@@ -6,14 +6,17 @@
  * Time: 16:09
  */
 
+use Nette\Utils\FileSystem;
+use Nette\Utils\Finder;
+
 /**
  * Class Database
  *
- * @author Tomáš Babický tomas.babicky@websta.de
+ * @author TomĂˇĹˇ BabickĂ˝ tomas.babicky@websta.de
  */
 class Database
 {
-    const DATABASE_DIR = '%s/data/%s';
+    const DATABASE_DIR = '%s' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR. '%s';
 
     private $name;
 
@@ -32,14 +35,16 @@ class Database
 
         $mask = sprintf('*.%s', Table::EXT);
         $size = 0;
+        
+        $files = Finder::findFiles($mask)->in(self::getPath($name));
 
-        foreach (\Nette\Utils\Finder::findFiles($mask) as $file) {
+        foreach ($files as $file) {
             $size += $file->getSize();
         }
 
         $this->size        = $size;
         $this->name        = $name;
-        $this->tablesCount = \Nette\Utils\Finder::findFiles($mask)->count();
+        $this->tablesCount = $files->count();
     }
 
     /**
@@ -49,7 +54,17 @@ class Database
     {
         $this->name = null;
     }
+    
+    public function getName()
+    {
+        return $this->name;
+    }
 
+    public function getPath2()
+    {
+        return self::getPath($this->name);
+    }
+    
     public static function getPath($name)
     {
         return sprintf(self::DATABASE_DIR,__DIR__, $name);
@@ -63,8 +78,11 @@ class Database
         $mask   = sprintf('*.%s', Table::EXT);
         $tables = [];
 
-        foreach (\Nette\Utils\Finder::findFiles($mask) as $file) {
-            $tables[] = new Table($file->getBaseName());
+        foreach (Finder::findFiles($mask)->in(self::getPath($this->name)) as $file) {            
+            $extension = $file->getExtension();            
+            $fileName = str_replace('.' . $extension, '', $file->getFileName());
+            
+            $tables[$fileName] = new Table($this, $fileName);                        
         }
 
         return $tables;
@@ -72,20 +90,38 @@ class Database
 
     public static function create($name)
     {
-        $path = self::getPath($name);
+        $path = self::getPath($name);        
 
         if (is_dir($path)) {
             throw new Exception('Database already exists.');
         } else {
-            if (!mkdir($path)) {
-                throw new Exception('Database was not created.');
+            
+            try {
+                FileSystem::createDir($path);
+                
+                return true;
+            } catch (Nette\IOException $e) {
+                throw new Exception('Database was not created.');                
             }
         }
 
         return new Database($name);
     }
 
-    public function delete()
+    public function delete($name)    
     {
+        $path = self::getPath($name);
+        
+        if (!is_dir($path)) {
+            throw new Exception(sprintf('Database "%s" not exist', $name));
+        }
+        
+        try {
+            FileSystem::delete($path);
+            
+            return true;
+        } catch (Nette\IOException $e) {
+            throw new Exception('Database was not created.');
+        }
     }
 }

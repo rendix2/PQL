@@ -18,9 +18,13 @@ class Row
     /**
      * Row constructor.
      */
-    public function __construct()
+    public function __construct($data)
     {
         $this->row = new stdClass();
+        
+        foreach ($data as $key => $value) {
+            $this->row->{$key} = $value;
+        }
     }
 
     /**
