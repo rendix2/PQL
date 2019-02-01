@@ -27,6 +27,11 @@ class Row
         }
     }
 
+    public function get()
+    {
+        return $this->row;
+    }
+
     /**
      * Row destructor.
      */
