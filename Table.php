@@ -17,22 +17,48 @@ class Table
 {
     const EXT = 'pql';
 
+    /**
+     * @var string $name
+     */
     private $name;
 
+    /**
+     * @var string $fileName
+     */
     private $fileName;
 
+    /**
+     * @var int $size
+     */
     private $size;
 
+    /**
+     * @var Row[] $rows
+     */
     private $rows;
-        
+
+    /**
+     * @var Database $database
+     */
     private $database;
-    
-    private $colums;
-    
+
+    /**
+     * @var array $columns
+     */
+    private $columns;
+
+    /**
+     * @var int $columnsCount
+     */
     private $columnsCount;
 
     /**
      * Table constructor.
+     *
+     * @param Database $database
+     * @param string   $name
+     *
+     * @throws Exception
      */
     public function __construct(Database $database, $name)
     {
@@ -61,12 +87,12 @@ class Table
             $columns[] = trim($column);
         }
 
-        $this->colums   = $columns;
-        $this->columnsCount = count($this->colums);
-        $this->name     = $name;
-        $this->fileName = $tableFileName;
-        $this->size     = $fileSize;
-        $this->database = $database;
+        $this->columns      = $columns;
+        $this->columnsCount = count($this->columns);
+        $this->name         = $name;
+        $this->fileName     = $tableFileName;
+        $this->size         = $fileSize;
+        $this->database     = $database;
     }
 
     /**
@@ -74,13 +100,46 @@ class Table
      */
     public function __destruct()
     {
-        $this->fileName = null;
-        $this->name = null;
-        $this->size = null;
-        $this->rows = null;
-        $this->database = null;
+        $this->name         = null;
+        $this->fileName     = null;
+        $this->size         = null;
+        $this->rows         = null;
+        $this->database     = null;
+        $this->columns      = null;
+        $this->columnsCount = null;
     }
-    
+
+    /**
+     * @param $column
+     *
+     * @return bool
+     */
+    public function columnExists($column)
+    {
+        return in_array($column, $this->getColumns(),true);
+    }
+
+    /**
+     * @return array
+     */
+    public function getColumns()
+    {
+        return $this->columns;
+    }
+
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    /**
+     * @param Database $database
+     * @param string   $name
+     * @param array    $columns
+     *
+     * @return bool
+     * @throws Exception
+     */
     public static function create(Database $database, $name, array $columns)
     {
         if (file_exists(self::getFilePath($database, $name))) {
@@ -95,7 +154,14 @@ class Table
             return false;
         }
     }
-    
+
+    /**
+     * @param Database $database
+     * @param string   $name
+     *
+     * @return bool
+     * @throws Exception
+     */
     public static function delete(Database $database, $name)
     {
         if (!file_exists(self::getFilePath($database, $name))) {
@@ -110,12 +176,21 @@ class Table
             return false;
         }
     }
-    
+
+    /**
+     * @param Database $database
+     * @param string   $name
+     *
+     * @return string
+     */
     public static function getFilePath(Database $database, $name)
     {
         return sprintf('%s%s%s.%s', $database->getPath2(), DIRECTORY_SEPARATOR, $name, self::EXT);
     }
 
+    /**
+     * @return Row[]
+     */
     public function getRows()
     {
         $rows       = file(self::getFilePath($this->database, $this->name));        
@@ -132,7 +207,7 @@ class Table
             $rowExploded       = explode(',', $row);            
             $columnValuesArray = [];            
             
-            foreach ($this->colums as $columnNumber => $columnValue ) {
+            foreach ($this->columns as $columnNumber => $columnValue ) {
                 foreach ($rowExploded as $explodedKey => $explodedValue) {
                     if ($columnNumber === $explodedKey) {
                         $columnValuesArray[$columnValue] = trim($explodedValue);
