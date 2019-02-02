@@ -28,11 +28,12 @@ class Result
      *
      * @param array $rows
      */
-    public function __construct(array $columns, array $rows)
+    public function __construct(array $columns, array $rows, $time)
     {
         $this->rows      = $rows;
         $this->rowsCount = count($rows);
-        $this->coolumns  = $columns;
+        $this->columns   = $columns;
+        $this->time      = $time;
     }
 
     /**
@@ -53,10 +54,10 @@ class Result
     public function __toString()
     {
         if (count($this->rows)) {
-            $table  = '<table>';
+            $table  = '<table border="1">';
             $table .= '<thead><tr>';
 
-            foreach ($this->coolumns as $column) {
+            foreach ($this->columns as $column) {
                 $table .= sprintf('<td>%s</td>', $column);
             }
 
@@ -65,8 +66,8 @@ class Result
             foreach ($this->rows as $row) {
                 $table .= '<tr>';
 
-                foreach ($row as $column) {
-                    $table .= sprintf('<td>%s</td>', $column);
+                foreach ($row->get() as $column) {
+                    $table .= sprintf('<td>%s</td>', mb_convert_encoding($column, 'utf8'));
                 }
 
                 $table .= '</tr>';
@@ -76,5 +77,7 @@ class Result
 
             return $table;
         }
+        
+        return 'No result';
     }
 }

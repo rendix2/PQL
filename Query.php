@@ -85,6 +85,10 @@ class Query
     public function __construct(Database $database)
     {
         $this->database = $database;
+        $this->isDelete = false;
+        $this->isInsert = false;
+        $this->isUpdate = false;
+        $this->isSelect = false;
     }
 
     /**
@@ -104,13 +108,15 @@ class Query
      * @throws Exception
      *
      */
-    public function select(array $columns)
+    public function select(array $columns = [])
     {
+        /*
         foreach ($columns as $column) {
             if (!$this->table->columnExists($column)) {
                 throw new Exception(sprintf('Column "%s" does not exist.', $column));
             }
         }
+        */
 
         $this->isSelect = true;
         $this->columns = $columns;
@@ -131,9 +137,9 @@ class Query
     }
 
     /**
-     * @param $column
-     * @param $operator
-     * @param $value
+     * @param string $column
+     * @param string $operator
+     * @param mixed  $value
      *
      * @return Query
      * @throws Exception
@@ -146,10 +152,6 @@ class Query
 
         if (!in_array($operator, self::ENABLED_OPERATORS, true)) {
             throw  new Exception(sprintf('Unknown operator "%s".', $column));
-        }
-
-        if (!is_scalar($value)) {
-            throw new Exception('Searched value is not scalar.');
         }
 
         $this->condition[] = ['column' => $column, 'operator' => $operator, 'value' => $value];
@@ -275,8 +277,8 @@ class Query
         if (count($this->groupBy)) {
             $groupBy = 'GROUP BY ';
 
-            foreach ($this->groupBy as $groupBy) {
-                $groupBy .= $groupBy;
+            foreach ($this->groupBy as $value) {
+                $groupBy .= $value;
             }
         }
 
@@ -290,10 +292,10 @@ class Query
         if (count($this->orderBy)) {
             $orderBy = 'ORDER BY ';
 
-            foreach ($this->orderBy as $orderBy) {
-                $type = $orderBy['asc'] ? 'ASC' : 'DESC';
+            foreach ($this->orderBy as $values) {
+                $type = $values['asc'] ? 'ASC' : 'DESC';
 
-                $orderBy .= sprintf('%s %s', $orderBy['column'], $type);
+                $orderBy .= sprintf('%s %s', $values['column'], $type);
             }
         }
 
@@ -337,7 +339,7 @@ class Query
             return sprintf('DELETE FROM %s %s %s', $this->table->getName(), $where, $limit);
         }
 
-        if (count($this->isUpdate)) {
+        if ($this->isUpdate) {
             $where   = $this->generateWhere();
             $limit   = $this->generateLimit();
             $set     = '';
@@ -353,7 +355,7 @@ class Query
             return sprintf('UPDATE %s %s %s %s', $this->table->getName(), $set, $where, $limit);
         }
 
-        if (count($this->isInsert)) {
+        if ($this->isInsert) {
             $columns = array_keys($this->insertData);
             $values  = array_values($this->insertData);
 
@@ -376,51 +378,59 @@ class Query
      */
     public function run()
     {
+         $startTime = microtime(true);
+         
+         foreach ($this->columns as $selectedColumn) {
+             if(!$this->table->columnExists($selectedColumn)) {
+                 throw new Exception(sprintf('Selected column "%s" does not exists in table "%s".', $selectedColumn, $this->table->getName()));
+             }
+         }
+        
         /**
          * @var Row[] $tmpRows
          */
         $tmpRows = $this->table->getRows();
-        $res     = [];
+        $res     = [];            
 
         if (count($this->condition)) {
+            
             /**
              * @var Row $tmpRow
              */
             foreach ($tmpRows as $tmpRow) {
-
                 foreach ($this->condition as $condition) {
                     if ($condition['operator'] === '=') {
-                        if ($tmpRow->get()->{$condition['column']} === $condition['value']) {
+                        if ($tmpRow[$condition['column']] === $condition['value']) {
                             $res[] = $tmpRow;
                         }
                     }
 
                     if ($condition['operator'] === '<') {
-                        if ($tmpRow->get()->{$condition['column']} < $condition['value']) {
+                        if ($tmpRow[$condition['column']] < $condition['value']) {
                             $res[] = $tmpRow;
                         }
                     }
 
                     if ($condition['operator'] === '>') {
-                        if ($tmpRow->get()->{$condition['column']} > $condition['value']) {
+                        if ($tmpRow[$condition['column']] > $condition['value']) {
                             $res[] = $tmpRow;
                         }
                     }
 
                     if ($condition['operator'] === '<=') {
-                        if ($tmpRow->get()->{$condition['column']} <= $condition['value']) {
+                        if ($tmpRow[$condition['column']] <= $condition['value']) {
                             $res[] = $tmpRow;
                         }
                     }
 
                     if ($condition['operator'] === '>=') {
-                        if ($tmpRow->get()->{$condition['column']} >= $condition['value']) {
+                        if ($tmpRow[$condition['column']] >= $condition['value']) {
                             $res[] = $tmpRow;
                         }
                     }
 
                     if ($condition['operator'] === '!=') {
-                        if ($tmpRow->get()->{$condition['column']} !== $condition['value']) {
+                        if ($tmpRow[$condition['column']] !== $condition['value']) {
                             $res[] = $tmpRow;
                         }
                     }
@@ -431,55 +441,85 @@ class Query
         }
 
         if (count($this->groupBy)) {
-            $groups = [];
+            $groups   = [];
             $tmpGroup = [];
-
+            $lostRows = [];
+            
             foreach ($res as $row) {
-                foreach ($row->get() as $column) {
+                foreach ($row as $column => $value) {
                     foreach ($this->groupBy as $groupColumn) {
                         if ($column === $groupColumn) {
-                            // todo
+                            if (isset($groups[$value])) {
+                                $groups[$value]['count'] += 1;
+                            } else {
+                                $groups[$value]['count'] = 1;
+                            }
+                            
+                            $groups[$value]['row'][] = $row;                             
+                            $lostRows[] = $row;
                         }
                     }
                 }
             }
+            
+            foreach ($groups as $grouppKey => $groupValue) {
+                $tmpGroup[] = $groupValue['row'][0];  
+            }
+            
+            $res = $tmpGroup;
         }
 
         if (count($this->orderBy)) {
-            $tmpSort = [];
-
-            foreach ($this->orderBy as $item) {
-                $tmpSort[] = [
-                    'row' => Help::arrayObjectColumn($res, $item['column']),
-                    'asc' => $item['asc']
-                ];
-            }
-
-            foreach ($tmpSort as $column => $row) {
-                if ($row['asc']) {
-                    array_multisort($row['row'], SORT_ASC, $tmpRows);
-                } else {
-                    array_multisort($row['row'], SORT_DESC, $tmpRows);
+            $tmpSort = [];            
+            $tmp =[];           
+            
+            foreach ($res as $column => $values) {
+                foreach ($values as $key => $value) {
+                    $tmp[$column][$key] = $value;
                 }
             }
+            
+            foreach ($this->orderBy as $value) {
+                $tmpSort[] = array_column($tmp, $value['column']);
+                $tmpSort[] = $value['asc'] ? SORT_ASC : SORT_DESC;
+                $tmpSort[] = SORT_REGULAR;
+            }
+            
+            $tmpSort[] = &$tmp;
+            
+            $sortRes = call_user_func_array('array_multisort', $tmpSort);
+            $res = $tmp;
         }
 
         if ($this->limit) {
+            $rowsCount = count($res);            
+            $limit     = $this->limit > $rowsCount ? $rowsCount : $this->limit;            
             $limitRows = [];
 
-            for ($i = 0; $i < $this->limit; $i++) {
+            for ($i = 0; $i < $limit; $i++) {
                 $limitRows[] = $res[$i];
             }
 
-            $tmpRows   = $limitRows;
-            $limitRows = null;
+            $res = $limitRows;
+        }
+        
+        $columnObj = [];        
+        
+        foreach ($res as $row) {    
+            $newRow = new Row([]);
+            
+            foreach ($row as $column => $value) {
+                if (in_array($column, $this->columns, true)) {
+                    $newRow->get()->{$column} = $value;
+                }
+            }
+            $columnObj[] = $newRow;
         }
 
-        return new Result($tmpRows);
+        $endTime = microtime(true);
+        $executeTime = $endTime - $startTime;
+        $executeTime = number_format($executeTime, 5);
+
+        return new Result($this->columns, $columnObj, $executeTime);
     }
 }
-
-$database = new Database('test');
-
-$query = new Query($database);
-$query->select(['hi', 'j'])->from('test')->where('hi', '=', 5)->run();

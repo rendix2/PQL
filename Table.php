@@ -77,14 +77,15 @@ class Table
         $fileContent = file($tableFileName);
         
         if (!count($fileContent)) {
-            FileSystem::write($tableFileName, trim("id"));            
+            FileSystem::write($tableFileName, trim("id:int"));            
             $fileContent = file($tableFileName);            
         }
         
         $columns = [];
         
-        foreach (explode(',', trim($fileContent[0])) as $column) {
-            $columns[] = trim($column);
+        foreach (explode(', ', trim($fileContent[0])) as $column) {
+            $columnExploded = explode(':', trim($column));            
+            $columns[]      = new Column($columnExploded[0], $columnExploded[1]);
         }
 
         $this->columns      = $columns;
@@ -116,7 +117,13 @@ class Table
      */
     public function columnExists($column)
     {
-        return in_array($column, $this->getColumns(),true);
+        foreach ($this->getColumns() as $columnObject) {
+            if ($columnObject->getName() == $column) {
+                return true;
+            }
+        }        
+        
+        return false;
     }
 
     /**
@@ -133,9 +140,9 @@ class Table
     }
 
     /**
-     * @param Database $database
-     * @param string   $name
-     * @param array    $columns
+     * @param Database  $database
+     * @param string    $name
+     * @param Column[]  $columns
      *
      * @return bool
      * @throws Exception
@@ -147,7 +154,20 @@ class Table
         }
         
         try {
-            FileSystem::write(self::getFilePath($database, $name), implode(', ', $columns));
+            $columnsNames = [];
+            
+            /**
+             * @var Column $column
+             */
+            foreach ($columns as $column) {
+                if ($column instanceof Column) {
+                    $columnsNames[] = sprintf('%s:%s', $column->getName(), $column->getType());
+                } else {
+                    throw new Exception('Unknown param "$columns". It should be instance of Column class.');
+                }
+            }
+            
+            FileSystem::write(self::getFilePath($database, $name), implode(', ', $columnsNames));
             
             return true;
         } catch (Nette\IOException $e) {
@@ -191,7 +211,7 @@ class Table
     /**
      * @return Row[]
      */
-    public function getRows()
+    public function getRows($object = false)
     {
         $rows       = file(self::getFilePath($this->database, $this->name));        
         $rowCounter = 0;        
@@ -210,12 +230,25 @@ class Table
             foreach ($this->columns as $columnNumber => $columnValue ) {
                 foreach ($rowExploded as $explodedKey => $explodedValue) {
                     if ($columnNumber === $explodedKey) {
-                        $columnValuesArray[$columnValue] = trim($explodedValue);
+                        if ($columnValue->getType() === 'int') {
+                            $columnValuesArray[$columnValue->getName()] = (int)trim($explodedValue);
+                        } elseif($columnValue->getType() === 'string') {
+                            $columnValuesArray[$columnValue->getName()] = (string)trim($explodedValue);
+                        }  elseif($columnValue->getType() === 'float') {
+                            $columnValuesArray[$columnValue->getName()] = (float)trim($explodedValue);
+                        } else {
+                            throw new Exception(sprintf('Column "%s" using unknow type "%s".', $columnValue->getName(), $columnValue->getType()));
+                        }
                     }
                 }
             }
             
-            $rowsObj[]         = new Row($columnValuesArray);
+            if ($object) {
+                $rowsObj[]         = new Row($columnValuesArray);
+            } else {
+                $rowsObj[] = $columnValuesArray;
+            }
+            
             $columnValuesArray = null;            
             $rowCounter++;
         }

@@ -19,7 +19,11 @@ class Help
         $tmp = [];
 
         foreach ($objects as $object) {
-            $tmp[] = $object->{$column};
+            if ($object instanceof Row) {
+                $tmp[] = $object->get()->{$column};
+            } else {
+                $tmp[] = $object->{$column};
+            }            
         }
 
         return $tmp;
