@@ -33,7 +33,7 @@ class Query
     /**
      * @var array $condition
      */
-    private $condition;
+    private $whereCondition;
 
     /**
      * @var array $orderBy
@@ -45,9 +45,23 @@ class Query
      */
     private $groupBy;
 
+    /**
+     * 
+     * @var Table[] $leftJoin
+     */
     private $leftJoin;
 
+    /**
+     * 
+     * @var Table[] $innerJoin
+     */
     private $innerJoin;
+    
+    /**
+     * 
+     * @var array $onCondition
+     */
+    private $onCondition;
 
     /**
      * @var string $query
@@ -59,12 +73,28 @@ class Query
      */
     private $limit;
 
+    /**
+     * 
+     * @var bool $isSelect
+     */
     private $isSelect;
 
+    /**
+     * 
+     * @var bool $isInsert
+     */
     private $isInsert;
 
+    /**
+     * 
+     * @var bool $isUpdate
+     */
     private $isUpdate;
 
+    /**
+     * 
+     * @var bool $isDelete
+     */
     private $isDelete;
 
     /**
@@ -85,10 +115,20 @@ class Query
     public function __construct(Database $database)
     {
         $this->database = $database;
+        
         $this->isDelete = false;
         $this->isInsert = false;
         $this->isUpdate = false;
         $this->isSelect = false;
+        
+        $this->innerJoin = [];
+        $this->leftJoin  = [];
+        
+        $this->onCondition    = [];
+        $this->whereCondition = [];
+        
+        $this->updateData = [];
+        $this->insertData = [];
     }
 
     /**
@@ -96,9 +136,23 @@ class Query
      */
     public function __destruct()
     {
-        $this->database = null;
-        $this->columns  = null;
-        $this->table    = null;
+        $this->database       = null;
+        $this->columns        = null;
+        $this->table          = null;
+        $this->whereCondition = null;
+        $this->orderBy        = null;
+        $this->groupBy        = null;
+        $this->leftJoin       = null;
+        $this->innerJoin      = null;
+        $this->onCondition    = null;
+        $this->query          = null;
+        $this->limit          = null;
+        $this->isSelect       = null;
+        $this->isDelete       = null;
+        $this->isUpdate       = null;
+        $this->isInsert       = null;
+        $this->insertData     = null;
+        $this->updateData     = null;
     }
 
     /**
@@ -154,7 +208,7 @@ class Query
             throw  new Exception(sprintf('Unknown operator "%s".', $column));
         }
 
-        $this->condition[] = ['column' => $column, 'operator' => $operator, 'value' => $value];
+        $this->whereCondition[] = ['column' => $column, 'operator' => $operator, 'value' => $value];
 
         return $this;
     }
@@ -214,11 +268,30 @@ class Query
 
     public function leftJoin($table)
     {
+        $this->leftJoin[] = new Table($this->database, $table);
+        
         return $this;
     }
 
     public function innerJoin($table)
     {
+        $this->innerJoin[] = new Table($this->database, $table);
+        
+        return $this;
+    }
+    
+    /**
+     * 
+     * @param string $column
+     * @param string $operator
+     * @param mixed  $value
+     *
+     * @return Query
+     */
+    public function on($column, $operator, $value)
+    {
+        $this->onCondition[] = ['column' =>$column, 'operator' => $operator, 'value' => $value];
+        
         return $this;
     }
 
@@ -259,10 +332,10 @@ class Query
     {
         $where   = '';
 
-        if (count($this->condition)) {
+        if (count($this->whereCondition)) {
             $where = 'WHERE ';
 
-            foreach ($this->condition as $condition) {
+            foreach ($this->whereCondition as $condition) {
                 $where .= sprintf('%s %s %s ', $condition['column'], $condition['operator'], $condition['value']);
             }
         }
@@ -380,11 +453,40 @@ class Query
     {
          $startTime = microtime(true);
          
+         $columns = [];
+         
+         /**
+          * @var Table $table
+          */
+         foreach ($this->innerJoin as $table) {
+             foreach ($table->getColumns() as $column) {
+                 $columns[] = $column->getName();
+             }
+         }
+         
+         foreach ($this->leftJoin as $table) {
+             foreach ($table->getColumns() as $column) {
+                 $columns[] = $column;
+             }
+         }
+         
+         foreach ($this->table->getColumns() as $column) {
+             $columns[] = $column->getName();
+         }
+         
+         foreach ($this->columns as $column) {
+             if (!in_array($column, $columns)) {
+                 throw new Exception(sprintf('Selected column "%s" does not exists.', $column));
+             }
+         }
+         
+         /*
          foreach ($this->columns as $selectedColumn) {
              if(!$this->table->columnExists($selectedColumn)) {
                  throw new Exception(sprintf('Selected column "%s" does not exists in table "%s".', $selectedColumn, $this->table->getName()));
              }
          }
+         */
         
         /**
          * @var Row[] $tmpRows
@@ -392,13 +494,13 @@ class Query
         $tmpRows = $this->table->getRows();
         $res     = [];            
 
-        if (count($this->condition)) {
+        if (count($this->whereCondition)) {
             
             /**
              * @var Row $tmpRow
              */
             foreach ($tmpRows as $tmpRow) {
-                foreach ($this->condition as $condition) {
+                foreach ($this->whereCondition as $condition) {
                     if ($condition['operator'] === '=') {
                         if ($tmpRow[$condition['column']] === $condition['value']) {
                             $res[] = $tmpRow;
@@ -439,6 +541,44 @@ class Query
         } else {
             $res = $tmpRows;
         }
+        
+        if (count($this->innerJoin)) {
+            if (!count($this->onCondition)) {
+                throw new Exception('No ON condition.');
+            }
+            
+            $joinTmp = [];
+            
+            /**
+             * @var Table $joinTable
+             */
+            foreach ($this->innerJoin as $joinTable) {                
+               /* foreach ($joinTable->getColumns() as $joinTableColumns) {
+                    $this->columns[] = $joinTableColumns->getName();
+                }
+                */
+                
+                foreach ($this->onCondition as $condition) {
+                    foreach ($res as $row) {
+                        foreach ($row as $column => $value) {                            
+                            if ($column === $condition['column']) {
+                                foreach ($joinTable->getRows() as $joinedTableRows ) {
+                                    foreach ($joinedTableRows as $joinedTableRowsKey => $joinedTableRowsValue) {
+                                        if ($joinedTableRowsKey === $condition['value']) {
+                                            if ($value === $joinedTableRowsValue) {
+                                                $joinTmp[] = array_merge($row, $joinedTableRows);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            $res = $joinTmp;
+        }
 
         if (count($this->groupBy)) {
             $groups   = [];
@@ -456,14 +596,14 @@ class Query
                             }
                             
                             $groups[$value]['row'][] = $row;                             
-                            $lostRows[] = $row;
+                            $lostRows[]              = $row;
                         }
                     }
                 }
             }
             
-            foreach ($groups as $grouppKey => $groupValue) {
-                $tmpGroup[] = $groupValue['row'][0];  
+            foreach ($groups as $group) {
+                $tmpGroup[] = $group['row'][0];  
             }
             
             $res = $tmpGroup;
@@ -471,7 +611,7 @@ class Query
 
         if (count($this->orderBy)) {
             $tmpSort = [];            
-            $tmp =[];           
+            $tmp     = [];           
             
             foreach ($res as $column => $values) {
                 foreach ($values as $key => $value) {
@@ -485,10 +625,9 @@ class Query
                 $tmpSort[] = SORT_REGULAR;
             }
             
-            $tmpSort[] = &$tmp;
-            
-            $sortRes = call_user_func_array('array_multisort', $tmpSort);
-            $res = $tmp;
+            $tmpSort[] = &$tmp;            
+            $sortRes   = call_user_func_array('array_multisort', $tmpSort);
+            $res       = $tmp;
         }
 
         if ($this->limit) {
@@ -516,9 +655,8 @@ class Query
             $columnObj[] = $newRow;
         }
 
-        $endTime = microtime(true);
+        $endTime     = microtime(true);
         $executeTime = $endTime - $startTime;
-        $executeTime = number_format($executeTime, 5);
 
         return new Result($this->columns, $columnObj, $executeTime);
     }

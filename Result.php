@@ -13,14 +13,40 @@
  */
 class Result
 {
+    /**
+     * 
+     * @var float $time
+     */
     private $time;
+    
+    /**
+     * 
+     * @var float $timeFormated
+     */
+    private $timeFormated;
 
+    /**
+     * 
+     * @var int|null $affectedRows
+     */
     private $affectedRows;
 
+    /**
+     * 
+     * @var int $rowsCount
+     */
     private $rowsCount;
 
+    /**
+     * 
+     * @var Row[] $rows
+     */
     private $rows;
 
+    /**
+     * 
+     * @var array $columns
+     */
     private $columns;
 
     /**
@@ -30,10 +56,12 @@ class Result
      */
     public function __construct(array $columns, array $rows, $time)
     {
-        $this->rows      = $rows;
-        $this->rowsCount = count($rows);
-        $this->columns   = $columns;
-        $this->time      = $time;
+        $this->rows         = $rows;
+        $this->rowsCount    = count($rows);
+        $this->columns      = $columns;
+        $this->time         = $time;
+        $this->timeFormated = (float)number_format($time, 5);
+        
     }
 
     /**
@@ -43,6 +71,7 @@ class Result
     {
         $this->rows         = null;
         $this->time         = null;
+        $this->timeFormated = null;
         $this->rowsCount    = null;
         $this->affectedRows = null;
         $this->columns      = null;
@@ -66,8 +95,8 @@ class Result
             foreach ($this->rows as $row) {
                 $table .= '<tr>';
 
-                foreach ($row->get() as $column) {
-                    $table .= sprintf('<td>%s</td>', mb_convert_encoding($column, 'utf8'));
+                foreach ($this->columns as $columnList) {                        
+                    $table .= sprintf('<td>%s</td>', mb_convert_encoding($row->get()->{$columnList}, 'utf8')); 
                 }
 
                 $table .= '</tr>';
