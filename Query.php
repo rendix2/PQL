@@ -1,4 +1,6 @@
 <?php
+use query\Select;
+
 /**
  * Created by PhpStorm.
  * User: Tom
@@ -39,6 +41,12 @@ class Query
      * @var array $orderBy
      */
     private $orderBy;
+    
+    /**
+     * 
+     * @var array $having
+     */
+    private $having;
 
     /**
      * @var array $groupBy
@@ -129,6 +137,8 @@ class Query
         
         $this->updateData = [];
         $this->insertData = [];
+        
+        $this->having = [];
     }
 
     /**
@@ -139,21 +149,75 @@ class Query
         $this->database       = null;
         $this->columns        = null;
         $this->table          = null;
+                
         $this->whereCondition = null;
-        $this->orderBy        = null;
-        $this->groupBy        = null;
-        $this->leftJoin       = null;
-        $this->innerJoin      = null;
-        $this->onCondition    = null;
-        $this->query          = null;
-        $this->limit          = null;
-        $this->isSelect       = null;
-        $this->isDelete       = null;
-        $this->isUpdate       = null;
-        $this->isInsert       = null;
-        $this->insertData     = null;
-        $this->updateData     = null;
+        $this->having         = null;
+        
+        $this->orderBy = null;
+        $this->groupBy = null;
+        
+        $this->leftJoin    = null;
+        $this->innerJoin   = null;
+        $this->onCondition = null;
+        
+        $this->limit       = null;
+        
+        $this->query = null;
+        
+        $this->isSelect = null;
+        $this->isDelete = null;
+        $this->isUpdate = null;
+        $this->isInsert = null;
+        
+        $this->insertData = null;
+        $this->updateData = null;
     }
+    
+    public function getWhereCondition()
+    {
+        return $this->whereCondition;
+    }
+    
+    public function getGroupBy()
+    {
+        return $this->groupBy;
+    }
+    
+    public function getOrderBy()
+    {
+        return $this->orderBy;
+    }
+    
+    public function getLimit()
+    {
+        return $this->limit;
+    }
+    
+    public function getInnerJoin()
+    {
+        return $this->innerJoin;
+    }
+    
+    public function getLeftJoin()
+    {
+        return $this->leftJoin;
+    }
+    
+    public function getOnCondition()
+    {
+        return $this->onCondition;
+    }
+    
+    public function getTable()
+    {
+        return $this->table;
+    }
+    
+    public function getColumns()
+    {
+        return $this->columns;
+    }
+    
 
     /**
      * @param array $columns
@@ -173,7 +237,7 @@ class Query
         */
 
         $this->isSelect = true;
-        $this->columns = $columns;
+        $this->columns  = $columns;
 
         return $this;
     }
@@ -266,6 +330,10 @@ class Query
         return $this;
     }
 
+    /**
+     * @param sring $table
+     * @return Query
+     */
     public function leftJoin($table)
     {
         $this->leftJoin[] = new Table($this->database, $table);
@@ -273,6 +341,11 @@ class Query
         return $this;
     }
 
+    /**
+     * @param string $table
+     * 
+     * @return Query
+     */
     public function innerJoin($table)
     {
         $this->innerJoin[] = new Table($this->database, $table);
@@ -296,8 +369,9 @@ class Query
          */
         $last = $this->innerJoin[count($this->innerJoin) - 1];
         
-        bdump($var)
-        
+        if (!$last) {
+            throw new Exception('ON condition has no join.');
+        }
         
         $this->onCondition[] = [
             'column'   => $column,
@@ -341,125 +415,17 @@ class Query
 
         return $this;
     }
-
-    private function generateWhere()
+    
+    private function  proceed()
     {
-        $where   = '';
-
-        if (count($this->whereCondition)) {
-            $where = 'WHERE ';
-
-            foreach ($this->whereCondition as $condition) {
-                $where .= sprintf('%s %s %s ', $condition['column'], $condition['operator'], $condition['value']);
-            }
-        }
-
-        return $where;
+        
     }
-
-    private function generateGroupBy()
+    
+    public function execute()
     {
-        $groupBy = '';
-
-        if (count($this->groupBy)) {
-            $groupBy = 'GROUP BY ';
-
-            foreach ($this->groupBy as $value) {
-                $groupBy .= $value;
-            }
-        }
-
-        return $groupBy;
+        return new FakeTable([], []);
     }
-
-    private function generateOrderBy()
-    {
-        $orderBy = '';
-
-        if (count($this->orderBy)) {
-            $orderBy = 'ORDER BY ';
-
-            foreach ($this->orderBy as $values) {
-                $type = $values['asc'] ? 'ASC' : 'DESC';
-
-                $orderBy .= sprintf('%s %s', $values['column'], $type);
-            }
-        }
-
-        return $orderBy;
-    }
-
-    /**
-     * @return string
-     */
-    private function generateLimit()
-    {
-        $limit = '';
-
-        if ($this->limit) {
-            $limit = 'LIMIT ' . $this->limit;
-        }
-
-        return $limit;
-    }
-
-    /**
-     * @return string
-     */
-    private function build()
-    {
-        if ($this->isSelect) {
-            $select = sprintf('SELECT %s FROM %s ', implode(', ', $this->columns), $this->table->getName());
-
-            $where   = $this->generateWhere();
-            $orderBy = $this->generateOrderBy();
-            $groupBy = $this->generateGroupBy();
-            $limit   = $this->generateLimit();
-
-            return sprintf('%s %s %s %s %s', $select, $where, $groupBy, $orderBy, $limit);
-        }
-
-        if ($this->isDelete) {
-            $where   = $this->generateWhere();
-            $limit   = $this->generateLimit();
-
-            return sprintf('DELETE FROM %s %s %s', $this->table->getName(), $where, $limit);
-        }
-
-        if ($this->isUpdate) {
-            $where   = $this->generateWhere();
-            $limit   = $this->generateLimit();
-            $set     = '';
-
-            if ($this->updateData) {
-                $set = 'SET ';
-
-                foreach ($this->updateData as $column => $value) {
-                    $set .= sprintf('%s = %s', $column, $value);
-                }
-            }
-
-            return sprintf('UPDATE %s %s %s %s', $this->table->getName(), $set, $where, $limit);
-        }
-
-        if ($this->isInsert) {
-            $columns = array_keys($this->insertData);
-            $values  = array_values($this->insertData);
-
-            return sprintf(
-                'INSERT INTO %s (%s) VALUES (%s)',
-                $this->table->getName(),
-                implode(', ', $columns),
-                implode(', ', $values)
-            );
-        }
-    }
-
-    public function show()
-    {
-        echo sprintf('I have built this query: %s', $this->build());
-    }
-
+    
     /**
      * @return Result
      */
@@ -467,242 +433,11 @@ class Query
     {
          $startTime = microtime(true);
          
-         $columns = [];
-         
-         /**
-          * @var Table $table
-          */
-         foreach ($this->innerJoin as $table) {
-             foreach ($table->getColumns() as $column) {
-                 $columns[] = $column->getName();
-             }
-         }
-         
-         foreach ($this->leftJoin as $table) {
-             foreach ($table->getColumns() as $column) {
-                 $columns[] = $column;
-             }
-         }
-         
-         foreach ($this->table->getColumns() as $column) {
-             $columns[] = $column->getName();
-         }
-         
-         foreach ($this->columns as $column) {
-             if (!in_array($column, $columns)) {
-                 throw new Exception(sprintf('Selected column "%s" does not exists.', $column));
-             }
-         }
-         
-         /*
-         foreach ($this->columns as $selectedColumn) {
-             if(!$this->table->columnExists($selectedColumn)) {
-                 throw new Exception(sprintf('Selected column "%s" does not exists in table "%s".', $selectedColumn, $this->table->getName()));
-             }
-         }
-         */
-        
-        /**
-         * @var Row[] $tmpRows
-         */
-        $tmpRows = $this->table->getRows();
-        $res     = [];            
+         if ($this->isSelect) {
+             $select = new Select($this);
 
-        if (count($this->whereCondition)) {
-            
-            /**
-             * @var Row $tmpRow
-             */
-            foreach ($tmpRows as $tmpRow) {
-                foreach ($this->whereCondition as $condition) {
-                    if ($condition['operator'] === '=') {
-                        if ($tmpRow[$condition['column']] === $condition['value']) {
-                            $res[] = $tmpRow;
-                        }
-                    }
-
-                    if ($condition['operator'] === '<') {
-                        if ($tmpRow[$condition['column']] < $condition['value']) {
-                            $res[] = $tmpRow;
-                        }
-                    }
-
-                    if ($condition['operator'] === '>') {
-                        if ($tmpRow[$condition['column']] > $condition['value']) {
-                            $res[] = $tmpRow;
-                        }
-                    }
-
-                    if ($condition['operator'] === '<=') {
-                        if ($tmpRow[$condition['column']] <= $condition['value']) {
-                            $res[] = $tmpRow;
-                        }
-                    }
-
-                    if ($condition['operator'] === '>=') {
-                        if ($tmpRow[$condition['column']] >= $condition['value']) {
-                            $res[] = $tmpRow;
-                        }
-                    }
-
-                    if ($condition['operator'] === '!=') {
-                        if ($tmpRow[$condition['column']] !== $condition['value']) {
-                            $res[] = $tmpRow;
-                        }
-                    }
-                }
-            }
-        } else {
-            $res = $tmpRows;
-        }
-        
-        if (count($this->innerJoin)) {
-            if (!count($this->onCondition)) {
-                throw new Exception('No ON condition.');
-            }
-            
-            $joinTmp = [];
-            
-            /**
-             * @var Table $joinTable
-             */
-            foreach ($this->innerJoin as $joinTable) {                
-               /* foreach ($joinTable->getColumns() as $joinTableColumns) {
-                    $this->columns[] = $joinTableColumns->getName();
-                }
-                */
-                
-                foreach ($this->onCondition as $condition) {
-                    foreach ($res as $row) {
-                        foreach ($row as $column => $value) {                            
-                            if ($column === $condition['column']) {
-                                foreach ($joinTable->getRows() as $joinedTableRows ) {
-                                    foreach ($joinedTableRows as $joinedTableRowsKey => $joinedTableRowsValue) {
-                                        if ($joinedTableRowsKey === $condition['value']) {
-
-                                            //parse condition
-
-                                            if ($condition['operator'] === '=') {
-                                                if ($value === $joinedTableRowsValue) {
-                                                    $joinTmp[] = array_merge($row, $joinedTableRows);
-                                                }
-                                            }
-
-                                            if ($condition['operator'] === '<') {
-                                                if ($value < $joinedTableRowsValue) {
-                                                    $joinTmp[] = array_merge($row, $joinedTableRows);
-                                                }
-                                            }
-
-                                            if ($condition['operator'] === '>') {
-                                                if ($value > $joinedTableRowsValue) {
-                                                    $joinTmp[] = array_merge($row, $joinedTableRows);
-                                                }
-                                            }
-
-                                            if ($condition['operator'] === '>=') {
-                                                if ($value >= $joinedTableRowsValue) {
-                                                    $joinTmp[] = array_merge($row, $joinedTableRows);
-                                                }
-                                            }
-
-                                            if ($condition['operator'] === '<=') {
-                                                if ($value <= $joinedTableRowsValue) {
-                                                    $joinTmp[] = array_merge($row, $joinedTableRows);
-                                                }
-                                            }
-
-                                            if ($condition['operator'] === '!=') {
-                                                if ($value !== $joinedTableRowsValue) {
-                                                    $joinTmp[] = array_merge($row, $joinedTableRows);
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            
-            $res = $joinTmp;
-        }
-
-        if (count($this->groupBy)) {
-            $groups   = [];
-            $tmpGroup = [];
-            $lostRows = [];
-            
-            foreach ($res as $row) {
-                foreach ($row as $column => $value) {
-                    foreach ($this->groupBy as $groupColumn) {
-                        if ($column === $groupColumn) {
-                            if (isset($groups[$value])) {
-                                $groups[$value]['count'] += 1;
-                            } else {
-                                $groups[$value]['count'] = 1;
-                            }
-                            
-                            $groups[$value]['row'][] = $row;                             
-                            $lostRows[]              = $row;
-                        }
-                    }
-                }
-            }
-            
-            foreach ($groups as $group) {
-                $tmpGroup[] = $group['row'][0];  
-            }
-            
-            $res = $tmpGroup;
-        }
-
-        if (count($this->orderBy)) {
-            $tmpSort = [];            
-            $tmp     = [];           
-            
-            foreach ($res as $column => $values) {
-                foreach ($values as $key => $value) {
-                    $tmp[$column][$key] = $value;
-                }
-            }
-            
-            foreach ($this->orderBy as $value) {
-                $tmpSort[] = array_column($tmp, $value['column']);
-                $tmpSort[] = $value['asc'] ? SORT_ASC : SORT_DESC;
-                $tmpSort[] = SORT_REGULAR;
-            }
-            
-            $tmpSort[] = &$tmp;            
-            $sortRes   = call_user_func_array('array_multisort', $tmpSort);
-            $res       = $tmp;
-        }
-
-        if ($this->limit) {
-            $rowsCount = count($res);            
-            $limit     = $this->limit > $rowsCount ? $rowsCount : $this->limit;            
-            $limitRows = [];
-
-            for ($i = 0; $i < $limit; $i++) {
-                $limitRows[] = $res[$i];
-            }
-
-            $res = $limitRows;
-        }
-        
-        $columnObj = [];        
-        
-        foreach ($res as $row) {    
-            $newRow = new Row([]);
-            
-            foreach ($row as $column => $value) {
-                if (in_array($column, $this->columns, true)) {
-                    $newRow->get()->{$column} = $value;
-                }
-            }
-            $columnObj[] = $newRow;
-        }
+             $columnObj = $select->run();
+         }        
 
         $endTime     = microtime(true);
         $executeTime = $endTime - $startTime;

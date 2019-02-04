@@ -11,7 +11,7 @@
  *
  * @author Tomáš Babický tomas.babicky@websta.de
  */
-class Result
+final class Result implements ITable
 {
     /**
      * 
@@ -75,6 +75,16 @@ class Result
         $this->rowsCount    = null;
         $this->affectedRows = null;
         $this->columns      = null;
+    }
+    
+    public function getColumns()
+    {
+        return $this->columns;
+    }
+    
+    public function getRows($object = false)
+    {
+        return $this->rows;
     }
 
     /**

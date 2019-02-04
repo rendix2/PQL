@@ -1,0 +1,193 @@
+/**
+         * @var Row[] $tmpRows
+         */
+         /*
+        $tmpRows = $this->table->getRows();
+        $res     = [];            
+
+        if (count($this->whereCondition)) {
+            
+            /**
+             * @var Row $tmpRow
+             */
+         /*
+            foreach ($tmpRows as $tmpRow) {
+                foreach ($this->whereCondition as $condition) {
+                    if ($condition['operator'] === '=') {
+                        if ($tmpRow[$condition['column']] === $condition['value']) {
+                            $res[] = $tmpRow;
+                        }
+                    }
+
+                    if ($condition['operator'] === '<') {
+                        if ($tmpRow[$condition['column']] < $condition['value']) {
+                            $res[] = $tmpRow;
+                        }
+                    }
+
+                    if ($condition['operator'] === '>') {
+                        if ($tmpRow[$condition['column']] > $condition['value']) {
+                            $res[] = $tmpRow;
+                        }
+                    }
+
+                    if ($condition['operator'] === '<=') {
+                        if ($tmpRow[$condition['column']] <= $condition['value']) {
+                            $res[] = $tmpRow;
+                        }
+                    }
+
+                    if ($condition['operator'] === '>=') {
+                        if ($tmpRow[$condition['column']] >= $condition['value']) {
+                            $res[] = $tmpRow;
+                        }
+                    }
+
+                    if ($condition['operator'] === '!=') {
+                        if ($tmpRow[$condition['column']] !== $condition['value']) {
+                            $res[] = $tmpRow;
+                        }
+                    }
+                }
+            }
+        } else {
+            $res = $tmpRows;
+        }
+        
+        if (count($this->innerJoin)) {
+            if (!count($this->onCondition)) {
+                throw new Exception('No ON condition.');
+            }
+            
+            $joinTmp = [];
+            
+            /**
+             * @var Table $joinTable
+             */
+         /*
+            foreach ($this->innerJoin as $joinTable) {                
+               /* foreach ($joinTable->getColumns() as $joinTableColumns) {
+                    $this->columns[] = $joinTableColumns->getName();
+                }
+                */
+                /*
+                foreach ($this->onCondition as $condition) {
+                    foreach ($res as $row) {
+                        foreach ($row as $column => $value) {                            
+                            if ($column === $condition['column'] && $joinTable->getName() === $condition['table']) {
+                                foreach ($joinTable->getRows() as $joinedTableRows ) {
+                                    foreach ($joinedTableRows as $joinedTableRowsKey => $joinedTableRowsValue) {
+                                        if ($joinedTableRowsKey === $condition['value'] ) {
+
+                                            //parse ON condition
+
+                                            if ($condition['operator'] === '=') {
+                                                if ($value === $joinedTableRowsValue) {
+                                                    $joinTmp[] = array_merge($row, $joinedTableRows);
+                                                }
+                                            }
+
+                                            if ($condition['operator'] === '<') {
+                                                if ($value < $joinedTableRowsValue) {
+                                                    $joinTmp[] = array_merge($row, $joinedTableRows);
+                                                }
+                                            }
+
+                                            if ($condition['operator'] === '>') {
+                                                if ($value > $joinedTableRowsValue) {
+                                                    $joinTmp[] = array_merge($row, $joinedTableRows);
+                                                }
+                                            }
+
+                                            if ($condition['operator'] === '>=') {
+                                                if ($value >= $joinedTableRowsValue) {
+                                                    $joinTmp[] = array_merge($row, $joinedTableRows);
+                                                }
+                                            }
+
+                                            if ($condition['operator'] === '<=') {
+                                                if ($value <= $joinedTableRowsValue) {
+                                                    $joinTmp[] = array_merge($row, $joinedTableRows);
+                                                }
+                                            }
+
+                                            if ($condition['operator'] === '!=') {
+                                                if ($value !== $joinedTableRowsValue) {
+                                                    $joinTmp[] = array_merge($row, $joinedTableRows);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            $res = $joinTmp;
+        }
+
+        if (count($this->groupBy)) {
+            $groups   = [];
+            $tmpGroup = [];
+            $lostRows = [];
+            
+            foreach ($res as $row) {
+                foreach ($row as $column => $value) {
+                    foreach ($this->groupBy as $groupColumn) {
+                        if ($column === $groupColumn) {
+                            if (isset($groups[$value])) {
+                                $groups[$value]['count'] += 1;
+                            } else {
+                                $groups[$value]['count'] = 1;
+                            }
+                            
+                            $groups[$value]['row'][] = $row;                             
+                            $lostRows[]              = $row;
+                        }
+                    }
+                }
+            }
+            
+            foreach ($groups as $group) {
+                $tmpGroup[] = $group['row'][0];  
+            }
+            
+            $res = $tmpGroup;
+        }
+
+        if (count($this->orderBy)) {
+            $tmpSort = [];            
+            $tmp     = [];           
+            
+            foreach ($res as $column => $values) {
+                foreach ($values as $key => $value) {
+                    $tmp[$column][$key] = $value;
+                }
+            }
+            
+            foreach ($this->orderBy as $value) {
+                $tmpSort[] = array_column($tmp, $value['column']);
+                $tmpSort[] = $value['asc'] ? SORT_ASC : SORT_DESC;
+                $tmpSort[] = SORT_REGULAR;
+            }
+            
+            $tmpSort[] = &$tmp;            
+            $sortRes   = call_user_func_array('array_multisort', $tmpSort);
+            $res       = $tmp;
+        }
+
+        if ($this->limit) {
+            $rowsCount = count($res);            
+            $limit     = $this->limit > $rowsCount ? $rowsCount : $this->limit;            
+            $limitRows = [];
+
+            for ($i = 0; $i < $limit; $i++) {
+                $limitRows[] = $res[$i];
+            }
+
+            $res = $limitRows;
+        }
+        
+        */

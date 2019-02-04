@@ -13,7 +13,7 @@ use Nette\Utils\FileSystem;
  *
  * @author Tomáš Babický tomas.babicky@websta.de
  */
-class Table
+class Table implements ITable
 {
     const EXT = 'pql';
 
@@ -209,7 +209,7 @@ class Table
     }
 
     /**
-     * @return Row[]
+     * @return Row[]|array
      */
     public function getRows($object = false)
     {
