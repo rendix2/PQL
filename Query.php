@@ -290,7 +290,21 @@ class Query
      */
     public function on($column, $operator, $value)
     {
-        $this->onCondition[] = ['column' =>$column, 'operator' => $operator, 'value' => $value];
+        /**
+         * 
+         * @var Table $last
+         */
+        $last = $this->innerJoin[count($this->innerJoin) - 1];
+        
+        bdump($last, 'last');
+        
+        
+        $this->onCondition[] = [
+            'column'   => $column,
+            'operator' => $operator,
+            'value'    => $value,
+            'table'    => $last->getName()
+        ];
         
         return $this;
     }
