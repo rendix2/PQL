@@ -565,8 +565,43 @@ class Query
                                 foreach ($joinTable->getRows() as $joinedTableRows ) {
                                     foreach ($joinedTableRows as $joinedTableRowsKey => $joinedTableRowsValue) {
                                         if ($joinedTableRowsKey === $condition['value']) {
-                                            if ($value === $joinedTableRowsValue) {
-                                                $joinTmp[] = array_merge($row, $joinedTableRows);
+
+                                            //parse condition
+
+                                            if ($condition['operator'] === '=') {
+                                                if ($value === $joinedTableRowsValue) {
+                                                    $joinTmp[] = array_merge($row, $joinedTableRows);
+                                                }
+                                            }
+
+                                            if ($condition['operator'] === '<') {
+                                                if ($value < $joinedTableRowsValue) {
+                                                    $joinTmp[] = array_merge($row, $joinedTableRows);
+                                                }
+                                            }
+
+                                            if ($condition['operator'] === '>') {
+                                                if ($value > $joinedTableRowsValue) {
+                                                    $joinTmp[] = array_merge($row, $joinedTableRows);
+                                                }
+                                            }
+
+                                            if ($condition['operator'] === '>=') {
+                                                if ($value >= $joinedTableRowsValue) {
+                                                    $joinTmp[] = array_merge($row, $joinedTableRows);
+                                                }
+                                            }
+
+                                            if ($condition['operator'] === '<=') {
+                                                if ($value <= $joinedTableRowsValue) {
+                                                    $joinTmp[] = array_merge($row, $joinedTableRows);
+                                                }
+                                            }
+
+                                            if ($condition['operator'] === '!=') {
+                                                if ($value !== $joinedTableRowsValue) {
+                                                    $joinTmp[] = array_merge($row, $joinedTableRows);
+                                                }
                                             }
                                         }
                                     }
