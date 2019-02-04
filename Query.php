@@ -296,7 +296,7 @@ class Query
          */
         $last = $this->innerJoin[count($this->innerJoin) - 1];
         
-        bdump($last, 'last');
+        bdump($var)
         
         
         $this->onCondition[] = [
