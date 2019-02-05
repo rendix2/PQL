@@ -103,12 +103,18 @@ final class Result implements ITable
             }
 
             $table.= '</tr></thead><tbody>';
-
+            
             foreach ($this->rows as $row) {
                 $table .= '<tr>';
 
-                foreach ($this->columns as $columnList) {                        
-                    $table .= sprintf('<td>%s</td>', mb_convert_encoding($row->get()->{$columnList}, 'utf8')); 
+                foreach ($this->columns as $columnList) {   
+                    $value = $row->get()->{$columnList};
+                    
+                    if ($value === null) {
+                        $value = '<i>NULL</i>';
+                    }
+                    
+                    $table .= sprintf('<td>%s</td>', mb_convert_encoding($value, 'utf8')); 
                 }
 
                 $table .= '</tr>';

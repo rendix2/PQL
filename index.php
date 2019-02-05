@@ -30,7 +30,6 @@ $myNew = $tables['myNew'];
 //bdump($myNew->getRows());
 
 $query = new Query($database);
-$res = $query->select(['jmeno', 'prijmeni', 'id','name'])->from('myNew')->innerJoin('myNews')->on('jmeno', '=', 'name')->limit(8)->run();
-
+$res = $query->select(['jmeno', 'prijmeni', 'id','name'])->from('myNew')->leftJoin('myNews')->on('jmeno', '=', 'name')->limit(5)->run();
 bdump($res);
 echo $res;

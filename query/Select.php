@@ -4,6 +4,7 @@ namespace query;
 use Query;
 use Row;
 use Table;
+use Exception;
 
 class Select
 {
@@ -72,7 +73,7 @@ class Select
         
         foreach ($this->query->getLeftJoin() as $table) {
             foreach ($table->getColumns() as $column) {
-                $columns[] = $column;
+                $columns[] = $column->getName();
             }
         }
         
@@ -99,19 +100,14 @@ class Select
         
         if (!count($this->query->getOnCondition())) {
             throw new Exception('No ON condition.');
-        }
-            
+        }            
+        
         $joinTmp = [];
             
         /**
          * @var Table $joinTable
          */
-        foreach ($this->query->getInnerJoin() as $joinTable) {
-            /* foreach ($joinTable->getColumns() as $joinTableColumns) {
-            $this->columns[] = $joinTableColumns->getName();
-            }
-            */
-                
+        foreach ($this->query->getInnerJoin() as $joinTable) {                
             foreach ($this->query->getOnCondition() as $condition) {
                 foreach ($this->result as $row) {
                     foreach ($row as $column => $value) {
@@ -177,16 +173,14 @@ class Select
         if (!count($this->query->getLeftJoin())) {
             return $this->result;
         }
-
+        
+        if (!count($this->query->getOnCondition())) {
+            throw new Exception('No ON condition.');
+        }
+        
+        $joinTmp = [];
+        
         foreach ($this->query->getLeftJoin() as $joinTable) {
-
-            // prepare columns
-            foreach ($joinTable->getColumns() as $column) {
-                foreach ($this->query->getTable()->getRows() as $row){
-                    $row->get()->{$column} = null;
-                }
-            }
-
             foreach ($this->query->getOnCondition() as $condition) {
                 foreach ($this->result as $row) {
                     foreach ($row as $column => $value) {
@@ -197,39 +191,45 @@ class Select
 
                                         if ($condition['operator'] === '=') {
                                             if ($value === $columnValue) {
-                                                $row->get()->{$columnName} = $columnValue;
+                                                $joinTmp[] = array_merge($row, $joinedTableRows);
                                             }
                                         }
 
                                         if ($condition['operator'] === '<') {
                                             if ($value < $columnValue) {
-                                                $row->get()->{$columnName} = $columnValue;
+                                                $joinTmp[] = array_merge($row, $joinedTableRows);
                                             }
                                         }
 
                                         if ($condition['operator'] === '>') {
                                             if ($value > $columnValue) {
-                                                $row->get()->{$columnName} = $columnValue;
+                                                $joinTmp[] = array_merge($row, $joinedTableRows);
                                             }
                                         }
 
                                         if ($condition['operator'] === '>=') {
                                             if ($value >= $columnValue) {
-                                                $row->get()->{$columnName} = $columnValue;
+                                                $joinTmp[] = array_merge($row, $joinedTableRows);
                                             }
                                         }
 
                                         if ($condition['operator'] === '<=') {
                                             if ($value <= $columnValue) {
-                                                $row->get()->{$columnName} = $columnValue;
+                                                $joinTmp[] = array_merge($row, $joinedTableRows);
                                             }
                                         }
 
                                         if ($condition['operator'] === '!=') {
                                             if ($value !== $columnValue) {
-                                                $row->get()->{$columnName} = $columnValue;
+                                                $joinTmp[] = array_merge($row, $joinedTableRows);
                                             }
                                         }
+                                    } else {                                        
+                                        foreach ($joinTable->getColumns() as $column) {
+                                            $row[$column->getName()] = null;
+                                        }
+                                   
+                                        $joinTmp[$columnName] = $row;
                                     }
                                 }
                             }
@@ -239,7 +239,7 @@ class Select
             }
         }
 
-        return $this->result;
+        return $this->result = $joinTmp;
     }
 
     /**
