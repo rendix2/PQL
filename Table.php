@@ -11,11 +11,17 @@ use Nette\Utils\FileSystem;
 /**
  * Class Table
  *
- * @author Tomáš Babický tomas.babicky@websta.de
+ * @author rendix2
  */
 class Table implements ITable
 {
     const EXT = 'pql';
+
+    const FIRST_LINE_LENGTH = 102400;
+
+    const COLUMN_DELIMITER = ', ';
+
+    const COLUMN_DATA_DELIMITER = ':';
 
     /**
      * @var string $name
@@ -77,14 +83,14 @@ class Table implements ITable
         $fileContent = file($tableFileName);
         
         if (!count($fileContent)) {
-            FileSystem::write($tableFileName, trim("id:int"));            
+            FileSystem::write($tableFileName, trim(sprintf('id%sint', self::COLUMN_DATA_DELIMITER)));
             $fileContent = file($tableFileName);            
         }
         
         $columns = [];
         
-        foreach (explode(', ', trim($fileContent[0])) as $column) {
-            $columnExploded = explode(':', trim($column));            
+        foreach (explode(self::COLUMN_DELIMITER, trim($fileContent[0])) as $column) {
+            $columnExploded = explode(self::COLUMN_DATA_DELIMITER, trim($column));
             $columns[]      = new Column($columnExploded[0], $columnExploded[1]);
         }
 
@@ -139,6 +145,11 @@ class Table implements ITable
         return $this->name;
     }
 
+    public function getFileName()
+    {
+        return $this->fileName;
+    }
+
     /**
      * @param Database  $database
      * @param string    $name
@@ -167,12 +178,65 @@ class Table implements ITable
                 }
             }
             
-            FileSystem::write(self::getFilePath($database, $name), implode(', ', $columnsNames));
+            FileSystem::write(self::getFilePath($database, $name), implode(self::COLUMN_DELIMITER, $columnsNames));
             
             return true;
         } catch (Nette\IOException $e) {
             return false;
         }
+    }
+
+    /**
+     * @param string $name
+     * @param string $type
+     *
+     * @return Table
+     * @throws Exception
+     */
+    public function addColumn($name, $type)
+    {
+        if(!in_array($type, Column::COLUMN_TYPE, true)) {
+            throw new Exception('Unknown column type.');
+        }
+
+        $handle   = fopen($this->fileName,'r+b');
+        $firstRow = '';
+
+        while ($char = fread($handle, self::FIRST_LINE_LENGTH) !== "\n") {
+            $firstRow .= $char;
+        }
+
+        $newsInFirstRow        = sprintf(', %s%s%s', $name, self::COLUMN_DATA_DELIMITER, $type);
+        $firstRow             .= $newsInFirstRow;
+        $newsInFirstRowLength  = mb_strlen($newsInFirstRow);
+
+        fwrite($handle, $firstRow);
+
+        $i   = 0;
+        $row = '';
+
+        $fileSize = $this->size + $newsInFirstRowLength;
+
+        while ($char = fread($handle, $fileSize)) {
+            $row .= $char;
+
+            if ($char === "\n" && $i > 1) {
+                $i++;
+
+                fwrite($handle, $row . self::COLUMN_DELIMITER);
+                $row = '';
+            }
+        }
+        $size = filesize($this->fileName);
+
+        if ($size === false) {
+            throw new Exception('There was problem during counting table size.');
+        }
+
+        $this->size = $size;
+        fclose($handle);
+
+        return $this;
     }
 
     /**
@@ -209,7 +273,10 @@ class Table implements ITable
     }
 
     /**
+     * @param bool $object
+     *
      * @return Row[]|array
+     * @throws Exception
      */
     public function getRows($object = false)
     {
@@ -244,7 +311,7 @@ class Table implements ITable
             }
             
             if ($object) {
-                $rowsObj[]         = new Row($columnValuesArray);
+                $rowsObj[] = new Row($columnValuesArray);
             } else {
                 $rowsObj[] = $columnValuesArray;
             }

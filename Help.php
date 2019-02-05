@@ -9,11 +9,10 @@
 /**
  * Class Help
  *
- * @author Tomáš Babický tomas.babicky@websta.de
+ * @author rendix2
  */
 class Help
 {
-
     public static function arrayObjectColumn(array $objects, $column)
     {
         $tmp = [];

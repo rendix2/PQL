@@ -9,7 +9,7 @@
 /**
  * Class Row
  *
- * @author Tomáš Babický tomas.babicky@websta.de
+ * @author rendix2
  */
 class Row
 {
@@ -17,6 +17,8 @@ class Row
 
     /**
      * Row constructor.
+     *
+     * @param $data
      */
     public function __construct($data)
     {
@@ -27,16 +29,56 @@ class Row
         }
     }
 
-    public function get()
-    {
-        return $this->row;
-    }
-
     /**
      * Row destructor.
      */
     public function __destruct()
     {
         $this->row = null;
+    }
+
+    /**
+     * @param $name
+     *
+     * @return bool
+     */
+    public function __isset($name)
+    {
+        return isset($this->row->{$name});
+    }
+
+    /**
+     * @param string $name
+     */
+    public function __unset($name)
+    {
+        unset($this->row->{$name});
+    }
+
+    /**
+     * @param string $name
+     * @param mixed $value
+     */
+    public function __set($name, $value)
+    {
+        $this->row->{$name} = $value;
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return mixed
+     */
+    public function __get($name)
+    {
+        return $this->row->{$name};
+    }
+
+    /**
+     * @return stdClass
+     */
+    public function get()
+    {
+        return $this->row;
     }
 }

@@ -14,7 +14,13 @@ class FakeTable implements ITable
      * @var array $columns
      */
     private $columns;
-    
+
+    /**
+     * FakeTable constructor.
+     *
+     * @param array $rows
+     * @param array $columns
+     */
     public function __construct(array $rows, array $columns)
     {
         $this->rows    = $rows;
@@ -22,15 +28,17 @@ class FakeTable implements ITable
     }
     
     /**
-     * 
+     * FakeTable destructor.
      */
     public function __destruct()
     {
         $this->rows    = null;
         $this->columns = null;
     }
-    
+
     /**
+     * @param bool $object
+     *
      * @return array
      */
     public function getRows($object = false)

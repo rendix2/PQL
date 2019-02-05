@@ -12,7 +12,7 @@ use Nette\Utils\Finder;
 /**
  * Class Database
  *
- * @author TomĂˇĹˇ BabickĂ˝ tomas.babicky@websta.de
+ * @author rendix2
  */
 class Database
 {

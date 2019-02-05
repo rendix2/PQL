@@ -1,0 +1,95 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: Tom
+ * Date: 5. 2. 2019
+ * Time: 13:14
+ */
+
+namespace query;
+
+use Query;
+
+/**
+ * Class Functions
+ *
+ * @package query
+ * @author  Tomáš Babický tomas.babicky@websta.de
+ */
+class Functions
+{
+    /**
+     * @var array $table
+     */
+    private $table;
+
+    /**
+     * Functions constructor.
+     *
+     * @param array $table
+     */
+    public function __construct(array $table)
+    {
+        $this->table = $table;
+    }
+
+    /**
+     * Functions destructor.
+     */
+    public function __destruct()
+    {
+        $this->table = null;
+    }
+
+    /**
+     * @param string $column
+     *
+     * @return int
+     */
+    public function count($column)
+    {
+        return count(array_column($this->table, $column));
+    }
+
+    /**
+     * @param string $column
+     *
+     * @return float|int
+     */
+    public function sum($column)
+    {
+        return array_sum(array_column($this->table, $column));
+    }
+
+    /**
+     * @param string $column
+     *
+     * @return float|int
+     */
+    public function avg($column)
+    {
+        $values = array_column($this->table, $column);
+
+        return array_sum($values) / $this->count($values);
+    }
+
+    /**
+     * @param string $column
+     *
+     * @return mixed
+     */
+    public function min($column)
+    {
+        return min(array_column($this->table, $column));
+    }
+
+    /**
+     * @param string $column
+     *
+     * @return mixed
+     */
+    public function max($column)
+    {
+        return max(array_column($this->table, $column));
+    }
+}

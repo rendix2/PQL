@@ -9,7 +9,7 @@
 /**
  * Class Result
  *
- * @author Tomáš Babický tomas.babicky@websta.de
+ * @author rendix2
  */
 final class Result implements ITable
 {
@@ -52,7 +52,9 @@ final class Result implements ITable
     /**
      * Result constructor.
      *
+     * @param array $columns
      * @param array $rows
+     * @param float $time
      */
     public function __construct(array $columns, array $rows, $time)
     {

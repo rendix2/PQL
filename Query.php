@@ -1,5 +1,9 @@
 <?php
+
+use query\Delete;
+use query\Insert;
 use query\Select;
+use query\Update;
 
 /**
  * Created by PhpStorm.
@@ -11,7 +15,7 @@ use query\Select;
 /**
  * Class Query
  *
- * @author Tomáš Babický tomas.babicky@websta.de
+ * @author rendix2
  */
 class Query
 {
@@ -116,6 +120,11 @@ class Query
     private $insertData;
 
     /**
+     * @var array $grouped
+     */
+    private $grouped;
+
+    /**
      * Query constructor.
      *
      * @param Database $database
@@ -197,7 +206,10 @@ class Query
     {
         return $this->innerJoin;
     }
-    
+
+    /**
+     * @return array|Table[]
+     */
     public function getLeftJoin()
     {
         return $this->leftJoin;
@@ -217,7 +229,26 @@ class Query
     {
         return $this->columns;
     }
-    
+
+    public function getHaving()
+    {
+        return $this->having;
+    }
+
+    public function getGrouped()
+    {
+        return $this->grouped;
+    }
+
+    public function setGrouped(array $grouped)
+    {
+        $this->grouped = $grouped;
+    }
+
+    public function getInsertData()
+    {
+        return $this->insertData;
+    }
 
     /**
      * @param array $columns
@@ -313,6 +344,23 @@ class Query
         return $this;
     }
 
+    public function having($column, $operator, $value)
+    {
+        if (!$this->table->columnExists($column)) {
+            throw new Exception(sprintf('Column "%s" does not exist.', $column));
+        }
+
+        if (!in_array($operator, self::ENABLED_OPERATORS, true)) {
+            throw  new Exception(sprintf('Unknown operator "%s".', $column));
+        }
+
+        $this->having[] = [
+          'column'   => $column,
+          'operator' => $operator,
+          'value'    => $value
+        ];
+    }
+
     /**
      * @param int $limit
      *
@@ -331,7 +379,8 @@ class Query
     }
 
     /**
-     * @param sring $table
+     * @param string $table
+     *
      * @return Query
      */
     public function leftJoin($table)
@@ -352,14 +401,15 @@ class Query
         
         return $this;
     }
-    
+
     /**
-     * 
+     *
      * @param string $column
      * @param string $operator
      * @param mixed  $value
      *
      * @return Query
+     * @throws Exception
      */
     public function on($column, $operator, $value)
     {
@@ -399,6 +449,12 @@ class Query
         return $this;
     }
 
+    /**
+     * @param string $table
+     * @param array  $data
+     *
+     * @return $this
+     */
     public function add($table, array $data)
     {
         $this->isInsert   = true;
@@ -408,6 +464,11 @@ class Query
         return $this;
     }
 
+    /**
+     * @param string $table
+     *
+     * @return $this
+     */
     public function delete($table)
     {
         $this->isDelete = true;
@@ -416,7 +477,7 @@ class Query
         return $this;
     }
     
-    private function  proceed()
+    private function proceed()
     {
         
     }
@@ -437,7 +498,22 @@ class Query
              $select = new Select($this);
 
              $columnObj = $select->run();
-         }        
+         }
+
+         if ($this->isInsert) {
+             $insert = new Insert($this);
+             $insert->run();
+         }
+
+         if ($this->isUpdate) {
+             $update = new Update($this);
+             $update->run();
+         }
+
+         if ($this->isDelete) {
+             $delete = new Delete($this);
+             $delete->run();
+         }
 
         $endTime     = microtime(true);
         $executeTime = $endTime - $startTime;

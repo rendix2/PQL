@@ -1,40 +1,62 @@
 <?php
 namespace query;
 
+use Query;
 use Row;
+use Table;
 
 class Select
 {
+    /**
+     * @var Query $query
+     */
     private $query;
-    
+    /**
+     * @var array|Row[] $result
+     */
     private $result;
-    
-    public function __construct(\Query $query) 
+
+    /**
+     * Select constructor.
+     *
+     * @param Query $query
+     */
+    public function __construct(Query $query)
     {
         $this->query  = $query;
         $this->result = $query->getTable()->getRows();
     }
-    
+
+    /**
+     * Select destructor.
+     */
     public function __destruct()
     {
         $this->result = null;
         $this->query  = null;
     }
-    
+
+    /**
+     * @return array|Row[]
+     */
     public function run()
     {
         $this->checkColumns();
         
-        $this->where();
         $this->innerJoin();
         $this->leftJoin();
+        $this->where();
         $this->groupBy();
+        $this->having();
         $this->orderBy();
         $this->limit();
         
         return $this->createRows();
     }
-    
+
+    /**
+     * @return void
+     */
     private function checkColumns()
     {
         $columns = [];
@@ -65,7 +87,10 @@ class Select
         }
         
     }
-    
+
+    /**
+     * @return array|Row[]
+     */
     private function innerJoin()
     {
         if (!count($this->query->getInnerJoin())) {
@@ -143,12 +168,83 @@ class Select
         
         return $this->result = $joinTmp;
     }
-    
+
+    /**
+     * @return array|Row[]
+     */
     private function leftJoin()
     {
+        if (!count($this->query->getLeftJoin())) {
+            return $this->result;
+        }
+
+        foreach ($this->query->getLeftJoin() as $joinTable) {
+
+            // prepare columns
+            foreach ($joinTable->getColumns() as $column) {
+                foreach ($this->query->getTable()->getRows() as $row){
+                    $row->get()->{$column} = null;
+                }
+            }
+
+            foreach ($this->query->getOnCondition() as $condition) {
+                foreach ($this->result as $row) {
+                    foreach ($row as $column => $value) {
+                        if ($column === $condition['column']) {
+                            foreach ($joinTable->getRows() as $joinedTableRows) {
+                                foreach ($joinedTableRows as $columnName => $columnValue) {
+                                    if ($columnName === $condition['value']) {
+
+                                        if ($condition['operator'] === '=') {
+                                            if ($value === $columnValue) {
+                                                $row->get()->{$columnName} = $columnValue;
+                                            }
+                                        }
+
+                                        if ($condition['operator'] === '<') {
+                                            if ($value < $columnValue) {
+                                                $row->get()->{$columnName} = $columnValue;
+                                            }
+                                        }
+
+                                        if ($condition['operator'] === '>') {
+                                            if ($value > $columnValue) {
+                                                $row->get()->{$columnName} = $columnValue;
+                                            }
+                                        }
+
+                                        if ($condition['operator'] === '>=') {
+                                            if ($value >= $columnValue) {
+                                                $row->get()->{$columnName} = $columnValue;
+                                            }
+                                        }
+
+                                        if ($condition['operator'] === '<=') {
+                                            if ($value <= $columnValue) {
+                                                $row->get()->{$columnName} = $columnValue;
+                                            }
+                                        }
+
+                                        if ($condition['operator'] === '!=') {
+                                            if ($value !== $columnValue) {
+                                                $row->get()->{$columnName} = $columnValue;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         return $this->result;
     }
-    
+
+    /**
+     * @return array|Row[]
+     */
     private function where()
     {
         if (!count($this->query->getWhereCondition())) {
@@ -202,7 +298,10 @@ class Select
 
         return $this->result = $res;
     }
-    
+
+    /**
+     * @return array|Row[]
+     */
     private function groupBy()
     {        
         if (!count($this->query->getGroupBy())) {
@@ -215,7 +314,7 @@ class Select
             
         foreach ($this->result as $row) {
             foreach ($row as $column => $value) {
-                foreach ($this->query->ge as $groupColumn) {
+                foreach ($this->query->getGroupBy() as $groupColumn) {
                     if ($column === $groupColumn) {
                         if (isset($groups[$value])) {
                             $groups[$value]['count'] += 1;
@@ -229,6 +328,8 @@ class Select
                 }
             }
         }
+
+        $this->query->setGrouped($lostRows);
             
         foreach ($groups as $group) {
             $tmpGroup[] = $group['row'][0];
@@ -236,12 +337,68 @@ class Select
             
         return $this->result = $tmpGroup;
     }
-    
+
+    /**
+     * @return array|Row[]
+     */
     private function having()
     {
-        return $this->result;
+        if (!count($this->query->getGrouped())) {
+            return $this->result;
+        }
+
+        $tmp = [];
+
+        foreach ($this->query->getHaving() as $having) {
+            foreach ($this->query->getGrouped() as $grouped) {
+                foreach ($this->result as $row) {
+                    foreach ($row as $column => $value) {
+                        if ($column === $having['column']) {
+                            if ($having['operator'] === '=') {
+                                if ($value === $having['value']) {
+
+                                }
+                            }
+
+                            if ($having['operator'] === '>') {
+                                if ($value > $having['value']) {
+
+                                }
+                            }
+
+                            if ($having['operator'] === '<') {
+                                if ($value < $having['value']) {
+
+                                }
+                            }
+
+                            if ($having['operator'] === '>=') {
+                                if ($value >= $having['value']) {
+
+                                }
+                            }
+
+                            if ($having['operator'] === '<=') {
+                                if ($value <= $having['value']) {
+
+                                }
+                            }
+
+                            if ($having['operator'] === '!=') {
+                                if ($value !== $having['value']) {
+
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
-    
+
+    /**
+     * @return array|Row[]
+     */
     private function orderBy()
     {
         if (!count($this->query->getOrderBy())) {
@@ -268,7 +425,10 @@ class Select
             
         return $this->result = $tmp;
     }
-  
+
+    /**
+     * @return array|Row[]
+     */
     private function limit()
     {
         if (!$this->query->getLimit()) {
@@ -278,14 +438,19 @@ class Select
         $rowsCount = count($this->result);
         $limit     = $this->query->getLimit() > $rowsCount ? $rowsCount : $this->query->getLimit();
         $limitRows = [];
-            
+
+        /*
         for ($i = 0; $i < $limit; $i++) {
             $limitRows[] = $this->result[$i];
         }
+        */
 
-        return $this->result = $limitRows;
-    }   
-    
+        return $this->result = array_slice($this->result,0, $limit,true);
+    }
+
+    /**
+     * @return array
+     */
     private function createRows()
     {
         $columnObj = [];
