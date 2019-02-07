@@ -473,7 +473,7 @@ class Query
      * @param string $table
      * @param array  $data
      *
-     * @return $this
+     * @return Query
      */
     public function add($table, array $data)
     {
@@ -487,7 +487,7 @@ class Query
     /**
      * @param string $table
      *
-     * @return $this
+     * @return Query
      */
     public function delete($table)
     {
