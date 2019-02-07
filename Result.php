@@ -78,12 +78,20 @@ final class Result implements ITable
         $this->affectedRows = null;
         $this->columns      = null;
     }
-    
+
+    /**
+     * @return array
+     */
     public function getColumns()
     {
         return $this->columns;
     }
-    
+
+    /**
+     * @param bool $object
+     *
+     * @return array|Row[]
+     */
     public function getRows($object = false)
     {
         return $this->rows;

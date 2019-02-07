@@ -38,6 +38,9 @@ class Database
         
         $files = Finder::findFiles($mask)->in(self::getPath($name));
 
+        /**
+         * @var $file SplFileInfo
+         */
         foreach ($files as $file) {
             $size += $file->getSize();
         }
