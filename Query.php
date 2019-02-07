@@ -249,6 +249,11 @@ class Query
     {
         return $this->insertData;
     }
+    
+    public function getDatabase()
+    {
+        return $this->database;
+    }
 
     /**
      * @param array $columns
@@ -480,6 +485,14 @@ class Query
         $this->isInsert   = true;
         $this->insertData = $data;
         $this->table      = new Table($this->database, $table);
+        
+        $columns = array_keys($data);
+        
+        foreach ($columns as $column) {
+            if (!$this->table->columnExists($column)) {
+                throw new Exception(sprintf('Column "%s" does not exist.', $column));
+            }
+        }
 
         return $this;
     }
@@ -518,11 +531,16 @@ class Query
              $select = new Select($this);
 
              $columnObj = $select->run();
+             
+             $endTime     = microtime(true);
+             $executeTime = $endTime - $startTime;
+             
+             return new Result($this->columns, $columnObj, $executeTime);
          }
 
          if ($this->isInsert) {
              $insert = new Insert($this);
-             $insert->run();
+             bdump($insert->run());
          }
 
          if ($this->isUpdate) {
@@ -535,9 +553,6 @@ class Query
              $delete->run();
          }
 
-        $endTime     = microtime(true);
-        $executeTime = $endTime - $startTime;
 
-        return new Result($this->columns, $columnObj, $executeTime);
     }
 }

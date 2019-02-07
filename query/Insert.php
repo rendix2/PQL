@@ -45,15 +45,17 @@ class Insert
 
         foreach ($this->query->getTable()->getColumns() as $column) {
             foreach ($this->query->getInsertData() as $key => $data) {
-                if ($column === $key) {
+                if ($column->getName() === $key) {
                     $row[] = $data;
                 }
             }
         }
 
+        $path = \Table::getFilePath($this->query->getDatabase(), $this->query->getTable()->getName());
+        
         return file_put_contents(
-            $this->query->getTable()->getFileName(),
-            implode(\Table::COLUMN_DELIMITER, $row),
+            $path,
+            "\n".implode(\Table::COLUMN_DELIMITER, $row),
             FILE_APPEND
         );
     }
