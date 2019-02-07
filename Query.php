@@ -155,9 +155,9 @@ class Query
      */
     public function __destruct()
     {
-        $this->database       = null;
-        $this->columns        = null;
-        $this->table          = null;
+        $this->database = null;
+        $this->columns  = null;
+        $this->table    = null;
                 
         $this->whereCondition = null;
         $this->having         = null;
@@ -169,7 +169,7 @@ class Query
         $this->innerJoin   = null;
         $this->onCondition = null;
         
-        $this->limit       = null;
+        $this->limit = null;
         
         $this->query = null;
         

@@ -280,9 +280,9 @@ class Table implements ITable
      */
     public function getRows($object = false)
     {
-        $rows       = file(self::getFilePath($this->database, $this->name));        
+        $rows       = $this->toArray();
         $rowCounter = 0;        
-        $rowsObj = [];        
+        $rowsObj    = [];
         
         foreach ($rows as $row) {
             if ($rowCounter === 0) {
@@ -304,7 +304,7 @@ class Table implements ITable
                         }  elseif($columnValue->getType() === 'float') {
                             $columnValuesArray[$columnValue->getName()] = (float)trim($explodedValue);
                         } else {
-                            throw new Exception(sprintf('Column "%s" using unknow type "%s".', $columnValue->getName(), $columnValue->getType()));
+                            throw new Exception(sprintf('Column "%s" using unknown type "%s".', $columnValue->getName(), $columnValue->getType()));
                         }
                     }
                 }
@@ -321,5 +321,13 @@ class Table implements ITable
         }
         
         return $rowsObj;        
+    }
+
+    /**
+     * @return array|bool
+     */
+    public function toArray()
+    {
+        return file(self::getFilePath($this->database, $this->name));
     }
 }
