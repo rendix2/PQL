@@ -54,6 +54,11 @@ class BinaryTree
         $this->destroy($this);
     }
 
+    /**
+     * @param BinaryTree|null $root
+     *
+     * @return BinaryTree
+     */
     public function minRec(BinaryTree $root = null)
     {
         if ($root->left === null) {
@@ -63,6 +68,12 @@ class BinaryTree
         $this->minRec($root->left);
     }
 
+    /**
+     * @param BinaryTree|null $root
+     *
+     * @return BinaryTree
+     *
+     */
     public function min(BinaryTree $root = null)
     {
         while ($root->left !== null) {
@@ -72,6 +83,11 @@ class BinaryTree
         return $root;
     }
 
+    /**
+     * @param BinaryTree|null $root
+     *
+     * @return BinaryTree
+     */
     public function max(BinaryTree $root = null)
     {
         while ($root->right !== null) {
@@ -81,6 +97,11 @@ class BinaryTree
         return $root;
     }
 
+    /**
+     * @param BinaryTree|null $root
+     *
+     * @return BinaryTree
+     */
     public function maxRec(BinaryTree $root = null)
     {
         if ($root->right === null) {
@@ -90,6 +111,12 @@ class BinaryTree
         $this->minRec($root->right);
     }
 
+    /**
+     * @param BinaryTree|null $root
+     * @param                 $data
+     *
+     * @return BinaryTree
+     */
     public function insert(BinaryTree $root = null, $data)
     {
         if ($root === null) {
@@ -105,6 +132,12 @@ class BinaryTree
         return $root;
     }
 
+    /**
+     * @param BinaryTree $root
+     * @param mixed      $data
+     *
+     * @return BinaryTree
+     */
     public function search(BinaryTree $root, $data)
     {
         if ($root === null || $root->data === $data) {
@@ -118,6 +151,12 @@ class BinaryTree
         }
     }
 
+    /**
+     * @param BinaryTree|null $root
+     * @param mixed           $data
+     *
+     * @return BinaryTree|null
+     */
     public function delete(BinaryTree $root = null, $data)
     {
         if ($root === null) {
@@ -157,6 +196,9 @@ class BinaryTree
         }
     }
 
+    /**
+     * @param BinaryTree|null $root
+     */
     public function pre(BinaryTree $root = null)
     {
         if ($root === null) {
@@ -169,6 +211,9 @@ class BinaryTree
         $this->pre($root->right);
     }
 
+    /**
+     * @param BinaryTree|null $root
+     */
     public function in(BinaryTree $root = null)
     {
         if ($root === null) {
@@ -180,6 +225,9 @@ class BinaryTree
         $this->in($root->right);
     }
 
+    /**
+     * @param BinaryTree|null $root
+     */
     public function post(BinaryTree $root = null)
     {
         if ($root === null) {
@@ -191,6 +239,9 @@ class BinaryTree
         echo $root->data;
     }
 
+    /**
+     * @param BinaryTree|null $root
+     */
     private function destroy(BinaryTree $root = null)
     {
         if ($root === null) {
