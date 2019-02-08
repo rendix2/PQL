@@ -1,6 +1,8 @@
 <?php
 use Tracy\Debugger;
 use Nette\Loaders\RobotLoader;
+use BTree\BTree;
+use BTree\Node;
 
 require __DIR__ . '/vendor/autoload.php';
 
@@ -15,31 +17,21 @@ Debugger::$maxDepth = 5;
 
 echo '<meta charset="UTF-8">';
 
-$r = new BTree(2);
-$r = $r->create(2);
-//$r->leaf = false;
 
-$r->insert(5);
-$r->insert(9);
-$r->insert(3);
-$r->insert(7);
-$r->insert(1);
-$r->insert(2);
-$r->insert(8);
-$r->insert(6);
-$r->insert(0);
-$r->insert(4);
-
-for ($i = 15; $i < 1000; $i++) {
-    $r->insert($i);
-}
-
-//bdump($r->search($r), 'seaarch');
-
-//$r->traverse($r);
+$root = new \BTree(2);
+$root->insert(555);
+$root->insert(5554);
+$root->insert(555555);
+$root->insert(5555);
+$root->insert(55555);
+$root->insert(5555);
+$root->insert(2);
+$root->insert(8885);
+$root->insert(88888);
+$root->insert(88854879);
 
 
-bdump($r, '$r index');
+bdump($root);
 
 
 $database = new Database('test');

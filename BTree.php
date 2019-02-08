@@ -25,12 +25,14 @@ class BTree
     
     public function __construct($i)
     {
-        $this->t = $i;
         //$this->n = $i;
-       //$this->root = null;
+        //$this->n = $i;
+       $this->root = null;
         $this->leaf = true;
+        $this->n = 0;
+        $this->t = 5;
         //$this->c = [];
-        //$this->key = [];
+       $this->key[] = $k;
         //$this->n = 0;
         //$this->n = 0;        
     }
