@@ -44,6 +44,11 @@ class Table implements ITable
     private $rows;
 
     /**
+     * @var int $rowsCount
+     */
+    private $rowsCount;
+
+    /**
      * @var Database $database
      */
     private $database;
@@ -87,9 +92,10 @@ class Table implements ITable
             $fileContent = file($tableFileName);            
         }
         
-        $columns = [];
+        $columns     = [];
+        $columnNames = explode(self::COLUMN_DELIMITER, trim($fileContent[0]));
         
-        foreach (explode(self::COLUMN_DELIMITER, trim($fileContent[0])) as $column) {
+        foreach ($columnNames as $column) {
             $columnExploded = explode(self::COLUMN_DATA_DELIMITER, trim($column));
             $columns[]      = new Column($columnExploded[0], $columnExploded[1]);
         }
@@ -100,6 +106,7 @@ class Table implements ITable
         $this->fileName     = $tableFileName;
         $this->size         = $fileSize;
         $this->database     = $database;
+        $this->rowsCount    = count($fileContent) - 1;
     }
 
     /**
@@ -111,13 +118,22 @@ class Table implements ITable
         $this->fileName     = null;
         $this->size         = null;
         $this->rows         = null;
+        $this->rowsCount    = null;
         $this->database     = null;
         $this->columns      = null;
         $this->columnsCount = null;
     }
 
     /**
-     * @param $column
+     * @return int
+     */
+    public function getRowsCount()
+    {
+        return $this->columnsCount;
+    }
+
+    /**
+     * @param string $column
      *
      * @return bool
      */
@@ -140,11 +156,17 @@ class Table implements ITable
         return $this->columns;
     }
 
+    /**
+     * @return string
+     */
     public function getName()
     {
         return $this->name;
     }
 
+    /**
+     * @return string
+     */
     public function getFileName()
     {
         return $this->fileName;
@@ -303,6 +325,8 @@ class Table implements ITable
                             $columnValuesArray[$columnValue->getName()] = (string)trim($explodedValue);
                         }  elseif($columnValue->getType() === 'float') {
                             $columnValuesArray[$columnValue->getName()] = (float)trim($explodedValue);
+                        } elseif ( $columnValue->getType() === 'bool') {
+                            $columnValuesArray[$columnValue->getName()] = (bool)trim($explodedValue);
                         } else {
                             throw new Exception(sprintf('Column "%s" using unknown type "%s".', $columnValue->getName(), $columnValue->getType()));
                         }

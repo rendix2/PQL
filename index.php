@@ -7,7 +7,7 @@ require __DIR__ . '/vendor/autoload.php';
 $loader = new RobotLoader();
 $loader->addDirectory(__DIR__);
 $loader->setTempDirectory(__DIR__ . '/temp');
-$loader->setAutoRefresh(true);
+$loader->setAutoRefresh();
 $loader->register();
 
 Debugger::enable();
