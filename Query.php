@@ -181,27 +181,42 @@ class Query
         $this->insertData = null;
         $this->updateData = null;
     }
-    
+
+    /**
+     * @return array
+     */
     public function getWhereCondition()
     {
         return $this->whereCondition;
     }
-    
+
+    /**
+     * @return array
+     */
     public function getGroupBy()
     {
         return $this->groupBy;
     }
-    
+
+    /**
+     * @return array
+     */
     public function getOrderBy()
     {
         return $this->orderBy;
     }
-    
+
+    /**
+     * @return int
+     */
     public function getLimit()
     {
         return $this->limit;
     }
-    
+
+    /**
+     * @return array|Table[]
+     */
     public function getInnerJoin()
     {
         return $this->innerJoin;
@@ -214,27 +229,42 @@ class Query
     {
         return $this->leftJoin;
     }
-    
+
+    /**
+     * @return array
+     */
     public function getOnCondition()
     {
         return $this->onCondition;
     }
-    
+
+    /**
+     * @return Table
+     */
     public function getTable()
     {
         return $this->table;
     }
-    
+
+    /**
+     * @return array
+     */
     public function getColumns()
     {
         return $this->columns;
     }
 
+    /**
+     * @return array
+     */
     public function getHaving()
     {
         return $this->having;
     }
 
+    /**
+     * @return array
+     */
     public function getGrouped()
     {
         return $this->grouped;
@@ -245,11 +275,17 @@ class Query
         $this->grouped = $grouped;
     }
 
+    /**
+     * @return array
+     */
     public function getInsertData()
     {
         return $this->insertData;
     }
-    
+
+    /**
+     * @return Database
+     */
     public function getDatabase()
     {
         return $this->database;
@@ -332,7 +368,7 @@ class Query
     }
 
     /**
-     * @param $column
+     * @param string $column
      *
      * @return Query
      * @throws Exception
@@ -349,6 +385,13 @@ class Query
         return $this;
     }
 
+    /**
+     * @param string $column
+     * @param string $operator
+     * @param mixed  $value
+     *
+     * @throws Exception
+     */
     public function having($column, $operator, $value)
     {
         if (!$this->table->columnExists($column)) {
@@ -479,6 +522,7 @@ class Query
      * @param array  $data
      *
      * @return Query
+     * @throws Exception
      */
     public function add($table, array $data)
     {
@@ -552,7 +596,5 @@ class Query
              $delete = new Delete($this);
              $delete->run();
          }
-
-
     }
 }

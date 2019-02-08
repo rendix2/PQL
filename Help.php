@@ -13,6 +13,12 @@
  */
 class Help
 {
+    /**
+     * @param array  $objects
+     * @param string $column
+     *
+     * @return array
+     */
     public static function arrayObjectColumn(array $objects, $column)
     {
         $tmp = [];
@@ -26,5 +32,24 @@ class Help
         }
 
         return $tmp;
+    }
+
+    /**
+     * @param mixed $var
+     *
+     * @return string
+     */
+    public static function getType($var)
+    {
+        $type = gettype($var);
+
+        switch ($type) {
+            case 'integer':
+                return 'int';
+            case 'boolean':
+                return 'bool';
+            default:
+                return $type;
+        }
     }
 }

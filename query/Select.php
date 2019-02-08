@@ -57,6 +57,7 @@ class Select
 
     /**
      * @return void
+     * @throws Exception
      */
     private function checkColumns()
     {
@@ -82,7 +83,7 @@ class Select
         }
         
         foreach ($this->query->getColumns() as $column) {
-            if (!in_array($column, $columns)) {
+            if (!in_array($column, $columns, true)) {
                 throw new Exception(sprintf('Selected column "%s" does not exists.', $column));
             }
         }
@@ -91,6 +92,7 @@ class Select
 
     /**
      * @return array|Row[]
+     * @throws Exception
      */
     private function innerJoin()
     {
@@ -167,6 +169,7 @@ class Select
 
     /**
      * @return array|Row[]
+     * @throws Exception
      */
     private function leftJoin()
     {
@@ -225,8 +228,8 @@ class Select
                                             }
                                         }
                                     } else {                                        
-                                        foreach ($joinTable->getColumns() as $column) {
-                                            $row[$column->getName()] = null;
+                                        foreach ($joinTable->getColumns() as $joinColumn) {
+                                            $row[$joinColumn->getName()] = null;
                                         }
                                    
                                         $joinTmp[$columnName] = $row;
@@ -437,13 +440,6 @@ class Select
         
         $rowsCount = count($this->result);
         $limit     = $this->query->getLimit() > $rowsCount ? $rowsCount : $this->query->getLimit();
-        $limitRows = [];
-
-        /*
-        for ($i = 0; $i < $limit; $i++) {
-            $limitRows[] = $this->result[$i];
-        }
-        */
 
         return $this->result = array_slice($this->result,0, $limit,true);
     }

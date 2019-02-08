@@ -1,7 +1,10 @@
 <?php
 namespace query;
 
+use Exception;
+use Help;
 use Query;
+use Table;
 
 class Insert
 {
@@ -45,17 +48,23 @@ class Insert
 
         foreach ($this->query->getTable()->getColumns() as $column) {
             foreach ($this->query->getInsertData() as $key => $data) {
+                /*
+                if ($column->getType() !== Help::getType($data[$column])) {
+                    throw new Exception('Incorrect data type.');
+                }
+                */
+
                 if ($column->getName() === $key) {
                     $row[] = $data;
                 }
             }
         }
 
-        $path = \Table::getFilePath($this->query->getDatabase(), $this->query->getTable()->getName());
+        $path = Table::getFilePath($this->query->getDatabase(), $this->query->getTable()->getName());
         
         return file_put_contents(
             $path,
-            "\n".implode(\Table::COLUMN_DELIMITER, $row),
+            "\n".implode(Table::COLUMN_DELIMITER, $row),
             FILE_APPEND
         );
     }

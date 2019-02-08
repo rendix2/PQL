@@ -70,7 +70,7 @@ class Functions
     {
         $values = array_column($this->table, $column);
 
-        return array_sum($values) / $this->count($values);
+        return array_sum($values) / $this->count($column);
     }
 
     /**

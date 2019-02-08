@@ -18,10 +18,19 @@ class Database
 {
     const DATABASE_DIR = '%s' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR. '%s';
 
+    /**
+     * @var string $name
+     */
     private $name;
 
+    /**
+     * @var int $size
+     */
     private $size;
 
+    /**
+     * @var int $tablesCount
+     */
     private $tablesCount;
 
     /**
@@ -55,19 +64,32 @@ class Database
      */
     public function __destruct()
     {
-        $this->name = null;
+        $this->name        = null;
+        $this->size        = null;
+        $this->tablesCount = null;
     }
-    
+
+    /**
+     * @return string
+     */
     public function getName()
     {
         return $this->name;
     }
 
+    /**
+     * @return string
+     */
     public function getPath2()
     {
         return self::getPath($this->name);
     }
-    
+
+    /**
+     * @param string $name
+     *
+     * @return string
+     */
     public static function getPath($name)
     {
         return sprintf(self::DATABASE_DIR,__DIR__, $name);
@@ -91,6 +113,12 @@ class Database
         return $tables;
     }
 
+    /**
+     * @param string $name
+     *
+     * @return Database
+     * @throws Exception
+     */
     public static function create($name)
     {
         $path = self::getPath($name);        
@@ -101,16 +129,20 @@ class Database
             
             try {
                 FileSystem::createDir($path);
-                
-                return true;
+
+                return new Database($name);
             } catch (Nette\IOException $e) {
                 throw new Exception('Database was not created.');                
             }
         }
-
-        return new Database($name);
     }
 
+    /**
+     * @param string $name
+     *
+     * @return Database
+     * @throws Exception
+     */
     public function delete($name)    
     {
         $path = self::getPath($name);
@@ -122,7 +154,7 @@ class Database
         try {
             FileSystem::delete($path);
             
-            return true;
+            return $this;
         } catch (Nette\IOException $e) {
             throw new Exception('Database was not created.');
         }
