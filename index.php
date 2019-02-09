@@ -13,25 +13,31 @@ $loader->setAutoRefresh();
 $loader->register();
 
 Debugger::enable();
-Debugger::$maxDepth = 5;
-
+Debugger::$maxDepth = 2000;
 echo '<meta charset="UTF-8">';
 
 
-$root = new \BTree(2);
-$root->insert(555);
-$root->insert(5554);
-$root->insert(555555);
-$root->insert(5555);
-$root->insert(55555);
-$root->insert(5555);
-$root->insert(2);
-$root->insert(8885);
-$root->insert(88888);
-$root->insert(88854879);
+$root = new BTree(25);
 
+$start = microtime(true);
+for($i = 0; $i <= 100; $i++) {
+    $root->insert($i);
+}
+
+$end = microtime(true);
 
 bdump($root);
+
+bdump($end-$start, 'adding');
+
+$start = microtime(true);
+//$search = $root->search(2000);
+$start = microtime(true);
+
+
+
+
+//bdump($search, 'search');
 
 
 $database = new Database('test');
