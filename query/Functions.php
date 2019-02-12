@@ -92,4 +92,18 @@ class Functions
     {
         return max(array_column($this->table, $column));
     }
+
+    public function median($column)
+    {
+        $values = array_column($this->table, $column);
+        $count  = count($values);
+
+        sort($values);
+
+        if ($count % 2) {
+            return $values[$count / 2];
+        } else {
+            return $values[$count / 2] + $values[$count / 2 + 1] / 2;
+        }
+    }
 }

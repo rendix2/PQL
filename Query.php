@@ -125,6 +125,11 @@ class Query
     private $grouped;
 
     /**
+     * @var array $functions
+     */
+    private $functions;
+
+    /**
      * Query constructor.
      *
      * @param Database $database
@@ -147,7 +152,8 @@ class Query
         $this->updateData = [];
         $this->insertData = [];
         
-        $this->having = [];
+        $this->having    = [];
+        $this->functions = [];
     }
 
     /**
@@ -180,6 +186,8 @@ class Query
         
         $this->insertData = null;
         $this->updateData = null;
+
+        $this->functions = null;
     }
 
     /**
@@ -289,6 +297,169 @@ class Query
     public function getDatabase()
     {
         return $this->database;
+    }
+
+    /**
+     * @param string $column
+     *
+     * @return Query
+     */
+    public function count($column)
+    {
+        $this->functions[] = ['column' => $column, 'function' => 'count'];
+
+        return $this;
+    }
+
+    /**
+     * @param string $column
+     *
+     * @return Query
+     */
+    public function sum($column)
+    {
+        $this->functions[] = ['column' => $column, 'function' => 'sum'];
+
+        return $this;
+    }
+
+    /**
+     * @param string $column
+     *
+     * @return Query
+     */
+    public function avg($column)
+    {
+        $this->functions[] = ['column' => $column, 'function' => 'avg'];
+
+        return $this;
+    }
+
+    /**
+     * @param string $column
+     *
+     * @return Query
+     */
+    public function min($column)
+    {
+        $this->functions[] = ['column' => $column, 'function' => 'min'];
+
+        return $this;
+    }
+
+    /**
+     * @param string $column
+     *
+     * @return Query
+     */
+    public function max($column)
+    {
+        $this->functions[] = ['column' => $column, 'function' => 'max'];
+
+        return $this;
+    }
+
+    /**
+     * @param string $column
+     *
+     * @return $this
+     */
+    public function median($column)
+    {
+        $this->functions[] = ['column' => $column, 'function' => 'median'];
+
+        return $this;
+    }
+
+    /**
+     * @param string $column
+     *
+     * @return $this
+     */
+    public function mode($column)
+    {
+        $this->functions[] = ['column' => $column, 'function' => 'mode'];
+
+        return $this;
+    }
+
+    /**
+     * @param string $expr
+     */
+    public function expression($expr)
+    {
+        $expr = mb_strtolower($expr);
+
+        $selectFunctions = new Nette\Tokenizer\Tokenizer([
+            'select'          => 'select',
+            'columns'         => '\s+',
+            'count'           => 'count(\s+)',
+            'sum'             => 'sum(\s+)',
+            'avg'             => 'avg(\s+)',
+            'min'             => 'min(\s+)',
+            'max'             => 'max(\s+)',
+            'from'            => 'from',
+            'table'           => '\s+',
+            'innerjoin'       => 'inner join',
+            'innerjointables' => '\s+',
+            'oni'             => 'on',
+            'onconditioni'    => '\s+',
+            'leftjoin'        => 'left join',
+            'leftjointables'  => '\s+',
+            'onl'             => 'on',
+            'onconditionl'    => '\s+',
+            'where'           => 'where',
+            'condition'       => '\s+',
+            'groupby'         => 'group by',
+            'group'           => '\s+',
+            'having'          => 'having',
+            'have'            => '\s+',
+            'orderby'         => 'order by',
+            'order'           => '\s+',
+            'limit'           => 'limit',
+            'lim'             => '\d+',
+        ]);
+
+        $selectFunctionStream = $selectFunctions->tokenize($expr);
+
+        $select = new Nette\Tokenizer\Tokenizer([
+            'select'          => 'select',
+            'columns'         => '\s+',
+            'from'            => 'from',
+            'table'           => '\s+',
+            'innerjoin'       => 'inner join',
+            'innerjointables' => '\s+',
+            'oni'             => 'on',
+            'onconditioni'    => '\s+',
+            'leftjoin'        => 'left join',
+            'leftjointables'  => '\s+',
+            'onl'             => 'on',
+            'onconditionl'    => '\s+',
+            'where'           => 'where',
+            'condition'       => '\s+',
+            'groupby'         => 'group by',
+            'group'           => '\s+',
+            'having'          => 'having',
+            'have'            => '\s+',
+            'orderby'         => 'order by',
+            'order'           => '\s+',
+            'limit'           => 'limit',
+            'lim'             => '\d+',
+        ]);
+
+        $selectStream = $select->tokenize($expr);
+
+        $insert = new Nette\Tokenizer\Tokenizer([
+            'insert'     => 'INSERT INTO',
+            'table'      => '\s+',
+            'columns'    => '(\s+)',
+            'valuesword' => 'VALUES',
+            'values'     => '\s+',
+        ]);
+
+        $selectStream = $insert->tokenize($expr);
+
+
     }
 
     /**

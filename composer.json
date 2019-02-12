@@ -3,6 +3,7 @@
         "nette/utils": "^2.5",
         "nette/finder": "^2.4",
         "nette/robot-loader": "^3.1",
-        "tracy/tracy": "^2.5"
+        "tracy/tracy": "^2.5",
+        "nette/tokenizer": "^2.3"
     }
 }

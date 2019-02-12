@@ -13,20 +13,27 @@
  */
 class Row
 {
+    /**
+     * @var stdClass $row
+     */
     private $row;
+
+    private $rawData;
 
     /**
      * Row constructor.
      *
      * @param $data
      */
-    public function __construct($data)
+    public function __construct(array $data)
     {
         $this->row = new stdClass();
         
         foreach ($data as $key => $value) {
             $this->row->{$key} = $value;
         }
+
+        $this->rawData = $data;
     }
 
     /**
@@ -80,5 +87,13 @@ class Row
     public function get()
     {
         return $this->row;
+    }
+
+    /**
+     * @return array
+     */
+    public function toArray()
+    {
+        return $this->rawData;
     }
 }

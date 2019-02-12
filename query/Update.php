@@ -54,7 +54,7 @@ class Update
 
         foreach ($this->res as $line => $values) {
             $file->seek($line + 1);
-            $file->fwrite(implode(Table::COLUMN_DELIMITER, $v));
+            $file->fwrite(implode(Table::COLUMN_DELIMITER, $values));
         }
 
         return count($this->res);

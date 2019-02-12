@@ -5,7 +5,7 @@ class Column
     /**
      * @var array
      */
-    const COLUMN_TYPE = ['int', 'string', 'float'];
+    const COLUMN_TYPE = ['int', 'string', 'float', 'bool'];
 
     /**
      * @var string $name
