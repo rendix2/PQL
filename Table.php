@@ -84,14 +84,12 @@ class Table implements ITable
         if ($fileSize === false) {
             throw new Exception('There was problem during counting table size.');
         }
-        
-        $fileContent = file($tableFileName);
-        
-        if (!count($fileContent)) {
+
+        if ($fileSize === 0) {
             FileSystem::write($tableFileName, trim(sprintf('id%sint', self::COLUMN_DATA_DELIMITER)));
-            $fileContent = file($tableFileName);            
         }
         
+        $fileContent = file($tableFileName);
         $columns     = [];
         $columnNames = explode(self::COLUMN_DELIMITER, trim($fileContent[0]));
         

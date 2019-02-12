@@ -55,15 +55,16 @@ final class Result implements ITable
      * @param array $columns
      * @param array $rows
      * @param float $time
+     * @param int   $affectedRows
      */
-    public function __construct(array $columns, array $rows, $time)
+    public function __construct(array $columns, array $rows, $time, $affectedRows = 0)
     {
         $this->rows         = $rows;
         $this->rowsCount    = count($rows);
         $this->columns      = $columns;
         $this->time         = $time;
         $this->timeFormated = (float)number_format($time, 5);
-        
+        $this->affectedRows =  $affectedRows;
     }
 
     /**

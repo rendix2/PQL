@@ -6,6 +6,7 @@
  * Time: 16:09
  */
 
+use Nette\IOException;
 use Nette\Utils\FileSystem;
 use Nette\Utils\Finder;
 
@@ -103,9 +104,12 @@ class Database
         $mask   = sprintf('*.%s', Table::EXT);
         $tables = [];
 
+        /**
+         * @var SplFileInfo $file
+         */
         foreach (Finder::findFiles($mask)->in(self::getPath($this->name)) as $file) {            
             $extension = $file->getExtension();            
-            $fileName = str_replace('.' . $extension, '', $file->getFileName());
+            $fileName = str_replace('.' . $extension, '', $file->getFilename());
             
             $tables[$fileName] = new Table($this, $fileName);                        
         }
@@ -158,5 +162,36 @@ class Database
         } catch (Nette\IOException $e) {
             throw new Exception('Database was not created.');
         }
+    }
+
+    /**
+     * @param string $newName
+     *
+     * @return Database
+     */
+    public function rename($newName)
+    {
+        self::renameS($this->name, $newName);
+
+        return $this;
+    }
+
+    /**
+     * @param string oldName
+     * @param string $newName
+     *
+     * @throws Exception
+     */
+    public static function renameS($oldName, $newName)
+    {
+        if (!file_exists(self::getPath($oldName))) {
+            throw new Exception('Old database does not exists.');
+        }
+
+        if (file_exists(self::getPath($newName))) {
+            throw new Exception('New database already exists.');
+        }
+
+        FileSystem::rename($oldName, $newName);
     }
 }

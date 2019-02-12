@@ -19,7 +19,7 @@ use query\Update;
  */
 class Query
 {
-    const ENABLED_OPERATORS = ['=', '<', '>', '<=', '>=', '!='];
+    const ENABLED_OPERATORS = ['=', '<', '>', '<=', '>=', '!=', '<>'];
 
     /**
      * @var Database $database
@@ -572,10 +572,8 @@ class Query
          $startTime = microtime(true);
          
          if ($this->isSelect) {
-             $select = new Select($this);
-
-             $columnObj = $select->run();
-             
+             $select      = new Select($this);
+             $columnObj   = $select->run();
              $endTime     = microtime(true);
              $executeTime = $endTime - $startTime;
              
@@ -583,18 +581,30 @@ class Query
          }
 
          if ($this->isInsert) {
-             $insert = new Insert($this);
-             bdump($insert->run());
+             $insert       = new Insert($this);
+             $affectedRows = $insert->run();
+             $endTime      = microtime(true);
+             $executeTime  = $endTime - $startTime;
+
+             return new Result([], [], $executeTime, $affectedRows);
          }
 
          if ($this->isUpdate) {
-             $update = new Update($this);
-             $update->run();
+             $update       = new Update($this);
+             $affectedRows = $update->run();
+             $endTime      = microtime(true);
+             $executeTime  = $endTime - $startTime;
+
+             return new Result([], [], $executeTime, $affectedRows);
          }
 
          if ($this->isDelete) {
-             $delete = new Delete($this);
-             $delete->run();
+             $delete       = new Delete($this);
+             $affectedRows = $delete->run();
+             $endTime      = microtime(true);
+             $executeTime  = $endTime - $startTime;
+
+             return new Result([], [], $executeTime, $affectedRows);
          }
     }
 }

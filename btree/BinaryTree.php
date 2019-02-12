@@ -113,7 +113,7 @@ class BinaryTree
 
     /**
      * @param BinaryTree|null $root
-     * @param                 $data
+     * @param mixed           $data
      *
      * @return BinaryTree
      */

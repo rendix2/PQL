@@ -291,7 +291,7 @@ class Select
                     }
                 }
                     
-                if ($condition['operator'] === '!=') {
+                if ($condition['operator'] === '!=' || $condition['operator'] === '<>') {
                     if ($tmpRow[$condition['column']] !== $condition['value']) {
                         $res[] = $tmpRow;
                     }
@@ -387,7 +387,7 @@ class Select
                                 }
                             }
 
-                            if ($having['operator'] === '!=') {
+                            if ($having['operator'] === '!=' || $having['operator'] === '<>') {
                                 if ($value !== $having['value']) {
 
                                 }
