@@ -4,6 +4,7 @@ namespace query;
 use Query;
 use SplFileObject;
 use Table;
+use Nette\Utils\FileSystem;
 
 /**
  * Class Update
@@ -49,60 +50,83 @@ class Update
     {
         $this->where();
         $this->limit();
+        
+        $tmpFileName = $this->query->getTable()->getFileName() . '.tmp';
 
-        $file = new SplFileObject($this->query->getTable()->getFileName(),'rwb');
-
-        foreach ($this->res as $line => $values) {
-            $file->seek($line + 1);
-            $file->fwrite(implode(Table::COLUMN_DELIMITER, $values));
+        $file = new SplFileObject($tmpFileName,'a');
+        
+        $file->fwrite($this->query->getTable()->getColumnsString());
+        
+        foreach ($this->res as $values) {
+            $file->fwrite(implode(Table::COLUMN_DELIMITER, $values) . "\n");
         }
+        
+        $file = null;
+        
+        $tmp = file_get_contents($tmpFileName);
+        file_put_contents($this->query->getTable()->getFileName(), $tmp);
+        FileSystem::delete($tmpFileName);
 
         return count($this->res);
     }
 
     private function where()
     {
+        $up     = $this->query->getUpdateData();
         $wheres = $this->query->getWhereCondition();
         $rows   = $this->query->getTable()->getRows();
-        $res    = [];
+        $res    = $rows;
 
         foreach ($wheres as $where) {
             foreach ($rows as $rowNumber => $row) {
                 foreach ($row as $column => $value) {
                     if ($where['column'] === $column) {
+                        
                         if ($where['operator'] === '=') {
-                            if ($where['value'] === $value) {
-                                $res[$rowNumber] = $row;
+                            if ($where['value'] === $value) {                                                        
+                                foreach ($up as $upKey => $upValue) {
+                                    $res[$rowNumber][$upKey] = $upValue;
+                                }
                             }
                         }
 
                         if ($where['operator'] === '>') {
                             if ($where['value'] > $value) {
-                                $res[$rowNumber] = $row;
+                                foreach ($up as $upKey => $upValue) {
+                                    $res[$rowNumber][$upKey] = $upValue;
+                                }
                             }
                         }
 
                         if ($where['operator'] === '>=') {
                             if ($where['value'] >= $value) {
-                                $res[$rowNumber] = $row;
+                                foreach ($up as $upKey => $upValue) {
+                                    $res[$rowNumber][$upKey] = $upValue;
+                                }
                             }
                         }
 
                         if ($where['operator'] === '<') {
                             if ($where['value'] < $value) {
-                                $res[$rowNumber] = $row;
+                                foreach ($up as $upKey => $upValue) {
+                                    $res[$rowNumber][$upKey] = $upValue;
+                                }
                             }
                         }
 
                         if ($where['operator'] === '<=') {
                             if ($where['value'] <= $value) {
-                                $res[$rowNumber] = $row;
+                                foreach ($up as $upKey => $upValue) {
+                                    $res[$rowNumber][$upKey] = $upValue;
+                                }
                             }
                         }
 
                         if ($where['operator'] === '!=' || $where['operator'] === '<>') {
                             if ($where['value'] !== $value) {
-                                $res[$rowNumber] = $row;
+                                foreach ($up as $upKey => $upValue) {
+                                    $res[$rowNumber][$upKey] = $upValue;
+                                }
                             }
                         }
                     }

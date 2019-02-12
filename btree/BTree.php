@@ -46,33 +46,61 @@ class BTree
         $this->root->traverse();
     }
     
+    
+    public function searchN(BTree $x, $k) 
+    {
+        $i = 1;
+        
+       //bdump($x); 
+       
+        
+       while ($i <= $x->n && isset($x->keys[$i]) && $k > $x->keys[$i]) {
+            $i = $i + 1;
+        }
+        
+        if ( $i<= $x->n && $x->keys[$i] === $k) {
+            return $x;
+        }
+        
+        if ($x->leaf) {
+            return null;
+        }
+        
+        return $this->searchN($x->c[$i], $k);
+    }
+    
+    
     public function search($k)
     {
         // Find the first key greater than or equal to k
         $i = 1;
         
-        /**
+        
         while ($i <= $this->n  && $k > $this->keys[$i]) {
             $i++;
         }
-        */
         
         
-        //$i--;
+        
+        
+        $i--;
         
         bdump($i, '$i');
             
             // If the found key is equal to k, return this node
         if ( $k === $this->keys[$i]) {
-            bdump('OK');
+            bdump('IF OK');
             
             return $k;
-        }
-        
-        
-        if ($this->c[$i]->leaf === true ) {
-            bdump('fal');
+        } elseif ($this->leaf === true ) {
+            bdump('ELSE IF fal');
             return null;
+        } else {
+            bdump('else');
+            
+            bdump($this, 'this');
+            
+            return $this->c[$i]->search($k);//
         }
         
                 
@@ -85,18 +113,20 @@ class BTree
         }
         */
         
+        /*
         if (!count($this->c[$i])) {
             bdump('FALSE');
             return false;
         }
+        */
         
-        bdump($this, '$this');
+       // bdump($this, '$this');        
         
         
                     
                     
                     // Go to the appropriate child
-                    return $this->c[$i]->search($k);
+                    
     }
     
     public function insert($k)
@@ -131,20 +161,23 @@ class BTree
                 
                 // New root has two children now. Decide which of the
                 // two children is going to have new key
-                $i = 0;
+                $i = 1;
                 if ($s->keys[0] < $k) {
                     //bdump('left');
                     $i++;
                 } else {
                     //bdump('right');
                 }
+                
+                bdump($this);
                  
-                    $s->c[$i]->insertNonFull($k);
+                    $s->c[1]->insertNonFull($k);
                     
                     //bdump($s, '$s');
                     
                     // Change root
                     $this->root = $s;
+                    $this->root->leaf = false;
             }
             else // If root is not full, call insertNonFull for root
             {
@@ -241,19 +274,26 @@ class BTree
         //bdump($y, '$y');
         
         $z = new BTree($y->t);
+        
+        $q = $y->c[$i];
+                
+        $z->leaf = $q->leaf;
         $z->n = $this->t - 1;
+        
+
         
         //$z->keys = $y->keys;
         
         
         // Copy the last (t-1) keys of y to z
-        /*for ($j = 0; $j < $this->t - 1; $j++) {
-            $z->keys[$j] = $y->keys[$j];
+        for ($j = 1; $j < $this->t - 1; $j++) {
+            $z->keys[$j] = $q->keys[$j + $this->t];
         }
-        */
         
+//        $q->n = $this->t - 1;
        
-        $z->keys = $y->keys;
+        
+        //$z->keys = $q->keys;
         //$y->keys = null;
         
         //bdump($z->keys, '$z->keyys');
@@ -268,8 +308,8 @@ class BTree
             {
                 //bdump('splitting: node is leaf');
                 
-                for ($j = 0; $j < $this->t; $j++)
-                    $z->c[$j] = $y->c[$j+$this->t];
+                for ($j = 1; $j < $this->t; $j++)
+                    $z->c[$j] = $q->c[$j+$this->t];
             }
            
 
@@ -279,23 +319,26 @@ class BTree
             
             // Since this node is going to have a new child,
             // create space of new child
-            for ($j = $this->n; $j >= $i+1; $j--) {
-                $this->c[$j+1] = $this->c[$j];
+            for ($j = $y->n + 1; $j <= $i+1; $j--) {
+                $y->c[$j+1] = $y->c[$j];
             }
             
             
             //bdump($this, '$this OK');
                 
                 // Link the new child to this node
-                $this->c[$i+1] = $z;
+                $y->c[$i+1] = $z;
                 
               //  bdump($this, '$this');
                 
                 // A key of y will move to this node. Find location of
                 // new key and move all greater keys one space ahead
-                for ($j = $this->n-1; $j >= $i; $j--) {
-                    $this->keys[$j+1] = $y->keys[$j];
+                for ($j = $y->n; $j <= $i; $j--) {
+                    $y->keys[$j+1] = $y->keys[$j];
                 }
+                
+                $y->keys[$i] =  $q->key[$this->t];
+                $y->n = $y->n + 1;
                 
                 //$y->keys = null;
                 
@@ -311,7 +354,7 @@ class BTree
                     //bdump($this, 'prirazeni');
                     
                     // Increment count of keys in this node
-                    $this->n = $this->n + 1; 
+                    //$this->n = $this->n + 1; 
     }
     
 }

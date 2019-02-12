@@ -36,14 +36,26 @@ class Delete
     public function run()
     {
         $this->where();
-        $this->limit();
-
-        $file = new SplFileObject($this->query->getTable()->getFileName(),'rwb');
-
-        foreach ($this->res as $line) {
-            $file->seek($line + 1);
-            $file->fwrite('');
+        $this->limit();       
+        
+        $tmpFileName = $this->query->getTable()->getFileName() . '.tmp';
+        
+        $fileTemp = new SplFileObject($tmpFileName, 'a');
+        
+        $fileTemp->fwrite($this->query->getTable()->getColumnsString());
+        
+        foreach ($this->query->getTable()->getRows() as $line => $row) {
+            if (!in_array($line, $this->res, true)) {
+                $fileTemp->fwrite(implode(\Table::COLUMN_DELIMITER, $row). "\n");
+            }
         }
+        
+        $fileTemp = null;        
+        $tmpFile  = file_get_contents($tmpFileName);
+        
+        file_put_contents($this->query->getTable()->getFileName(), $tmpFile);
+                
+        FileSystem::delete($tmpFileName);
 
         return count($this->res);
     }

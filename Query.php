@@ -290,6 +290,14 @@ class Query
     {
         return $this->insertData;
     }
+    
+    /**
+     * @return array
+     */
+    public function getUpdateData()
+    {
+        return $this->updateData;
+    }
 
     /**
      * @return Database

@@ -16,28 +16,29 @@ Debugger::enable();
 Debugger::$maxDepth = 2000;
 echo '<meta charset="UTF-8">';
 
-
-$root = new BTree(25);
+/*
+$root = new BTree(3);
 
 $start = microtime(true);
-for($i = 0; $i <= 100; $i++) {
+for($i = 0; $i <= 20; $i++) {
     $root->insert($i);
 }
 
-$end = microtime(true);
-
 bdump($root);
+
+$end = microtime(true);
 
 bdump($end-$start, 'adding');
 
 $start = microtime(true);
-//$search = $root->search(2000);
+$search = $root->searchN($root, 17);
 $start = microtime(true);
 
 
 
 
-//bdump($search, 'search');
+bdump($search, 'search');
+*/
 
 
 $database = new Database('test');
@@ -58,4 +59,5 @@ $query = new Query($database);
 //bdump($res);
 //echo $res;
 
-$query->add('myNew', ['jmeno' => 'a', 'prijmeni' => 'zzz'])->run();
+//$query->add('myNew', ['jmeno' => 'a', 'prijmeni' => 'zzz'])->run();
+$query->update('myNew', ['prijmeni' => 'bbbb'])->where('jmeno', '=', 'a')->run();

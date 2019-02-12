@@ -62,6 +62,12 @@ class Table implements ITable
      * @var int $columnsCount
      */
     private $columnsCount;
+    
+    /**
+     * 
+     * @var string $columnsString
+     */
+    private $columnsString;
 
     /**
      * Table constructor.
@@ -98,13 +104,14 @@ class Table implements ITable
             $columns[]      = new Column($columnExploded[0], $columnExploded[1]);
         }
 
-        $this->columns      = $columns;
-        $this->columnsCount = count($this->columns);
-        $this->name         = $name;
-        $this->fileName     = $tableFileName;
-        $this->size         = $fileSize;
-        $this->database     = $database;
-        $this->rowsCount    = count($fileContent) - 1;
+        $this->columns       = $columns;
+        $this->columnsCount  = count($this->columns);
+        $this->name          = $name;
+        $this->fileName      = $tableFileName;
+        $this->size          = $fileSize;
+        $this->database      = $database;
+        $this->rowsCount     = count($fileContent) - 1;
+        $this->columnsString = $fileContent[0];
     }
 
     /**
@@ -168,6 +175,14 @@ class Table implements ITable
     public function getFileName()
     {
         return $this->fileName;
+    }
+    
+    /**
+     * @return string
+     */
+    public function getColumnsString()
+    {
+        return $this->columnsString;
     }
 
     /**
@@ -311,7 +326,7 @@ class Table implements ITable
                 continue;
             }            
             
-            $rowExploded       = explode(',', $row);            
+            $rowExploded       = explode(Table::COLUMN_DELIMITER, $row);            
             $columnValuesArray = [];            
             
             foreach ($this->columns as $columnNumber => $columnValue ) {
