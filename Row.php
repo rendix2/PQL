@@ -18,6 +18,9 @@ class Row
      */
     private $row;
 
+    /**
+     * @var array $rawData
+     */
     private $rawData;
 
     /**
