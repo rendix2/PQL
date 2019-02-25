@@ -1,8 +1,6 @@
 <?php
 namespace query;
 
-use Exception;
-use Help;
 use Query;
 use Table;
 
