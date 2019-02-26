@@ -380,82 +380,15 @@ class Query
     }
 
     /**
-     * @param string $expr
+     * @param string $expression
+     *
+     * @return Query|null
      */
-    public function expression($expr)
+    public function expression($expression)
     {
-        $expr = mb_strtolower($expr);
+        $parser = new ParseQuery($this->database, $expression);
 
-        $selectFunctions = new Nette\Tokenizer\Tokenizer([
-            'select'          => 'select',
-            'columns'         => '\s+',
-            'count'           => 'count(\s+)',
-            'sum'             => 'sum(\s+)',
-            'avg'             => 'avg(\s+)',
-            'min'             => 'min(\s+)',
-            'max'             => 'max(\s+)',
-            'from'            => 'from',
-            'table'           => '\s+',
-            'innerjoin'       => 'inner join',
-            'innerjointables' => '\s+',
-            'oni'             => 'on',
-            'onconditioni'    => '\s+',
-            'leftjoin'        => 'left join',
-            'leftjointables'  => '\s+',
-            'onl'             => 'on',
-            'onconditionl'    => '\s+',
-            'where'           => 'where',
-            'condition'       => '\s+',
-            'groupby'         => 'group by',
-            'group'           => '\s+',
-            'having'          => 'having',
-            'have'            => '\s+',
-            'orderby'         => 'order by',
-            'order'           => '\s+',
-            'limit'           => 'limit',
-            'lim'             => '\d+',
-        ]);
-
-        $selectFunctionStream = $selectFunctions->tokenize($expr);
-
-        $select = new Nette\Tokenizer\Tokenizer([
-            'select'          => 'select',
-            'columns'         => '\s+',
-            'from'            => 'from',
-            'table'           => '\s+',
-            'innerjoin'       => 'inner join',
-            'innerjointables' => '\s+',
-            'oni'             => 'on',
-            'onconditioni'    => '\s+',
-            'leftjoin'        => 'left join',
-            'leftjointables'  => '\s+',
-            'onl'             => 'on',
-            'onconditionl'    => '\s+',
-            'where'           => 'where',
-            'condition'       => '\s+',
-            'groupby'         => 'group by',
-            'group'           => '\s+',
-            'having'          => 'having',
-            'have'            => '\s+',
-            'orderby'         => 'order by',
-            'order'           => '\s+',
-            'limit'           => 'limit',
-            'lim'             => '\d+',
-        ]);
-
-        $selectStream = $select->tokenize($expr);
-
-        $insert = new Nette\Tokenizer\Tokenizer([
-            'insert'     => 'INSERT INTO',
-            'table'      => '\s+',
-            'columns'    => '(\s+)',
-            'valuesword' => 'VALUES',
-            'values'     => '\s+',
-        ]);
-
-        $selectStream = $insert->tokenize($expr);
-
-
+        return $parser->getQuery();
     }
 
     /**
