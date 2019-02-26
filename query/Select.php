@@ -186,7 +186,7 @@ class Select
                                             }
                                         }
                                             
-                                        if ($condition['operator'] === '!=') {
+                                        if ($condition['operator'] === '!=' || $condition['operator'] === '<>') {
                                             if ($value !== $joinedTableRowsValue) {
                                                 $joinTmp[] = array_merge($row, $joinedTableRows);
                                             }
@@ -258,7 +258,7 @@ class Select
                                             }
                                         }
 
-                                        if ($condition['operator'] === '!=') {
+                                        if ($condition['operator'] === '!=' || $condition['operator'] === '<>') {
                                             if ($value !== $columnValue) {
                                                 $joinTmp[] = array_merge($row, $joinedTableRows);
                                             }

@@ -44,7 +44,7 @@ class Update
     }
 
     /**
-     *
+     * run query
      */
     public function run()
     {
@@ -70,6 +70,9 @@ class Update
         return count($this->res);
     }
 
+    /**
+     * where conditions
+     */
     private function where()
     {
         $up     = $this->query->getUpdateData();
@@ -137,6 +140,9 @@ class Update
         $this->res = $res;
     }
 
+    /**
+     * limit
+     */
     private function limit()
     {
         $limit = $this->query->getLimit();

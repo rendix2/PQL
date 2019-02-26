@@ -16,6 +16,9 @@ use Nette\Utils\Finder;
  */
 class Database
 {
+    /**
+     * @var string
+     */
     const DATABASE_DIR = '%s' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR. '%s';
 
     /**

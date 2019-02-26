@@ -131,14 +131,15 @@ class Table implements ITable
      */
     public function __destruct()
     {
-        $this->name         = null;
-        $this->fileName     = null;
-        $this->size         = null;
-        $this->rows         = null;
-        $this->rowsCount    = null;
-        $this->database     = null;
-        $this->columns      = null;
-        $this->columnsCount = null;
+        $this->name          = null;
+        $this->fileName      = null;
+        $this->size          = null;
+        $this->rows          = null;
+        $this->rowsCount     = null;
+        $this->database      = null;
+        $this->columns       = null;
+        $this->columnsCount  = null;
+        $this->columnsString = null;
     }
 
     /**
@@ -377,6 +378,6 @@ class Table implements ITable
      */
     public function toArray()
     {
-        return file(self::getFilePath($this->database, $this->name));
+        return file($this->fileName);
     }
 }
