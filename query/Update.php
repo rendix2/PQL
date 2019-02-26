@@ -50,10 +50,25 @@ class Update
     {
         $this->where();
         $this->limit();
-        
+
         $tmpFileName = $this->query->getTable()->getFileName() . '.tmp';
 
         $file = new SplFileObject($tmpFileName,'a');
+        /*
+
+        $file->next();
+        $line = 1;
+        while (!$file->eof()) {
+            $textLine = implode(Table::COLUMN_DELIMITER, $this->res[$line]);
+
+            if ($textLine !== $file->current()) {
+                $length = mb_strlen($file->current());
+
+                $file->fseek(-$length, SEEK_CUR);
+                $file->fwrite($textLine, $length);
+            }
+        }
+*/
         
         $file->fwrite($this->query->getTable()->getColumnsString());
         

@@ -138,7 +138,9 @@ class ParseQuery
             'having'          => 'having',
             'have'            => '\s+',
             'orderby'         => 'order by',
-            'order'           => '\s+',
+            'orderColumn'     => '\s+',
+            'orderTypeAsc'    => 'asc',
+            'orderTypeDesc'   => 'desc',
             'limit'           => 'limit',
             'lim'             => '\d+',
         ]);
