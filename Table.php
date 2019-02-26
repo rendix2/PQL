@@ -15,12 +15,24 @@ use Nette\Utils\FileSystem;
  */
 class Table implements ITable
 {
+    /**
+     * @var string
+     */
     const EXT = 'pql';
 
+    /**
+     * @var int
+     */
     const FIRST_LINE_LENGTH = 102400;
 
+    /**
+     * @var string
+     */
     const COLUMN_DELIMITER = ', ';
 
+    /**
+     * @var string
+     */
     const COLUMN_DATA_DELIMITER = ':';
 
     /**
