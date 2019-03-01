@@ -14,6 +14,16 @@ Debugger::enable();
 Debugger::$maxDepth = 2000;
 echo '<meta charset="UTF-8">';
 
+$root = new \BTree\BtreeJ();
+
+for ($i = 1; $i < 1000; $i++) {
+    $root->insert($i);
+}
+
+bdump(\BTree\BtreeJ::$cache);
+
+bdump($root, '$root');
+
 /*
 $root = new BTree(3);
 
@@ -38,7 +48,7 @@ $start = microtime(true);
 bdump($search, 'search');
 */
 
-
+/*
 $database = new Database('test');
 $tables = $database->getTables();
 
@@ -59,3 +69,4 @@ $query = new Query($database);
 
 //$query->add('myNew', ['jmeno' => 'a', 'prijmeni' => 'zzz'])->run();
 $query->update('myNew', ['prijmeni' => 'bbbb'])->where('jmeno', '=', 'a')->run();
+*/
