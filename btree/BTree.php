@@ -15,346 +15,169 @@ namespace BTree;
  */
 class BTree
 {
-    /**
-     *
-     * @var Node $root
-     */
-    public $root;
     
-    public $t;
+    public $capacity;
     
-    public $n;
+    public $values;
+    
+    public $valuesCount;
+    
+    public $nodes;
+    
+    public $nodesCount;
+    
+    public $parent;
     
     public $leaf;
     
-    public $c;
+    public $root;
     
-    public $keys;
-    
-    public function __construct($t)
+    public function __construct()
     {
-        $this->root = $this;
-        $this->t    = $t;
-        $this->c = [];
-        $this->n = 0;
+        $this->capacity = 5;
+        $this->valuesCount = 0;
+        $this->nodes = [];
+        $this->nodesCount = 0;
+        $this->parent = null;
         $this->leaf = true;
-        //$this->keys = [];
+        $this->root = null;
     }
     
-    public function traverse()
-    {
-        $this->root->traverse();
-    }
-    
-    
-    public function searchN(BTree $x, $k) 
-    {
-        $i = 1;
-        
-       //bdump($x); 
+    public function insert($value)
+    {        
+        if ($this->valuesCount < $this->capacity - 1) {
+            $this->insertNonFull($this, $value);
+        } else {
+            $this->split($this);
+            
+            $i = 0;
+            
+            if ($this->nodes[$i]->values[0] < $value) {
+                $i++;   
+            }            
+            
+            $this->insertNonFull($this->nodes[$i], $value);
+            
+        }
        
         
-       while ($i <= $x->n && isset($x->keys[$i]) && $k > $x->keys[$i]) {
-            $i = $i + 1;
-        }
-        
-        if ( $i<= $x->n && $x->keys[$i] === $k) {
-            return $x;
-        }
-        
-        if ($x->leaf) {
-            return null;
-        }
-        
-        return $this->searchN($x->c[$i], $k);
+        return $this;
     }
     
-    
-    public function search($k)
+    public function insertNonFull(BTree $node, $value) 
     {
-        // Find the first key greater than or equal to k
-        $i = 1;
         
         
-        while ($i <= $this->n  && $k > $this->keys[$i]) {
-            $i++;
-        }
-        
-        
-        
-        
-        $i--;
-        
-        bdump($i, '$i');
+        if ($node->leaf) {
+            //bdump($value, 'leaf');
             
-            // If the found key is equal to k, return this node
-        if ( $k === $this->keys[$i]) {
-            bdump('IF OK');
-            
-            return $k;
-        } elseif ($this->leaf === true ) {
-            bdump('ELSE IF fal');
-            return null;
+            $node->values[] = $value;            
+            sort($this->values);            
+            $node->valuesCount++;
         } else {
-            bdump('else');
+            //bdump($value, '!leaf');
+            //bdump($node, '$node');
             
-            bdump($this, 'this');
+            //bdump($node->valuesCount, '$node->valuesCount');
+            //bdump($node->capacity, '$node->capacity');
+            //bdump($node, '$node');
             
-            return $this->c[$i]->search($k);//
-        }
-        
+            if ($node->nodes[$this->nodesCount + 1]->valuesCount === $node->capacity - 1) {
+                //bdump('We need to plit');
                 
-                // If key is not found here and this is a leaf node
-                /**
-                 * 
-                 
-        if ($this->leaf === true) {
-            return NULL;
+                $this->split($node->nodes[$this->nodesCount + 1]);
+            }
+            
+            $this->insertNonFull($node->nodes[$this->nodesCount + 1], $value);
         }
-        */
+    }
+    
+    public function split(BTree $node)
+    {
+        $left = new BTree();        
+        $right = new BTree();
+        
+        if ($node->leaf) {
+            $node->leaf = false;
+            $left->parent = $node;
+            $right->parent = $node;
+        } 
+        
+        $node->nodes[] = $left;
+        $node->nodes[] = $right;
+                
+        $left->nodesCount = $node->nodesCount;
+                
+        //$left->values[] = $value;
+
+        
+        $chunk = array_chunk($node->values, $node->capacity / 2);
+        
+        
+        
+        $left->values = $chunk[0];
+        $left->valuesCount = count($chunk[0]);
+        $right->values = $chunk[1];
+        
+        $middle = $node->values[$node->capacity/2];
+        $node->values = [];
+        $node->values[] = $middle;
+        $node->valuesCount = count($node->values);
+        
+        unset($right->values[0]);
+        $rightValues = array_values($right->values);
+        $right->values = $rightValues;
+        $right->valuesCount = count($rightValues);
+        
+        
+        //if ()
+        
+        
+        bdump($chunk);
         
         /*
-        if (!count($this->c[$i])) {
-            bdump('FALSE');
-            return false;
+        
+        for ($i = 0; $i < $node->capacity / 2 - 1; $i++) {
+            $left->values[] = $node->values[$i];
+            $left->valuesCount++;
+            $node->valuesCount--;
+            unset($node->values[$i]);
         }
+        
+        if ($this->capacity % 2 === 0) {
+            $middleValue = $node->values[$this->capacity / 2 - 1]; 
+            
+            
+            for ($i = $node->capacity / 2; $i < $this->capacity; $i++) {
+                $right->values[] = $node->values[$i];
+                $right->valuesCount++;
+                $node->valuesCount--;
+                unset($node->values[$i]);
+            }
+            //$node->values[] = $middleValue;
+            
+        } else {
+            $middleValue = $node->values[$this->capacity / 2];
+            
+            bdump($middleValue, '$middle');
+            bdump($node->values);
+            
+            
+            for ($i = $node->capacity / 2 + 1; $i < $this->capacity -1 ; $i++) {
+                
+                
+                
+                $right->values[] = $node->values[$i];
+                $right->valuesCount++;
+                $node->valuesCount--;
+                unset($node->values[$i]);
+            }
+            
+            bdump($node->values);
+            
+            //$node->values[] = $middleValue;
+        }
+        
         */
-        
-       // bdump($this, '$this');        
-        
-        
-                    
-                    
-                    // Go to the appropriate child
-                    
     }
-    
-    public function insert($k)
-    {        
-        // If tree is empty
-        if ($this->root == NULL)
-        {
-            // Allocate memory for root
-            $root = new Node($this->t, true);
-            $root->keys[0] = $k; // Insert key
-            $root->n = 1; // Update number of keys in root
-        }
-        else // If tree is not empty
-        {
-            // If root is full, then tree grows in height
-            if ($this->root->n == 2*$this->t-1)
-            {
-                //bdump('node is full '. $k);
-                
-                // Allocate memory for new root
-                $s = new BTree($k);                
-                                
-                // Make old root as child of new root
-                //$s->c[0] = $this->root;
-                
-                $this->root->c[1] = $s;
-                
-                // Split the old root and move 1 key to the new root
-                $s->splitChild(0, $this->root);
-                
-                $this->root->leaf = false;
-                
-                // New root has two children now. Decide which of the
-                // two children is going to have new key
-                $i = 1;
-                if ($s->keys[0] < $k) {
-                    //bdump('left');
-                    $i++;
-                } else {
-                    //bdump('right');
-                }
-                
-                bdump($this);
-                 
-                    $s->c[1]->insertNonFull($k);
-                    
-                    //bdump($s, '$s');
-                    
-                    // Change root
-                    $this->root = $s;
-                    $this->root->leaf = false;
-            }
-            else // If root is not full, call insertNonFull for root
-            {
-                //bdump('node is NOT full, calling insertNonFUll() ' . $k);
-                
-                //$this->root->keys = [];
-                $this->root->insertNonFull($k);
-            }
-        } 
-        
-    }
-    
-    private function insertNonFull($k)
-    {
-        //bdump('inserting non full: '. $k);
-        
-        // Initialize index as index of rightmost element
-        $i = $this->n-1;
-        
-        if ($i === -1) {
-            $i = 0;
-        }
-        
-        // If this is a leaf node
-        if ($this->leaf == true)
-        {
-            //bdump('this->leaf === true');
-            
-            // The following loop does two things
-            // a) Finds the location of new key to be inserted
-            // b) Moves all greater keys to one place ahead
-
-            
-            if ($this->keys === null) {
-                $this->keys = [];
-            }
-            
-            
-            //bdump($this->keys, '$this->keys');
-            //bdump(isset($this->keys[$i]), 'isset($this->keys[$i])');
-            
-
-            
-            
-           // bdump($this->keys[$i], '$this->keys[$i]');
-            //bdump($i, '$i');
-            //bdump($this);
-            
-            //if (!isset($this->keys[$i])) {
-                //bdump('return' );
-                
-                //return ;
-            //}
-
-            
-            
-            while ($i >= 0 &&  isset($this->keys[$i]) && $this->keys[$i] > $k)
-            {
-                //$this->keys[$i+1] = $this->keys[$i];
-                $i--;
-            }
-            
-            // Insert the new key at found location
-            $this->keys[$i+1] = $k;
-            $this->n          = $this->n + 1;
-        }
-        else // If this node is not leaf
-        {
-            // Find the child which is going to have the new key
-            while ($i >= 0 && $this->keys[$i] > $k)
-                $i--;
-                
-                // See if the found child is full
-                if ($this->c[$i+1]->n == 2*$this->t-1)
-                {
-                    // If the child is full, then split it
-                    $this->splitChild($i+1, $this->c[$i+1]);
-                    
-                    // After split, the middle key of C[i] goes up and
-                    // C[i] is splitted into two. See which of the two
-                    // is going to have the new key
-                    if ($this->keys[$i+1] < $k)
-                        $i++;
-                }
-               // bdump($this);
-                
-                $this->c[$i+1]->insertNonFull($k);
-        } 
-    }
-    
-    private function splitChild($i, BTree $y) 
-    {
-       // bdump('split');
-        //bdump($y, '$y');
-        
-        $z = new BTree($y->t);
-        
-        $q = $y->c[$i];
-                
-        $z->leaf = $q->leaf;
-        $z->n = $this->t - 1;
-        
-
-        
-        //$z->keys = $y->keys;
-        
-        
-        // Copy the last (t-1) keys of y to z
-        for ($j = 1; $j < $this->t - 1; $j++) {
-            $z->keys[$j] = $q->keys[$j + $this->t];
-        }
-        
-//        $q->n = $this->t - 1;
-       
-        
-        //$z->keys = $q->keys;
-        //$y->keys = null;
-        
-        //bdump($z->keys, '$z->keyys');
-        
-        
-        
-        //bdump($z, '$z');
-            
-        
-            // Copy the last t children of y to z
-            if ($y->leaf === false)
-            {
-                //bdump('splitting: node is leaf');
-                
-                for ($j = 1; $j < $this->t; $j++)
-                    $z->c[$j] = $q->c[$j+$this->t];
-            }
-           
-
-            
-            // Reduce the number of keys in y
-            $y->n = $this->t - 1;
-            
-            // Since this node is going to have a new child,
-            // create space of new child
-            for ($j = $y->n + 1; $j <= $i+1; $j--) {
-                $y->c[$j+1] = $y->c[$j];
-            }
-            
-            
-            //bdump($this, '$this OK');
-                
-                // Link the new child to this node
-                $y->c[$i+1] = $z;
-                
-              //  bdump($this, '$this');
-                
-                // A key of y will move to this node. Find location of
-                // new key and move all greater keys one space ahead
-                for ($j = $y->n; $j <= $i; $j--) {
-                    $y->keys[$j+1] = $y->keys[$j];
-                }
-                
-                $y->keys[$i] =  $q->key[$this->t];
-                $y->n = $y->n + 1;
-                
-                //$y->keys = null;
-                
-                //bdump($this, '$this after foreach');
-                //bdump($this->keys, '$this->keys');    
-                
-                
-                    // Copy the middle key of y to this node
-                    //$this->keys[$i] = $y->keys[$i];
-                    
-                    //bdump($this->keys, '$this->keys');
-                    
-                    //bdump($this, 'prirazeni');
-                    
-                    // Increment count of keys in this node
-                    //$this->n = $this->n + 1; 
-    }
-    
 }
