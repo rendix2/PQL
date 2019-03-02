@@ -12,6 +12,9 @@ class Delete
      */
     private $query;
 
+    /**
+     * @var array $res
+     */
     private $res;
 
     /**

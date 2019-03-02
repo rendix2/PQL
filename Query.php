@@ -20,110 +20,90 @@ use query\Update;
 class Query
 {
     const ENABLED_OPERATORS = ['=', '<', '>', '<=', '>=', '!=', '<>'];
-
     /**
      * @var Database $database
      */
     private $database;
-
     /**
      * @var array $columns
      */
     private $columns;
-
     /**
      * @var Table $table
      */
     private $table;
-
     /**
      * @var array $condition
      */
     private $whereCondition;
-
     /**
      * @var array $orderBy
      */
     private $orderBy;
-    
     /**
-     * 
+     *
      * @var array $having
      */
     private $having;
-
     /**
      * @var array $groupBy
      */
     private $groupBy;
-
     /**
-     * 
+     *
      * @var Table[] $leftJoin
      */
     private $leftJoin;
-
     /**
-     * 
+     *
      * @var Table[] $innerJoin
      */
     private $innerJoin;
-    
     /**
-     * 
+     *
      * @var array $onCondition
      */
     private $onCondition;
-
     /**
      * @var string $query
      */
     private $query;
-
     /**
      * @var int $limit
      */
     private $limit;
-
     /**
-     * 
+     *
      * @var bool $isSelect
      */
     private $isSelect;
-
     /**
-     * 
+     *
      * @var bool $isInsert
      */
     private $isInsert;
-
     /**
-     * 
+     *
      * @var bool $isUpdate
      */
     private $isUpdate;
-
     /**
-     * 
+     *
      * @var bool $isDelete
      */
     private $isDelete;
-
     /**
      * @var array $updateData
      */
     private $updateData;
-
     /**
      * @var array $insertData
      */
     private $insertData;
-
     /**
      * @var array $grouped
      */
     private $grouped;
-
     /**
      * @var array $functions
      */
@@ -137,21 +117,21 @@ class Query
     public function __construct(Database $database)
     {
         $this->database = $database;
-        
+
         $this->isDelete = false;
         $this->isInsert = false;
         $this->isUpdate = false;
         $this->isSelect = false;
-        
+
         $this->innerJoin = [];
         $this->leftJoin  = [];
-        
+
         $this->onCondition    = [];
         $this->whereCondition = [];
-        
+
         $this->updateData = [];
         $this->insertData = [];
-        
+
         $this->having    = [];
         $this->functions = [];
     }
@@ -164,30 +144,38 @@ class Query
         $this->database = null;
         $this->columns  = null;
         $this->table    = null;
-                
+
         $this->whereCondition = null;
         $this->having         = null;
-        
+
         $this->orderBy = null;
         $this->groupBy = null;
-        
+
         $this->leftJoin    = null;
         $this->innerJoin   = null;
         $this->onCondition = null;
-        
+
         $this->limit = null;
-        
+
         $this->query = null;
-        
+
         $this->isSelect = null;
         $this->isDelete = null;
         $this->isUpdate = null;
         $this->isInsert = null;
-        
+
         $this->insertData = null;
         $this->updateData = null;
 
         $this->functions = null;
+    }
+
+    /**
+     * @return array
+     */
+    public function getFunctions()
+    {
+        return $this->functions;
     }
 
     /**
@@ -392,82 +380,15 @@ class Query
     }
 
     /**
-     * @param string $expr
+     * @param string $expression
+     *
+     * @return Query|null
      */
-    public function expression($expr)
+    public function expression($expression)
     {
-        $expr = mb_strtolower($expr);
+        $parser = new ParseQuery($this->database, $expression);
 
-        $selectFunctions = new Nette\Tokenizer\Tokenizer([
-            'select'          => 'select',
-            'columns'         => '\s+',
-            'count'           => 'count(\s+)',
-            'sum'             => 'sum(\s+)',
-            'avg'             => 'avg(\s+)',
-            'min'             => 'min(\s+)',
-            'max'             => 'max(\s+)',
-            'from'            => 'from',
-            'table'           => '\s+',
-            'innerjoin'       => 'inner join',
-            'innerjointables' => '\s+',
-            'oni'             => 'on',
-            'onconditioni'    => '\s+',
-            'leftjoin'        => 'left join',
-            'leftjointables'  => '\s+',
-            'onl'             => 'on',
-            'onconditionl'    => '\s+',
-            'where'           => 'where',
-            'condition'       => '\s+',
-            'groupby'         => 'group by',
-            'group'           => '\s+',
-            'having'          => 'having',
-            'have'            => '\s+',
-            'orderby'         => 'order by',
-            'order'           => '\s+',
-            'limit'           => 'limit',
-            'lim'             => '\d+',
-        ]);
-
-        $selectFunctionStream = $selectFunctions->tokenize($expr);
-
-        $select = new Nette\Tokenizer\Tokenizer([
-            'select'          => 'select',
-            'columns'         => '\s+',
-            'from'            => 'from',
-            'table'           => '\s+',
-            'innerjoin'       => 'inner join',
-            'innerjointables' => '\s+',
-            'oni'             => 'on',
-            'onconditioni'    => '\s+',
-            'leftjoin'        => 'left join',
-            'leftjointables'  => '\s+',
-            'onl'             => 'on',
-            'onconditionl'    => '\s+',
-            'where'           => 'where',
-            'condition'       => '\s+',
-            'groupby'         => 'group by',
-            'group'           => '\s+',
-            'having'          => 'having',
-            'have'            => '\s+',
-            'orderby'         => 'order by',
-            'order'           => '\s+',
-            'limit'           => 'limit',
-            'lim'             => '\d+',
-        ]);
-
-        $selectStream = $select->tokenize($expr);
-
-        $insert = new Nette\Tokenizer\Tokenizer([
-            'insert'     => 'INSERT INTO',
-            'table'      => '\s+',
-            'columns'    => '(\s+)',
-            'valuesword' => 'VALUES',
-            'values'     => '\s+',
-        ]);
-
-        $selectStream = $insert->tokenize($expr);
-
-
+        return $parser->getQuery();
     }
 
     /**

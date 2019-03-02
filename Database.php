@@ -6,7 +6,6 @@
  * Time: 16:09
  */
 
-use Nette\IOException;
 use Nette\Utils\FileSystem;
 use Nette\Utils\Finder;
 
@@ -17,6 +16,9 @@ use Nette\Utils\Finder;
  */
 class Database
 {
+    /**
+     * @var string
+     */
     const DATABASE_DIR = '%s' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR. '%s';
 
     /**
@@ -36,6 +38,10 @@ class Database
 
     /**
      * Database constructor.
+     *
+     * @param string $name
+     *
+     * @throws Exception
      */
     public function __construct($name)
     {
@@ -115,6 +121,16 @@ class Database
         }
 
         return $tables;
+    }
+
+    /**
+     * @param string $tableName
+     *
+     * @return Table
+     */
+    public function getTable($tableName)
+    {
+        return new Table($this, $tableName);
     }
 
     /**

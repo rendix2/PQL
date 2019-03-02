@@ -24,6 +24,16 @@ class Row
     private $rawData;
 
     /**
+     * @var array $columns
+     */
+    private $columns;
+
+    /**
+     * @var int $columnsCount
+     */
+    private $columnsCount;
+
+    /**
      * Row constructor.
      *
      * @param $data
@@ -31,12 +41,15 @@ class Row
     public function __construct(array $data)
     {
         $this->row = new stdClass();
+
+        $this->rawData = $data;
+        $this->columns = array_keys($data);
+
+        $this->columnsCount = count($this->columns);
         
         foreach ($data as $key => $value) {
             $this->row->{$key} = $value;
         }
-
-        $this->rawData = $data;
     }
 
     /**
@@ -45,6 +58,9 @@ class Row
     public function __destruct()
     {
         $this->row = null;
+        $this->rawData = null;
+        $this->columns = null;
+        $this->columnsCount = null;
     }
 
     /**
@@ -90,6 +106,22 @@ class Row
     public function get()
     {
         return $this->row;
+    }
+
+    /**
+     * @return array
+     */
+    public function getColumns()
+    {
+        return $this->columns;
+    }
+
+    /**
+     * @return int
+     */
+    public function getColumnsCount()
+    {
+        return $this->columnsCount;
     }
 
     /**

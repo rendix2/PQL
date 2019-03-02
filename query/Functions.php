@@ -8,8 +8,6 @@
 
 namespace query;
 
-use Query;
-
 /**
  * Class Functions
  *
@@ -93,6 +91,11 @@ class Functions
         return max(array_column($this->table, $column));
     }
 
+    /**
+     * @param string $column
+     *
+     * @return float|int
+     */
     public function median($column)
     {
         $values = array_column($this->table, $column);

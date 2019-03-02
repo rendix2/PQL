@@ -51,6 +51,7 @@ class Select
         $this->having();
         $this->orderBy();
         $this->limit();
+        $this->functions();
         
         return $this->createRows();
     }
@@ -87,7 +88,42 @@ class Select
                 throw new Exception(sprintf('Selected column "%s" does not exists.', $column));
             }
         }
-        
+    }
+
+    /**
+     *
+     */
+    private function functions()
+    {
+        $functions = new Functions($this->result);
+
+        foreach ($this->query->getFunctions() as $function) {
+            if ($function['function'] === 'sum') {
+                array_merge($this->result, $functions->sum($function['column']));
+            }
+
+            if ($function['function'] === 'count') {
+                array_merge($this->result, $functions->count($function['column']));
+            }
+
+            if ($function['function'] === 'avg') {
+                array_merge($this->result, $functions->avg($function['column']));
+            }
+
+            if ($function['function'] === 'min') {
+                array_merge($this->result, $functions->min($function['column']));
+            }
+
+            if ($function['function'] === 'max') {
+                array_merge($this->result, $functions->max($function['column']));
+            }
+
+            if ($function['function'] === 'median') {
+                array_merge($this->result, $functions->median($function['column']));
+            }
+        }
+
+        return $this->result;
     }
 
     /**
@@ -150,7 +186,7 @@ class Select
                                             }
                                         }
                                             
-                                        if ($condition['operator'] === '!=') {
+                                        if ($condition['operator'] === '!=' || $condition['operator'] === '<>') {
                                             if ($value !== $joinedTableRowsValue) {
                                                 $joinTmp[] = array_merge($row, $joinedTableRows);
                                             }
@@ -222,7 +258,7 @@ class Select
                                             }
                                         }
 
-                                        if ($condition['operator'] === '!=') {
+                                        if ($condition['operator'] === '!=' || $condition['operator'] === '<>') {
                                             if ($value !== $columnValue) {
                                                 $joinTmp[] = array_merge($row, $joinedTableRows);
                                             }

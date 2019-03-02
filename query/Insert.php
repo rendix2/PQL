@@ -1,8 +1,6 @@
 <?php
 namespace query;
 
-use Exception;
-use Help;
 use Query;
 use Table;
 
@@ -60,11 +58,9 @@ class Insert
             }
         }
 
-        $path = Table::getFilePath($this->query->getDatabase(), $this->query->getTable()->getName());
-        
         return file_put_contents(
-            $path,
-            "\n".implode(Table::COLUMN_DELIMITER, $row),
+            $this->query->getTable()->getFileName(),
+            "\n" . implode(Table::COLUMN_DELIMITER, $row),
             FILE_APPEND
         );
     }
