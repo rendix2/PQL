@@ -1,6 +1,7 @@
 <?php
 namespace query;
 
+use Exception;
 use Nette\Utils\FileSystem;
 use SplFileObject;
 use Table;
@@ -9,6 +10,7 @@ class Delete extends BaseQuery
 {
     /**
      * @return int
+     * @throws Exception
      */
     public function run()
     {

@@ -3,9 +3,11 @@ namespace query;
 
 use Table;
 use BTree\BtreeJ;
+use Query;
 
 class Insert extends BaseQuery
 {
+
     /**
      *
      */
