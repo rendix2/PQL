@@ -14,6 +14,7 @@ Debugger::enable();
 Debugger::$maxDepth = 2000;
 echo '<meta charset="UTF-8">';
 
+/*
 $root = new \BTree\BtreeJ();
 $root->create($root);
 
@@ -25,6 +26,7 @@ $search = $root->search($root, 142);
 
 bdump($root, '$root');
 bdump($search, '$search');
+*/
 
 /*
 $root = new BTree(3);
@@ -49,6 +51,18 @@ $start = microtime(true);
 
 bdump($search, 'search');
 */
+
+$database = new Database('test');
+
+$query1 = new Query($database);
+$res1   = $query1->select(['id'])->from('test')->where('text', '=', 'adwa')->run();
+echo $res1;
+
+$query2 = new Query($database);
+$res2   = $query2->select(['id', 'text'])->from('test')->where('id', '<>', $query1)->run();
+echo $res2;
+
+//Table::create($database, 'test', ['id', 'jmeno']);
 
 /*
 $database = new Database('test');

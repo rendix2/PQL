@@ -12,37 +12,8 @@ use Nette\Utils\FileSystem;
  * @author  rendix2
  * @package query
  */
-class Update
+class Update extends BaseQuery
 {
-    /**
-     * @var Query $query
-     */
-    private $query;
-
-    /**
-     * @var array $res
-     */
-    private $res;
-
-    /**
-     * Update constructor.
-     *
-     * @param Query $query
-     */
-    public function __construct(Query $query)
-    {
-        $this->query = $query;
-    }
-
-    /**
-     * Update destructor.
-     */
-    public function __destruct()
-    {
-        $this->query = null;
-        $this->res   = null;
-    }
-
     /**
      * run query
      */
@@ -72,7 +43,7 @@ class Update
         
         $file->fwrite($this->query->getTable()->getColumnsString());
         
-        foreach ($this->res as $values) {
+        foreach ($this->result as $values) {
             $file->fwrite(implode(Table::COLUMN_DELIMITER, $values) . "\n");
         }
         
@@ -82,7 +53,7 @@ class Update
         file_put_contents($this->query->getTable()->getFileName(), $tmp);
         FileSystem::delete($tmpFileName);
 
-        return count($this->res);
+        return count($this->result);
     }
 
     /**
@@ -153,16 +124,6 @@ class Update
         }
 
         $this->res = $res;
-    }
-
-    /**
-     * limit
-     */
-    private function limit()
-    {
-        $limit = $this->query->getLimit();
-
-        $this->res = array_slice($this->res, $limit);
     }
 }
 

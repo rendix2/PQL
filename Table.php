@@ -94,7 +94,7 @@ class Table implements ITable
         $tableFileName = self::getFilePath($database, $name);
 
         if (!is_file($tableFileName)) {
-            throw new Exception('Table does not exist.');
+            throw new Exception(sprintf('Table "%s" does not exist.', $name));
         }
 
         $fileSize = filesize($tableFileName);

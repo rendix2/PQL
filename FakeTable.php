@@ -4,13 +4,11 @@ class FakeTable implements ITable
 {
     
     /**
-     * 
      * @var array $rows
      */
     private $rows;
     
     /**
-     * 
      * @var array $columns
      */
     private $columns;

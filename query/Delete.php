@@ -2,40 +2,14 @@
 namespace query;
 
 use Nette\Utils\FileSystem;
-use Query;
 use SplFileObject;
+use Table;
 
-class Delete
+class Delete extends BaseQuery
 {
     /**
-     * @var Query $query
+     * @return int
      */
-    private $query;
-
-    /**
-     * @var array $res
-     */
-    private $res;
-
-    /**
-     * Update constructor.
-     *
-     * @param Query $query
-     */
-    public function __construct(Query $query)
-    {
-        $this->query = $query;
-    }
-
-    /**
-     * Update destructor.
-     */
-    public function __destruct()
-    {
-        $this->query = null;
-        $this->res   = null;
-    }
-
     public function run()
     {
         $this->where();
@@ -48,8 +22,8 @@ class Delete
         $fileTemp->fwrite($this->query->getTable()->getColumnsString());
         
         foreach ($this->query->getTable()->getRows() as $line => $row) {
-            if (!in_array($line, $this->res, true)) {
-                $fileTemp->fwrite(implode(\Table::COLUMN_DELIMITER, $row). "\n");
+            if (!in_array($line, $this->result, true)) {
+                $fileTemp->fwrite(implode(Table::COLUMN_DELIMITER, $row). "\n");
             }
         }
         
@@ -60,14 +34,17 @@ class Delete
                 
         FileSystem::delete($tmpFileName);
 
-        return count($this->res);
+        return count($this->result);
     }
 
+    /**
+     *
+     */
     private function where()
     {
         $wheres = $this->query->getWhereCondition();
         $rows   = $this->query->getTable()->getRows();
-        $res    = [];
+        $result = [];
 
         foreach ($wheres as $where) {
             foreach ($rows as $rowNumber => $row) {
@@ -75,37 +52,37 @@ class Delete
                     if ($where['column'] === $column) {
                         if ($where['operator'] === '=') {
                             if ($where['value'] === $value) {
-                              $res[] = $rowNumber;
+                              $result[] = $rowNumber;
                             }
                         }
 
                         if ($where['operator'] === '>') {
                             if ($where['value'] > $value) {
-                                $res[] = $rowNumber;
+                                $result[] = $rowNumber;
                             }
                         }
 
                         if ($where['operator'] === '>=') {
                             if ($where['value'] >= $value) {
-                                $res[] = $rowNumber;
+                                $result[] = $rowNumber;
                             }
                         }
 
                         if ($where['operator'] === '<') {
                             if ($where['value'] < $value) {
-                                $res[] = $rowNumber;
+                                $result[] = $rowNumber;
                             }
                         }
 
                         if ($where['operator'] === '<=') {
                             if ($where['value'] <= $value) {
-                                $res[] = $rowNumber;
+                                $result[] = $rowNumber;
                             }
                         }
 
                         if ($where['operator'] === '!=' || $where['operator'] === '<>') {
                             if ($where['value'] !== $value) {
-                                $res[] = $rowNumber;
+                                $result[] = $rowNumber;
                             }
                         }
                     }
@@ -113,14 +90,7 @@ class Delete
             }
         }
 
-        $this->res = $res;
-    }
-
-    private function limit()
-    {
-        $limit = $this->query->getLimit();
-
-        $this->res = array_slice($this->res, $limit);
+        $this->result = $result;
     }
 }
 

@@ -37,6 +37,11 @@ class Database
     private $tablesCount;
 
     /**
+     * @var Table[] $tables
+     */
+    private $tables;
+
+    /**
      * Database constructor.
      *
      * @param string $name
@@ -46,7 +51,7 @@ class Database
     public function __construct($name)
     {
         if (!is_dir(self::getPath($name))) {
-            throw new Exception('Database does not exist.');
+            throw new Exception(sprintf('Database "%s" does not exist.', $name));
         }
 
         $mask = sprintf('*.%s', Table::EXT);
@@ -61,8 +66,11 @@ class Database
             $size += $file->getSize();
         }
 
-        $this->size        = $size;
-        $this->name        = $name;
+        $this->size = $size;
+        $this->name = $name;
+
+        $this->tables = [];
+
         $this->tablesCount = $files->count();
     }
 
@@ -71,6 +79,7 @@ class Database
      */
     public function __destruct()
     {
+        $this->tables      = null;
         $this->name        = null;
         $this->size        = null;
         $this->tablesCount = null;
@@ -107,6 +116,10 @@ class Database
      */
     public function getTables()
     {
+        if ($this->tables) {
+            return $this->tables;
+        }
+
         $mask   = sprintf('*.%s', Table::EXT);
         $tables = [];
 
@@ -120,7 +133,7 @@ class Database
             $tables[$fileName] = new Table($this, $fileName);                        
         }
 
-        return $tables;
+        return $this->tables = $tables;
     }
 
     /**

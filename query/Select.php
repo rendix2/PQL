@@ -1,22 +1,14 @@
 <?php
 namespace query;
 
+use Column;
 use Query;
 use Row;
 use Table;
 use Exception;
 
-class Select
+class Select extends BaseQuery
 {
-    /**
-     * @var Query $query
-     */
-    private $query;
-    /**
-     * @var array|Row[] $result
-     */
-    private $result;
-
     /**
      * Select constructor.
      *
@@ -24,17 +16,9 @@ class Select
      */
     public function __construct(Query $query)
     {
-        $this->query  = $query;
-        $this->result = $query->getTable()->getRows();
-    }
+        parent::__construct($query);
 
-    /**
-     * Select destructor.
-     */
-    public function __destruct()
-    {
-        $this->result = null;
-        $this->query  = null;
+        $this->result = $query->getTable()->getRows();
     }
 
     /**
@@ -66,6 +50,7 @@ class Select
         
         /**
          * @var Table $table
+         * @var Column $column
          */
         foreach ($this->query->getInnerJoin() as $table) {
             foreach ($table->getColumns() as $column) {
@@ -298,38 +283,86 @@ class Select
         foreach ($this->result as $tmpRow) {
             foreach ($this->query->getWhereCondition() as $condition) {
                 if ($condition['operator'] === '=') {
-                    if ($tmpRow[$condition['column']] === $condition['value']) {
-                        $res[] = $tmpRow;
+                    if ($condition['value'] instanceof Query) {
+                        $subQueryValue = $this->runSubQuery($condition);
+
+                        if ($tmpRow[$condition['column']] === $subQueryValue) {
+                            $res[] = $tmpRow;
+                        }
+                    } else {
+                        if ($tmpRow[$condition['column']] === $condition['value']) {
+                            $res[] = $tmpRow;
+                        }
                     }
                 }
                     
                 if ($condition['operator'] === '<') {
-                    if ($tmpRow[$condition['column']] < $condition['value']) {
-                        $res[] = $tmpRow;
+                    if ($condition['value'] instanceof Query) {
+                        $subQueryValue = $this->runSubQuery($condition);
+
+                        if ($tmpRow[$condition['column']] < $subQueryValue) {
+                            $res[] = $tmpRow;
+                        }
+                    } else {
+                        if ($tmpRow[$condition['column']] < $condition['value']) {
+                            $res[] = $tmpRow;
+                        }
                     }
                 }
                     
                 if ($condition['operator'] === '>') {
-                    if ($tmpRow[$condition['column']] > $condition['value']) {
-                        $res[] = $tmpRow;
+                    if ($condition['value'] instanceof Query) {
+                        $subQueryValue = $this->runSubQuery($condition);
+
+                        if ($tmpRow[$condition['column']] > $subQueryValue) {
+                            $res[] = $tmpRow;
+                        }
+                    } else {
+                        if ($tmpRow[$condition['column']] > $condition['value']) {
+                            $res[] = $tmpRow;
+                        }
                     }
                 }
                     
                 if ($condition['operator'] === '<=') {
-                    if ($tmpRow[$condition['column']] <= $condition['value']) {
-                        $res[] = $tmpRow;
+                    if ($condition['value'] instanceof Query) {
+                        $subQueryValue = $this->runSubQuery($condition);
+
+                        if ($tmpRow[$condition['column']] <= $subQueryValue) {
+                            $res[] = $tmpRow;
+                        }
+                    } else {
+                        if ($tmpRow[$condition['column']] <= $condition['value']) {
+                            $res[] = $tmpRow;
+                        }
                     }
                 }
                     
                 if ($condition['operator'] === '>=') {
-                    if ($tmpRow[$condition['column']] >= $condition['value']) {
-                        $res[] = $tmpRow;
+                    if ($condition['value'] instanceof Query) {
+                        $subQueryValue = $this->runSubQuery($condition);
+
+                        if ($tmpRow[$condition['column']] >= $subQueryValue) {
+                            $res[] = $tmpRow;
+                        }
+                    } else {
+                        if ($tmpRow[$condition['column']] >= $condition['value']) {
+                            $res[] = $tmpRow;
+                        }
                     }
                 }
                     
                 if ($condition['operator'] === '!=' || $condition['operator'] === '<>') {
-                    if ($tmpRow[$condition['column']] !== $condition['value']) {
-                        $res[] = $tmpRow;
+                    if ($condition['value'] instanceof Query) {
+                        $subQueryValue = $this->runSubQuery($condition);
+
+                        if ($tmpRow[$condition['column']] !== $subQueryValue) {
+                            $res[] = $tmpRow;
+                        }
+                    } else {
+                        if ($tmpRow[$condition['column']] !== $condition['value']) {
+                            $res[] = $tmpRow;
+                        }
                     }
                 }
             }
@@ -463,21 +496,6 @@ class Select
         $sortRes   = call_user_func_array('array_multisort', $tmpSort);
             
         return $this->result = $tmp;
-    }
-
-    /**
-     * @return array|Row[]
-     */
-    private function limit()
-    {
-        if (!$this->query->getLimit()) {
-            return $this->result;
-        }
-        
-        $rowsCount = count($this->result);
-        $limit     = $this->query->getLimit() > $rowsCount ? $rowsCount : $this->query->getLimit();
-
-        return $this->result = array_slice($this->result,0, $limit,true);
     }
 
     /**
