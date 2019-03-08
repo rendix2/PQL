@@ -20,6 +20,8 @@ class Database
      * @var string
      */
     const DATABASE_DIR = '%s' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR. '%s';
+    
+    const DATA_DIR = 'data';
 
     /**
      * @var string $name
@@ -35,6 +37,12 @@ class Database
      * @var int $tablesCount
      */
     private $tablesCount;
+    
+    /**
+     * 
+     * @var string $dir
+     */
+    private $dir;
 
     /**
      * Database constructor.
@@ -45,14 +53,19 @@ class Database
      */
     public function __construct($name)
     {
-        if (!is_dir(self::getPath($name))) {
+        
+        $sep = DIRECTORY_SEPARATOR;
+        
+        $database_dir = __DIR__ . $sep . self::DATA_DIR . $sep.  $name . $sep;
+               
+        
+        if (!is_dir($database_dir)) {
             throw new Exception('Database does not exist.');
         }
 
-        $mask = sprintf('*.%s', Table::EXT);
         $size = 0;
         
-        $files = Finder::findFiles($mask)->in(self::getPath($name));
+        $files = Finder::findFiles('*')->from($database_dir);
 
         /**
          * @var $file SplFileInfo
@@ -64,6 +77,7 @@ class Database
         $this->size        = $size;
         $this->name        = $name;
         $this->tablesCount = $files->count();
+        $this->dir         = $database_dir;
     }
 
     /**
@@ -82,42 +96,29 @@ class Database
     public function getName()
     {
         return $this->name;
-    }
+    }    
 
-    /**
-     * @return string
-     */
-    public function getPath2()
+    public function getDir()
     {
-        return self::getPath($this->name);
+        return $this->dir;
     }
-
-    /**
-     * @param string $name
-     *
-     * @return string
-     */
-    public static function getPath($name)
-    {
-        return sprintf(self::DATABASE_DIR,__DIR__, $name);
-    }
+    
 
     /**
      * @return Table[]
      */
     public function getTables()
     {
-        $mask   = sprintf('*.%s', Table::EXT);
         $tables = [];
 
         /**
          * @var SplFileInfo $file
          */
-        foreach (Finder::findFiles($mask)->in(self::getPath($this->name)) as $file) {            
+        foreach (Finder::findFiles('*.' . Table::EXT)->from($this->getDir()) as $file) {                   
             $extension = $file->getExtension();            
             $fileName = str_replace('.' . $extension, '', $file->getFilename());
             
-            $tables[$fileName] = new Table($this, $fileName);                        
+            $tables[$fileName] = new Table($this, $fileName);
         }
 
         return $tables;

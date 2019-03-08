@@ -64,7 +64,7 @@ final class Result implements ITable
         $this->columns      = $columns;
         $this->time         = $time;
         $this->timeFormated = (float)number_format($time, 5);
-        $this->affectedRows =  $affectedRows;
+        $this->affectedRows = $affectedRows;
     }
 
     /**
@@ -133,7 +133,7 @@ final class Result implements ITable
 
             return $table;
         }
-        
+
         return 'No result';
     }
 }

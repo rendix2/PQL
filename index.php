@@ -1,6 +1,7 @@
 <?php
 use Tracy\Debugger;
 use Nette\Loaders\RobotLoader;
+use BTree\BtreeJ;
 
 require __DIR__ . '/vendor/autoload.php';
 
@@ -14,6 +15,7 @@ Debugger::enable();
 Debugger::$maxDepth = 2000;
 echo '<meta charset="UTF-8">';
 
+/*
 $root = new \BTree\BtreeJ();
 $root->create($root);
 
@@ -25,6 +27,13 @@ $search = $root->search($root, 142);
 
 bdump($root, '$root');
 bdump($search, '$search');
+*/
+
+//$root->write(__DIR__ .'/data/test/index/test.index');
+
+//$root = BtreeJ::read(__DIR__ .'/data/test/index/test.index');
+
+//bdump($root);
 
 /*
 $root = new BTree(3);
@@ -50,25 +59,29 @@ $start = microtime(true);
 bdump($search, 'search');
 */
 
-/*
+
 $database = new Database('test');
-$tables = $database->getTables();
 
-//Table::create($database, 'myNewsss', ['id', 'ch']);
-//$res = Table::delete($database, 'zz');
-
-$myNew = $tables['myNew'];
+$myNew = $database->getTable('myNew');
 
 //bdump($database);
 //bdump($tables);
-//bdump($myNew);
+bdump($myNew);
 //bdump($myNew->getRows());
 
 $query = new Query($database);
-//$res = $query->select(['jmeno', 'prijmeni', 'id','name'])->from('myNew')->leftJoin('myNews')->on('jmeno', '=', 'name')->limit(5)->run();
-//bdump($res);
-//echo $res;
+$res = $query->select(['jmeno', 'prijmeni'])->from('myNew')->run();
+bdump($res);
+echo $res;
 
-//$query->add('myNew', ['jmeno' => 'a', 'prijmeni' => 'zzz'])->run();
-$query->update('myNew', ['prijmeni' => 'bbbb'])->where('jmeno', '=', 'a')->run();
-*/
+$query = new Query($database);
+$res = $query->add('myNew', ['jmeno' => 'ffawdwawdwaa', 'prijmeni' => 'zjfjewdwawdadawdwaz'])->run();
+bdump($res);
+echo $res;
+
+$query = new Query($database);
+$res = $query->select(['jmeno', 'prijmeni'])->from('myNew')->run();
+bdump($res);
+echo $res;
+//$query->update('myNew', ['prijmeni' => 'bbbb'])->where('jmeno', '=', 'a')->run();
+

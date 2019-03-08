@@ -83,6 +83,21 @@ class BtreeJ
         $this->c      = null;
         $this->root   = null;
     }
+    
+    public function write($path)
+    {
+        file_put_contents($path, serialize($this));
+    }
+    
+    /**
+     * 
+     * @param string $path
+     * @return BtreeJ
+     */
+    public static function read($path)
+    {
+        return unserialize(file_get_contents($path));
+    }
 
     /**
      * @param BtreeJ $node

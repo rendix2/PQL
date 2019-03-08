@@ -7,6 +7,8 @@
  */
 
 use Nette\Utils\FileSystem;
+use Nette\Utils\Finder;
+use BTree\BtreeJ;
 
 /**
  * Class Table
@@ -19,6 +21,10 @@ class Table implements ITable
      * @var string
      */
     const EXT = 'pql';
+    
+    const INDEX_DIR = 'index';
+    
+    const INDEX_EXTENSION = 'index';
 
     /**
      * @var int
@@ -41,6 +47,22 @@ class Table implements ITable
     private $name;
 
     /**
+     * @var string $fileName
+     */
+    private $filePath;
+
+    /**
+     * @var string $tableDir
+     */
+    private $tableDir;
+    
+    /**
+     * @var string $indexDir
+     */
+    private $indexDir;
+    
+    /**
+     * 
      * @var string $fileName
      */
     private $fileName;
@@ -75,11 +97,15 @@ class Table implements ITable
      */
     private $columnsCount;
     
-    /**
-     * 
+    /** 
      * @var string $columnsString
      */
     private $columnsString;
+    
+    /**
+     * @var array $indexes
+     */
+    private $indexes;
 
     /**
      * Table constructor.
@@ -91,39 +117,72 @@ class Table implements ITable
      */
     public function __construct(Database $database, $name)
     {
-        $tableFileName = self::getFilePath($database, $name);
+        $this->database = $database;
+        $this->fileName = $name . '.' . self::EXT;
+        
+        $sep = DIRECTORY_SEPARATOR;
+        
+        $tableDir = $database->getDir() . $name . $sep;
+        
+        if (!file_exists($tableDir)) {
+            throw new Exception('Table directory does not exist.');
+        }
+        
+        $this->tableDir = $tableDir;
+        
+        $filePath = $tableDir .$this->fileName;
 
-        if (!is_file($tableFileName)) {
+        if (!file_exists($filePath)) {
             throw new Exception('Table does not exist.');
         }
-
-        $fileSize = filesize($tableFileName);
+        
+        $this->filePath = $filePath;
+        $this->name     = $name;
+        
+        $fileSize = filesize($filePath);
 
         if ($fileSize === false) {
             throw new Exception('There was problem during counting table size.');
         }
 
         if ($fileSize === 0) {
-            FileSystem::write($tableFileName, trim(sprintf('id%sint', self::COLUMN_DATA_DELIMITER)));
+            FileSystem::write($filePath, trim(sprintf('id%sint', self::COLUMN_DATA_DELIMITER)));
         }
         
-        $fileContent = file($tableFileName);
+        
+        $index_dir = $this->tableDir . 'index' . $sep;
+        
+        if (!file_exists($index_dir)) {
+            throw new Exception('Index dir does not exist.');
+        }
+        
+        $this->indexDir = $index_dir;
+        
+        
+        foreach (Finder::findFiles('*.' .self::INDEX_EXTENSION)->in($this->indexDir) as $index) {
+            $fileName = str_replace('.' . self::INDEX_EXTENSION, '', $index->getFilename());
+            
+            //$this->indexes[$fileName] = BtreeJ::read($this->indexDir . $index->getFilename());
+            $this->indexes[$fileName] = $index->getFilename();
+        }
+        
+
+        $fileContent = file($filePath);
         $columns     = [];
         $columnNames = explode(self::COLUMN_DELIMITER, trim($fileContent[0]));
         
         foreach ($columnNames as $column) {
             $columnExploded = explode(self::COLUMN_DATA_DELIMITER, trim($column));
             $columns[]      = new Column($columnExploded[0], $columnExploded[1]);
-        }
+        }       
 
         $this->columns       = $columns;
         $this->columnsCount  = count($this->columns);
-        $this->name          = $name;
-        $this->fileName      = $tableFileName;
         $this->size          = $fileSize;
-        $this->database      = $database;
         $this->rowsCount     = count($fileContent) - 1;
         $this->columnsString = $fileContent[0];
+        
+        //bdump($this);
     }
 
     /**
@@ -196,6 +255,21 @@ class Table implements ITable
     public function getColumnsString()
     {
         return $this->columnsString;
+    }
+    
+    public function getIndexes()
+    {
+        return $this->indexes;
+    }
+    
+    public function getFilePath()
+    {
+        return $this->filePath;
+    }
+    
+    public function getIndexDir()
+    {
+        return $this->indexDir;
     }
 
     /**
@@ -294,30 +368,26 @@ class Table implements ITable
      * @return bool
      * @throws Exception
      */
-    public static function delete(Database $database, $name)
+    public function delete()
     {
-        if (!file_exists(self::getFilePath($database, $name))) {
+        if (!file_exists($this->filePath)) {
             throw new Exception(sprintf('Table "%s" does not exist in database "%s".', $name, $database->getName()));
         }
         
         try {
-            FileSystem::delete(self::getFilePath($database, $name));
+            FileSystem::delete($this->filePath);
                 
             return true;
         } catch (Nette\IOException $e) {
             return false;
         }
     }
-
-    /**
-     * @param Database $database
-     * @param string   $name
-     *
-     * @return string
-     */
-    public static function getFilePath(Database $database, $name)
+    
+    public function getDirPath()
     {
-        return sprintf('%s%s%s.%s', $database->getPath2(), DIRECTORY_SEPARATOR, $name, self::EXT);
+        $sep = DIRECTORY_SEPARATOR;
+        
+        return $this->database->getPath2() . $sep . $this->name;
     }
 
     /**
@@ -378,6 +448,6 @@ class Table implements ITable
      */
     public function toArray()
     {
-        return file($this->fileName);
+        return file($this->filePath);
     }
 }
