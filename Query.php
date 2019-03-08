@@ -29,7 +29,7 @@ class Query
     /**
      * @var array $columns
      */
-    private $columns;
+    public $columns;
 
     /**
      * @var Table $table
@@ -331,6 +331,8 @@ class Query
     {
         $this->functions[] = ['column' => $column, 'function' => 'count'];
 
+        $this->isSelect  = true;
+
         return $this;
     }
 
@@ -342,6 +344,8 @@ class Query
     public function sum($column)
     {
         $this->functions[] = ['column' => $column, 'function' => 'sum'];
+
+        $this->isSelect  = true;
 
         return $this;
     }
@@ -355,6 +359,8 @@ class Query
     {
         $this->functions[] = ['column' => $column, 'function' => 'avg'];
 
+        $this->isSelect  = true;
+
         return $this;
     }
 
@@ -366,6 +372,9 @@ class Query
     public function min($column)
     {
         $this->functions[] = ['column' => $column, 'function' => 'min'];
+
+        //$this->columns[] = 'min';
+        $this->isSelect  = true;
 
         return $this;
     }
@@ -379,6 +388,8 @@ class Query
     {
         $this->functions[] = ['column' => $column, 'function' => 'max'];
 
+        $this->isSelect  = true;
+
         return $this;
     }
 
@@ -391,31 +402,9 @@ class Query
     {
         $this->functions[] = ['column' => $column, 'function' => 'median'];
 
-        return $this;
-    }
-
-    /**
-     * @param string $column
-     *
-     * @return $this
-     */
-    public function mode($column)
-    {
-        $this->functions[] = ['column' => $column, 'function' => 'mode'];
+        $this->isSelect  = true;
 
         return $this;
-    }
-
-    /**
-     * @param string $expression
-     *
-     * @return Query|null
-     */
-    public function expression($expression)
-    {
-        $parser = new ParseQuery($this->database, $expression);
-
-        return $parser->getQuery();
     }
 
     /**

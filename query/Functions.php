@@ -106,7 +106,7 @@ class Functions
         if ($count % 2) {
             return $values[$count / 2];
         } else {
-            return $values[$count / 2] + $values[$count / 2 + 1] / 2;
+            return ($values[$count / 2] + $values[($count / 2) - 1]) / 2;
         }
     }
 }
