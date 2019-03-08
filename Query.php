@@ -20,94 +20,119 @@ use query\Update;
 class Query
 {
     const ENABLED_OPERATORS = ['=', '<', '>', '<=', '>=', '!=', '<>'];
+
     /**
      * @var Database $database
      */
     private $database;
+
     /**
      * @var array $columns
      */
-    private $columns;
+    public $columns;
+
     /**
      * @var Table $table
      */
     private $table;
+
     /**
      * @var array $condition
      */
     private $whereCondition;
+
     /**
      * @var array $orderBy
      */
     private $orderBy;
+
     /**
      *
      * @var array $having
      */
     private $having;
+
     /**
      * @var array $groupBy
      */
     private $groupBy;
+
     /**
      *
      * @var Table[] $leftJoin
      */
     private $leftJoin;
+
     /**
      *
      * @var Table[] $innerJoin
      */
     private $innerJoin;
+
     /**
      *
      * @var array $onCondition
      */
     private $onCondition;
+
     /**
      * @var string $query
      */
     private $query;
+
     /**
      * @var int $limit
      */
     private $limit;
+
     /**
      *
      * @var bool $isSelect
      */
     private $isSelect;
+
     /**
      *
      * @var bool $isInsert
      */
     private $isInsert;
+
     /**
      *
      * @var bool $isUpdate
      */
     private $isUpdate;
+
     /**
      *
      * @var bool $isDelete
      */
     private $isDelete;
+
     /**
      * @var array $updateData
      */
     private $updateData;
+
     /**
      * @var array $insertData
      */
     private $insertData;
+
     /**
      * @var array $grouped
      */
     private $grouped;
+
     /**
      * @var array $functions
      */
     private $functions;
+
+    /**
+     * @var Result $res
+     */
+    private $res;
 
     /**
      * Query constructor.
@@ -168,6 +193,8 @@ class Query
         $this->updateData = null;
 
         $this->functions = null;
+
+        $this->res = null;
     }
 
     /**
@@ -304,6 +331,8 @@ class Query
     {
         $this->functions[] = ['column' => $column, 'function' => 'count'];
 
+        $this->isSelect  = true;
+
         return $this;
     }
 
@@ -315,6 +344,8 @@ class Query
     public function sum($column)
     {
         $this->functions[] = ['column' => $column, 'function' => 'sum'];
+
+        $this->isSelect  = true;
 
         return $this;
     }
@@ -328,6 +359,8 @@ class Query
     {
         $this->functions[] = ['column' => $column, 'function' => 'avg'];
 
+        $this->isSelect  = true;
+
         return $this;
     }
 
@@ -339,6 +372,9 @@ class Query
     public function min($column)
     {
         $this->functions[] = ['column' => $column, 'function' => 'min'];
+
+        //$this->columns[] = 'min';
+        $this->isSelect  = true;
 
         return $this;
     }
@@ -352,6 +388,8 @@ class Query
     {
         $this->functions[] = ['column' => $column, 'function' => 'max'];
 
+        $this->isSelect  = true;
+
         return $this;
     }
 
@@ -364,31 +402,9 @@ class Query
     {
         $this->functions[] = ['column' => $column, 'function' => 'median'];
 
-        return $this;
-    }
-
-    /**
-     * @param string $column
-     *
-     * @return $this
-     */
-    public function mode($column)
-    {
-        $this->functions[] = ['column' => $column, 'function' => 'mode'];
+        $this->isSelect  = true;
 
         return $this;
-    }
-
-    /**
-     * @param string $expression
-     *
-     * @return Query|null
-     */
-    public function expression($expression)
-    {
-        $parser = new ParseQuery($this->database, $expression);
-
-        return $parser->getQuery();
     }
 
     /**
@@ -669,6 +685,10 @@ class Query
      */
     public function run()
     {
+        if ($this->res instanceof Result) {
+            return $this->res;
+        }
+
          $startTime = microtime(true);
          
          if ($this->isSelect) {
@@ -677,7 +697,7 @@ class Query
              $endTime     = microtime(true);
              $executeTime = $endTime - $startTime;
              
-             return new Result($this->columns, $columnObj, $executeTime);
+             return $this->res = new Result($this->columns, $columnObj, $executeTime);
          }
 
          if ($this->isInsert) {
@@ -686,7 +706,7 @@ class Query
              $endTime      = microtime(true);
              $executeTime  = $endTime - $startTime;
 
-             return new Result([], [], $executeTime, $affectedRows);
+             return $this->res = new Result([], [], $executeTime, $affectedRows);
          }
 
          if ($this->isUpdate) {
@@ -695,7 +715,7 @@ class Query
              $endTime      = microtime(true);
              $executeTime  = $endTime - $startTime;
 
-             return new Result([], [], $executeTime, $affectedRows);
+             return $this->res = new Result([], [], $executeTime, $affectedRows);
          }
 
          if ($this->isDelete) {
@@ -704,7 +724,7 @@ class Query
              $endTime      = microtime(true);
              $executeTime  = $endTime - $startTime;
 
-             return new Result([], [], $executeTime, $affectedRows);
+             return $this->res = new Result([], [], $executeTime, $affectedRows);
          }
     }
 }

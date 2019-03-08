@@ -14,37 +14,31 @@
 final class Result implements ITable
 {
     /**
-     * 
      * @var float $time
      */
     private $time;
     
     /**
-     * 
      * @var float $timeFormated
      */
     private $timeFormated;
 
     /**
-     * 
      * @var int|null $affectedRows
      */
     private $affectedRows;
 
     /**
-     * 
      * @var int $rowsCount
      */
     private $rowsCount;
 
     /**
-     * 
      * @var Row[] $rows
      */
     private $rows;
 
     /**
-     * 
      * @var array $columns
      */
     private $columns;

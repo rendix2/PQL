@@ -1,22 +1,14 @@
 <?php
 namespace query;
 
+use Column;
 use Query;
 use Row;
 use Table;
 use Exception;
 
-class Select
+class Select extends BaseQuery
 {
-    /**
-     * @var Query $query
-     */
-    private $query;
-    /**
-     * @var array|Row[] $result
-     */
-    private $result;
-
     /**
      * Select constructor.
      *
@@ -24,17 +16,9 @@ class Select
      */
     public function __construct(Query $query)
     {
-        $this->query  = $query;
-        $this->result = $query->getTable()->getRows();
-    }
+        parent::__construct($query);
 
-    /**
-     * Select destructor.
-     */
-    public function __destruct()
-    {
-        $this->result = null;
-        $this->query  = null;
+        $this->result = $query->getTable()->getRows();
     }
 
     /**
@@ -66,6 +50,7 @@ class Select
         
         /**
          * @var Table $table
+         * @var Column $column
          */
         foreach ($this->query->getInnerJoin() as $table) {
             foreach ($table->getColumns() as $column) {
@@ -82,7 +67,7 @@ class Select
         foreach ($this->query->getTable()->getColumns() as $column) {
             $columns[] = $column->getName();
         }
-        
+
         foreach ($this->query->getColumns() as $column) {
             if (!in_array($column, $columns, true)) {
                 throw new Exception(sprintf('Selected column "%s" does not exists.', $column));
@@ -98,28 +83,98 @@ class Select
         $functions = new Functions($this->result);
 
         foreach ($this->query->getFunctions() as $function) {
-            if ($function['function'] === 'sum') {
-                array_merge($this->result, $functions->sum($function['column']));
+            $function_name = $function['function'];
+            $column        = $function['column'];
+
+            if ($function_name === 'sum') {
+                $sum = $functions->sum($column);
+
+                if ($this->query->getColumns()) {
+                    $this->query->columns[] = $function_name;
+
+                    foreach ($this->result as &$row) {
+                        $row[$function_name] = $sum;
+                    }
+                } else {
+                    $this->query->columns[] = $function_name;
+
+                    $this->result = [0 => [$function_name => $sum]];
+                }
             }
 
-            if ($function['function'] === 'count') {
-                array_merge($this->result, $functions->count($function['column']));
+            if ($function_name === 'count') {
+                $count = $functions->count($column);
+
+                if ($this->query->getColumns()) {
+                    $this->query->columns[] = $function_name;
+
+                    foreach ($this->result as &$row) {
+                        $row[$function_name] = $count;
+                    }
+                } else {
+                    $this->query->columns[] = $function_name;
+                    $this->result = [0 => [$function_name => $count]];
+                }
             }
 
-            if ($function['function'] === 'avg') {
-                array_merge($this->result, $functions->avg($function['column']));
+            if ($function_name === 'avg') {
+                $avg= $functions->avg($column);
+
+                if ($this->query->getColumns()) {
+                    $this->query->columns[] = $function_name;
+
+                    foreach ($this->result as &$row) {
+                        $row[$function_name] = $avg;
+                    }
+                } else {
+                    $this->query->columns[] = $function_name;
+                    $this->result = [0 => [$function_name => $avg]];
+                }
             }
 
-            if ($function['function'] === 'min') {
-                array_merge($this->result, $functions->min($function['column']));
+            if ($function_name === 'min') {
+                $min = $functions->min($column);
+
+                if ($this->query->getColumns()) {
+                    $this->query->columns[] = $function_name;
+
+                    foreach ($this->result as &$row) {
+                        $row[$function_name] = $min;
+                    }
+                } else {
+                    $this->query->columns[] = $function_name;
+                    $this->result = [0 => [$function_name => $min]];
+                }
             }
 
-            if ($function['function'] === 'max') {
-                array_merge($this->result, $functions->max($function['column']));
+            if ($function_name === 'max') {
+                $max = $functions->max($column);
+
+                if ($this->query->getColumns()) {
+                    $this->query->columns[] = $function_name;
+
+                    foreach ($this->result as &$row) {
+                        $row[$function_name] = $max;
+                    }
+                } else {
+                    $this->query->columns[] = $function_name;
+                    $this->result = [0 => [$function_name => $max]];
+                }
             }
 
-            if ($function['function'] === 'median') {
-                array_merge($this->result, $functions->median($function['column']));
+            if ($function_name === 'median') {
+                $median = $functions->median($column);
+
+                if ($this->query->getColumns()) {
+                    $this->query->columns[] = $function_name;
+
+                    foreach ($this->result as &$row) {
+                        $row[$function_name] = $median;
+                    }
+                } else {
+                    $this->query->columns[] = $function_name;
+                    $this->result = [0 => [$function_name => $median]];
+                }
             }
         }
 
@@ -298,38 +353,86 @@ class Select
         foreach ($this->result as $tmpRow) {
             foreach ($this->query->getWhereCondition() as $condition) {
                 if ($condition['operator'] === '=') {
-                    if ($tmpRow[$condition['column']] === $condition['value']) {
-                        $res[] = $tmpRow;
+                    if ($condition['value'] instanceof Query) {
+                        $subQueryValue = $this->runSubQuery($condition);
+
+                        if ($tmpRow[$condition['column']] === $subQueryValue) {
+                            $res[] = $tmpRow;
+                        }
+                    } else {
+                        if ($tmpRow[$condition['column']] === $condition['value']) {
+                            $res[] = $tmpRow;
+                        }
                     }
                 }
                     
                 if ($condition['operator'] === '<') {
-                    if ($tmpRow[$condition['column']] < $condition['value']) {
-                        $res[] = $tmpRow;
+                    if ($condition['value'] instanceof Query) {
+                        $subQueryValue = $this->runSubQuery($condition);
+
+                        if ($tmpRow[$condition['column']] < $subQueryValue) {
+                            $res[] = $tmpRow;
+                        }
+                    } else {
+                        if ($tmpRow[$condition['column']] < $condition['value']) {
+                            $res[] = $tmpRow;
+                        }
                     }
                 }
                     
                 if ($condition['operator'] === '>') {
-                    if ($tmpRow[$condition['column']] > $condition['value']) {
-                        $res[] = $tmpRow;
+                    if ($condition['value'] instanceof Query) {
+                        $subQueryValue = $this->runSubQuery($condition);
+
+                        if ($tmpRow[$condition['column']] > $subQueryValue) {
+                            $res[] = $tmpRow;
+                        }
+                    } else {
+                        if ($tmpRow[$condition['column']] > $condition['value']) {
+                            $res[] = $tmpRow;
+                        }
                     }
                 }
                     
                 if ($condition['operator'] === '<=') {
-                    if ($tmpRow[$condition['column']] <= $condition['value']) {
-                        $res[] = $tmpRow;
+                    if ($condition['value'] instanceof Query) {
+                        $subQueryValue = $this->runSubQuery($condition);
+
+                        if ($tmpRow[$condition['column']] <= $subQueryValue) {
+                            $res[] = $tmpRow;
+                        }
+                    } else {
+                        if ($tmpRow[$condition['column']] <= $condition['value']) {
+                            $res[] = $tmpRow;
+                        }
                     }
                 }
                     
                 if ($condition['operator'] === '>=') {
-                    if ($tmpRow[$condition['column']] >= $condition['value']) {
-                        $res[] = $tmpRow;
+                    if ($condition['value'] instanceof Query) {
+                        $subQueryValue = $this->runSubQuery($condition);
+
+                        if ($tmpRow[$condition['column']] >= $subQueryValue) {
+                            $res[] = $tmpRow;
+                        }
+                    } else {
+                        if ($tmpRow[$condition['column']] >= $condition['value']) {
+                            $res[] = $tmpRow;
+                        }
                     }
                 }
                     
                 if ($condition['operator'] === '!=' || $condition['operator'] === '<>') {
-                    if ($tmpRow[$condition['column']] !== $condition['value']) {
-                        $res[] = $tmpRow;
+                    if ($condition['value'] instanceof Query) {
+                        $subQueryValue = $this->runSubQuery($condition);
+
+                        if ($tmpRow[$condition['column']] !== $subQueryValue) {
+                            $res[] = $tmpRow;
+                        }
+                    } else {
+                        if ($tmpRow[$condition['column']] !== $condition['value']) {
+                            $res[] = $tmpRow;
+                        }
                     }
                 }
             }
@@ -463,21 +566,6 @@ class Select
         $sortRes   = call_user_func_array('array_multisort', $tmpSort);
             
         return $this->result = $tmp;
-    }
-
-    /**
-     * @return array|Row[]
-     */
-    private function limit()
-    {
-        if (!$this->query->getLimit()) {
-            return $this->result;
-        }
-        
-        $rowsCount = count($this->result);
-        $limit     = $this->query->getLimit() > $rowsCount ? $rowsCount : $this->query->getLimit();
-
-        return $this->result = array_slice($this->result,0, $limit,true);
     }
 
     /**

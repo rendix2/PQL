@@ -20,7 +20,7 @@ class Database
      * @var string
      */
     const DATABASE_DIR = '%s' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR. '%s';
-    
+
     const DATA_DIR = 'data';
 
     /**
@@ -37,12 +37,17 @@ class Database
      * @var int $tablesCount
      */
     private $tablesCount;
-    
+
     /**
-     * 
+     *
      * @var string $dir
      */
     private $dir;
+
+    /**
+     * @var Table[] $tables
+     */
+    private $tables;
 
     /**
      * Database constructor.
@@ -53,14 +58,14 @@ class Database
      */
     public function __construct($name)
     {
-        
+
         $sep = DIRECTORY_SEPARATOR;
-        
+
         $database_dir = __DIR__ . $sep . self::DATA_DIR . $sep.  $name . $sep;
-               
-        
+
+
         if (!is_dir($database_dir)) {
-            throw new Exception('Database does not exist.');
+            throw new Exception(sprintf('Database "%s" does not exist.', $name));
         }
 
         $size = 0;
@@ -74,8 +79,11 @@ class Database
             $size += $file->getSize();
         }
 
-        $this->size        = $size;
-        $this->name        = $name;
+        $this->size = $size;
+        $this->name = $name;
+
+        $this->tables = [];
+
         $this->tablesCount = $files->count();
         $this->dir         = $database_dir;
     }
@@ -85,6 +93,7 @@ class Database
      */
     public function __destruct()
     {
+        $this->tables      = null;
         $this->name        = null;
         $this->size        = null;
         $this->tablesCount = null;
@@ -96,32 +105,37 @@ class Database
     public function getName()
     {
         return $this->name;
-    }    
+    }
 
     public function getDir()
     {
         return $this->dir;
     }
-    
+
 
     /**
      * @return Table[]
      */
     public function getTables()
     {
+        if ($this->tables) {
+            return $this->tables;
+        }
+
+        $mask   = sprintf('*.%s', Table::EXT);
         $tables = [];
 
         /**
          * @var SplFileInfo $file
          */
-        foreach (Finder::findFiles('*.' . Table::EXT)->from($this->getDir()) as $file) {                   
+        foreach (Finder::findFiles('*.' . Table::EXT)->from($this->getDir()) as $file) {
             $extension = $file->getExtension();            
             $fileName = str_replace('.' . $extension, '', $file->getFilename());
             
             $tables[$fileName] = new Table($this, $fileName);
         }
 
-        return $tables;
+        return $this->tables = $tables;
     }
 
     /**
