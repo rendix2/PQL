@@ -2,10 +2,10 @@
 namespace query;
 
 use Column;
+use Exception;
 use Query;
 use Row;
 use Table;
-use Exception;
 
 class Select extends BaseQuery
 {
@@ -32,11 +32,11 @@ class Select extends BaseQuery
         $this->leftJoin();
         $this->where();
         $this->groupBy();
+        $this->functions();
         $this->having();
         $this->orderBy();
         $this->limit();
-        $this->functions();
-        
+
         return $this->createRows();
     }
 
@@ -87,33 +87,57 @@ class Select extends BaseQuery
             $column        = $function['column'];
 
             if ($function_name === 'sum') {
-                $sum = $functions->sum($column);
-
-                if ($this->query->getColumns()) {
+                if (count($this->query->getGrouped())) {
                     $this->query->columns[] = $function_name;
 
                     foreach ($this->result as &$row) {
-                        $row[$function_name] = $sum;
+                        $row[$function_name] = $row['__group_count'] * $row[$column];
                     }
-                } else {
-                    $this->query->columns[] = $function_name;
 
-                    $this->result = [0 => [$function_name => $sum]];
+                    unset($row);
+                } else {
+                    $sum = $functions->sum($column);
+
+                    if ($this->query->getColumns()) {
+                        $this->query->columns[] = $function_name;
+
+                        foreach ($this->result as &$row) {
+                            $row[$function_name] = $sum;
+                        }
+
+                        unset($row);
+                    } else {
+                        $this->query->columns[] = $function_name;
+
+                        $this->result = [0 => [$function_name => $sum]];
+                    }
                 }
             }
 
             if ($function_name === 'count') {
-                $count = $functions->count($column);
-
-                if ($this->query->getColumns()) {
+                if (count($this->query->getGrouped())) {
                     $this->query->columns[] = $function_name;
 
                     foreach ($this->result as &$row) {
-                        $row[$function_name] = $count;
+                        $row[$function_name] = $row['__group_count'];
                     }
+
+                    unset($row);
                 } else {
-                    $this->query->columns[] = $function_name;
-                    $this->result = [0 => [$function_name => $count]];
+                    $count = $functions->count($column);
+
+                    if ($this->query->getColumns()) {
+                        $this->query->columns[] = $function_name;
+
+                        foreach ($this->result as &$row) {
+                            $row[$function_name] = $count;
+                        }
+
+                        unset($row);
+                    } else {
+                        $this->query->columns[] = $function_name;
+                        $this->result = [0 => [$function_name => $count]];
+                    }
                 }
             }
 
@@ -126,6 +150,8 @@ class Select extends BaseQuery
                     foreach ($this->result as &$row) {
                         $row[$function_name] = $avg;
                     }
+
+                    unset($row);
                 } else {
                     $this->query->columns[] = $function_name;
                     $this->result = [0 => [$function_name => $avg]];
@@ -141,6 +167,8 @@ class Select extends BaseQuery
                     foreach ($this->result as &$row) {
                         $row[$function_name] = $min;
                     }
+
+                    unset($row);
                 } else {
                     $this->query->columns[] = $function_name;
                     $this->result = [0 => [$function_name => $min]];
@@ -156,6 +184,8 @@ class Select extends BaseQuery
                     foreach ($this->result as &$row) {
                         $row[$function_name] = $max;
                     }
+
+                    unset($row);
                 } else {
                     $this->query->columns[] = $function_name;
                     $this->result = [0 => [$function_name => $max]];
@@ -353,6 +383,7 @@ class Select extends BaseQuery
         foreach ($this->result as $tmpRow) {
             foreach ($this->query->getWhereCondition() as $condition) {
                 if ($condition['operator'] === '=') {
+                    // if we have SubQuery
                     if ($condition['value'] instanceof Query) {
                         $subQueryValue = $this->runSubQuery($condition);
 
@@ -367,6 +398,7 @@ class Select extends BaseQuery
                 }
                     
                 if ($condition['operator'] === '<') {
+                    // if we have SubQuery
                     if ($condition['value'] instanceof Query) {
                         $subQueryValue = $this->runSubQuery($condition);
 
@@ -381,6 +413,7 @@ class Select extends BaseQuery
                 }
                     
                 if ($condition['operator'] === '>') {
+                    // if we have SubQuery
                     if ($condition['value'] instanceof Query) {
                         $subQueryValue = $this->runSubQuery($condition);
 
@@ -393,8 +426,9 @@ class Select extends BaseQuery
                         }
                     }
                 }
-                    
+
                 if ($condition['operator'] === '<=') {
+                    // if we have SubQuery
                     if ($condition['value'] instanceof Query) {
                         $subQueryValue = $this->runSubQuery($condition);
 
@@ -409,6 +443,7 @@ class Select extends BaseQuery
                 }
                     
                 if ($condition['operator'] === '>=') {
+                    // if we have SubQuery
                     if ($condition['value'] instanceof Query) {
                         $subQueryValue = $this->runSubQuery($condition);
 
@@ -423,6 +458,7 @@ class Select extends BaseQuery
                 }
                     
                 if ($condition['operator'] === '!=' || $condition['operator'] === '<>') {
+                    // if we have SubQuery
                     if ($condition['value'] instanceof Query) {
                         $subQueryValue = $this->runSubQuery($condition);
 
@@ -452,31 +488,34 @@ class Select extends BaseQuery
         
         $groups   = [];
         $tmpGroup = [];
-        $lostRows = [];
             
         foreach ($this->result as $row) {
             foreach ($row as $column => $value) {
                 foreach ($this->query->getGroupBy() as $groupColumn) {
                     if ($column === $groupColumn) {
-                        if (isset($groups[$value])) {
-                            $groups[$value]['count'] += 1;
+                        $groups[$column][$value]['row'] = $row;
+
+                        if (isset($groups[$column][$value]['__group_count'])) {
+                            $groups[$column][$value]['__group_count'] += 1;
                         } else {
-                            $groups[$value]['count'] = 1;
+                            $groups[$column][$value]['__group_count'] = 1;
                         }
-                            
-                        $groups[$value]['row'][] = $row;
-                        $lostRows[]              = $row;
                     }
                 }
             }
         }
 
-        $this->query->setGrouped($lostRows);
+        $this->query->setGrouped($groups);
             
-        foreach ($groups as $group) {
-            $tmpGroup[] = $group['row'][0];
+        foreach ($groups as $column => $groupData) {
+            foreach ($groupData as $data) {
+                $data['row']['__group_count'] = $data['__group_count'];
+                unset($data['__group_count']);
+
+                $tmpGroup[] = $data['row'];
+            }
         }
-            
+
         return $this->result = $tmpGroup;
     }
 
@@ -485,57 +524,57 @@ class Select extends BaseQuery
      */
     private function having()
     {
-        if (!count($this->query->getGrouped())) {
+        if (!count($this->query->getHaving())) {
             return $this->result;
         }
 
-        $tmp = [];
+        $res = [];
 
         foreach ($this->query->getHaving() as $having) {
-            foreach ($this->query->getGrouped() as $grouped) {
-                foreach ($this->result as $row) {
-                    foreach ($row as $column => $value) {
-                        if ($column === $having['column']) {
-                            if ($having['operator'] === '=') {
-                                if ($value === $having['value']) {
-
-                                }
+            foreach ($this->result as $row) {
+                foreach ($row as $column => $value) {
+                    if ($column === $having['column']) {
+                        if ($having['operator'] === '=') {
+                            if ($value === $having['value']) {
+                                $res[] = $row;
                             }
+                        }
 
-                            if ($having['operator'] === '>') {
-                                if ($value > $having['value']) {
-
-                                }
+                        if ($having['operator'] === '>') {
+                            if ($value > $having['value']) {
+                                $res[] = $row;
                             }
+                        }
 
-                            if ($having['operator'] === '<') {
-                                if ($value < $having['value']) {
-
-                                }
+                        if ($having['operator'] === '<') {
+                            if ($value < $having['value']) {
+                                $res[] = $row;
                             }
+                        }
 
-                            if ($having['operator'] === '>=') {
-                                if ($value >= $having['value']) {
-
-                                }
+                        if ($having['operator'] === '>=') {
+                            if ($value >= $having['value']) {
+                                $res[] = $row;
                             }
+                        }
 
-                            if ($having['operator'] === '<=') {
-                                if ($value <= $having['value']) {
-
-                                }
+                        if ($having['operator'] === '<=') {
+                            if ($value <= $having['value']) {
+                                $res[] = $row;
                             }
+                        }
 
-                            if ($having['operator'] === '!=' || $having['operator'] === '<>') {
-                                if ($value !== $having['value']) {
-
-                                }
+                        if ($having['operator'] === '!=' || $having['operator'] === '<>') {
+                            if ($value !== $having['value']) {
+                                $res[] = $row;
                             }
                         }
                     }
                 }
             }
         }
+
+        return $this->result = $res;
     }
 
     /**

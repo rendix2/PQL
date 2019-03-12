@@ -21,6 +21,9 @@ class Database
      */
     const DATABASE_DIR = '%s' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR. '%s';
 
+    /**
+     * @var string
+     */
     const DATA_DIR = 'data';
 
     /**
@@ -39,10 +42,9 @@ class Database
     private $tablesCount;
 
     /**
-     *
-     * @var string $dir
+     * @var string $databaseDir
      */
-    private $dir;
+    private $databaseDir;
 
     /**
      * @var Table[] $tables
@@ -58,11 +60,7 @@ class Database
      */
     public function __construct($name)
     {
-
-        $sep = DIRECTORY_SEPARATOR;
-
-        $database_dir = __DIR__ . $sep . self::DATA_DIR . $sep.  $name . $sep;
-
+        $database_dir = self::getPath($name);
 
         if (!is_dir($database_dir)) {
             throw new Exception(sprintf('Database "%s" does not exist.', $name));
@@ -85,7 +83,7 @@ class Database
         $this->tables = [];
 
         $this->tablesCount = $files->count();
-        $this->dir         = $database_dir;
+        $this->databaseDir = $database_dir;
     }
 
     /**
@@ -100,6 +98,19 @@ class Database
     }
 
     /**
+     * @param string $name
+     *
+     * @return string
+     *
+     */
+    public static function getPath($name)
+    {
+        $sep = DIRECTORY_SEPARATOR;
+
+        return __DIR__ . $sep . self::DATA_DIR . $sep.  $name . $sep;
+    }
+
+    /**
      * @return string
      */
     public function getName()
@@ -107,11 +118,13 @@ class Database
         return $this->name;
     }
 
-    public function getDir()
+    /**
+     * @return string
+     */
+    public function getDatabaseDir()
     {
-        return $this->dir;
+        return $this->databaseDir;
     }
-
 
     /**
      * @return Table[]
@@ -128,7 +141,7 @@ class Database
         /**
          * @var SplFileInfo $file
          */
-        foreach (Finder::findFiles('*.' . Table::EXT)->from($this->getDir()) as $file) {
+        foreach (Finder::findFiles('*.' . Table::EXT)->from($this->getDatabaseDir()) as $file) {
             $extension = $file->getExtension();            
             $fileName = str_replace('.' . $extension, '', $file->getFilename());
             
@@ -199,23 +212,11 @@ class Database
      * @param string $newName
      *
      * @return Database
+     * @throws Exception
      */
     public function rename($newName)
     {
-        self::renameS($this->name, $newName);
-
-        return $this;
-    }
-
-    /**
-     * @param string oldName
-     * @param string $newName
-     *
-     * @throws Exception
-     */
-    public static function renameS($oldName, $newName)
-    {
-        if (!file_exists(self::getPath($oldName))) {
+        if (!file_exists(self::getPath($this->name))) {
             throw new Exception('Old database does not exists.');
         }
 
@@ -223,6 +224,8 @@ class Database
             throw new Exception('New database already exists.');
         }
 
-        FileSystem::rename($oldName, $newName);
+        FileSystem::rename($this->name, $newName);
+
+        return $this;
     }
 }

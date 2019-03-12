@@ -62,28 +62,39 @@ bdump($search, 'search');
 
 //Table::create($database, 'test', ['id', 'jmeno']);
 
-/*
+
 $database = new Database('test');
 
-$myNew = $database->getTable('myNew');
+$myNew = $database->getTable('test');
 
 //bdump($database);
 //bdump($tables);
-bdump($myNew);
+//bdump($myNew);
 //bdump($myNew->getRows());
 
+
 $query = new Query($database);
-$res = $query->select(['jmeno', 'prijmeni'])->from('myNew')->run();
+$res = $query->select(['id', 'text'])->from('test')->run();
 bdump($res);
 echo $res;
 
+/*
 $query = new Query($database);
-$res = $query->add('myNew', ['jmeno' => 'ffawdwawdwaa', 'prijmeni' => 'zjfjewdwawdadawdwaz'])->run();
+$res = $query->add('test', ['id' => 55, 'text' => 'zjfjewdwawdadawdwaz'])->run();
 bdump($res);
 echo $res;
+*/
 
 $query = new Query($database);
-$res = $query->select(['jmeno', 'prijmeni'])->from('myNew')->run();
+$res = $query->select(['id', 'text'])
+    ->count('test')
+    ->from('test')
+    ->orderBy('id', false)
+    ->orderBy('text')
+    ->groupBy('text')
+    ->where('id','>', 5)
+    ->having('count', '=', 2)
+    ->run();
 bdump($res);
 echo $res;
 //$query->update('myNew', ['prijmeni' => 'bbbb'])->where('jmeno', '=', 'a')->run();

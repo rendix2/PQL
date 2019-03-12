@@ -1,6 +1,7 @@
 <?php
 namespace query;
 
+use Column;
 use Table;
 use BTree\BtreeJ;
 use Query;
@@ -27,7 +28,8 @@ class Insert extends BaseQuery
             foreach ($this->query->getInsertData() as $key => $data) {
 
                 /**
-                 * index maitaince
+                 * index maintenance
+                 * @var Column $column
                  */
                 foreach ($this->query->getTable()->getIndexes() as $indexColumn => $indexFile) {
                     if ($column->getName() === $indexColumn) {

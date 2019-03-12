@@ -452,9 +452,10 @@ class Query
      */
     public function where($column, $operator, $value)
     {
+        /*
         if (!$this->table->columnExists($column)) {
             throw new Exception(sprintf('Column "%s" does not exist.', $column));
-        }
+        }*/
 
         if (!in_array($operator, self::ENABLED_OPERATORS, true)) {
             throw  new Exception(sprintf('Unknown operator "%s".', $column));
@@ -510,9 +511,11 @@ class Query
      */
     public function having($column, $operator, $value)
     {
+        /*
         if (!$this->table->columnExists($column)) {
             throw new Exception(sprintf('Column "%s" does not exist.', $column));
         }
+        */
 
         if (!in_array($operator, self::ENABLED_OPERATORS, true)) {
             throw  new Exception(sprintf('Unknown operator "%s".', $column));
@@ -523,6 +526,8 @@ class Query
           'operator' => $operator,
           'value'    => $value
         ];
+
+        return $this;
     }
 
     /**

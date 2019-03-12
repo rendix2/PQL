@@ -12,7 +12,7 @@ namespace BTree;
  * Class BtreeJ
  *
  * @package BTree
- * @author  Tomáš Babický tomas.babicky@websta.de
+ * @author  rendix2
  */
 class BtreeJ
 {

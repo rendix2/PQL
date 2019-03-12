@@ -12,7 +12,7 @@ namespace query;
  * Class Functions
  *
  * @package query
- * @author  Tomáš Babický tomas.babicky@websta.de
+ * @author  rendix2
  */
 class Functions
 {
