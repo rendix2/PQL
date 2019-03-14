@@ -476,6 +476,30 @@ class Select extends BaseQuery
                         }
                     }
                 }
+
+                if ($condition['operator'] === 'in') {
+                    if ($condition['value'] instanceof Query) {
+                        $subQueryValues = $condition['value']->run();
+
+                        if (count($subQueryValues->getColumns()) !== 1) {
+                            throw new Exception('Subquery returned more than one column');
+                        }
+
+                        foreach ($subQueryValues->getRows() as $subRow) {
+                            $col = $subRow->getColumns()[0];
+
+                            if ($subRow->get()->{$col} === $tmpRow[$condition['column']]) {
+                                $res[] = $tmpRow;
+                            }
+                        }
+                    } else if (is_array($condition['value'])) {
+                        foreach ($condition['value'] as $inValue) {
+                            if ($inValue === $tmpRow[$condition['column']]) {
+                                $res[] = $tmpRow;
+                            }
+                        }
+                    }
+                }
             }
         }
 

@@ -19,7 +19,7 @@ use query\Update;
  */
 class Query
 {
-    const ENABLED_OPERATORS = ['=', '<', '>', '<=', '>=', '!=', '<>'];
+    const ENABLED_OPERATORS = ['=', '<', '>', '<=', '>=', '!=', '<>', 'in'];
 
     /**
      * @var Database $database
@@ -459,8 +459,10 @@ class Query
             throw new Exception(sprintf('Column "%s" does not exist.', $column));
         }*/
 
+        $operator = mb_strtolower($operator);
+
         if (!in_array($operator, self::ENABLED_OPERATORS, true)) {
-            throw  new Exception(sprintf('Unknown operator "%s".', $column));
+            throw  new Exception(sprintf('Unknown operator "%s".', $operator));
         }
 
         $this->whereCondition[] = ['column' => $column, 'operator' => $operator, 'value' => $value];

@@ -96,4 +96,14 @@ $res = $query->select(['id', 'text'])
     ->run();
 bdump($res);
 echo $res;
+
+$query = new Query($database);
+$res = $query->select(['id', 'text'])
+    ->from('test')
+    ->where('id', 'IN', [1,3])
+    ->run();
+bdump($res);
+echo $res;
+
+
 //$query->update('myNew', ['prijmeni' => 'bbbb'])->where('jmeno', '=', 'a')->run();
