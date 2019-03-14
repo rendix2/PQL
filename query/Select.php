@@ -500,6 +500,18 @@ class Select extends BaseQuery
                         }
                     }
                 }
+
+                if ($condition['operator'] === 'between') {
+                    if ($tmpRow[$condition['column']] > $condition['value'][0] && $tmpRow[$condition['column']] < $condition['value'][1]) {
+                        $res[] = $tmpRow;
+                    }
+                }
+
+                if ($condition['operator'] === 'between_in') {
+                    if ($tmpRow[$condition['column']] >= $condition['value'][0] && $tmpRow[$condition['column']] <= $condition['value'][1]) {
+                        $res[] = $tmpRow;
+                    }
+                }
             }
         }
 

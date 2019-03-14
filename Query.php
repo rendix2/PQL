@@ -19,7 +19,7 @@ use query\Update;
  */
 class Query
 {
-    const ENABLED_OPERATORS = ['=', '<', '>', '<=', '>=', '!=', '<>', 'in'];
+    const ENABLED_OPERATORS = ['=', '<', '>', '<=', '>=', '!=', '<>', 'in', 'between', 'between_in'];
 
     /**
      * @var Database $database
@@ -463,6 +463,16 @@ class Query
 
         if (!in_array($operator, self::ENABLED_OPERATORS, true)) {
             throw  new Exception(sprintf('Unknown operator "%s".', $operator));
+        }
+
+        if ($operator === 'between' || $operator === 'between_in') {
+            if (!is_array($value)) {
+                throw new Exception('Parameter for between must be array');
+            }
+
+            if (count($value) !== 2) {
+                throw new Exception('I need two parameters');
+            }
         }
 
         $this->whereCondition[] = ['column' => $column, 'operator' => $operator, 'value' => $value];
