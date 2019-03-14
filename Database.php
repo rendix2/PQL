@@ -135,7 +135,6 @@ class Database
             return $this->tables;
         }
 
-        $mask   = sprintf('*.%s', Table::EXT);
         $tables = [];
 
         /**

@@ -188,7 +188,7 @@ class Table implements ITable
         $this->columnsCount  = count($this->columns);
         $this->size          = $fileSize;
         $this->rowsCount     = count($fileContent) - 1;
-        $this->columnsString = $fileContent[0];
+        $this->columnsString = substr($fileContent[0],0, -2); // remove new line
     }
 
     /**

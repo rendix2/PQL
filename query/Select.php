@@ -86,12 +86,14 @@ class Select extends BaseQuery
             $function_name = $function['function'];
             $column        = $function['column'];
 
+            $function_column_name = sprintf('%s(%s)', mb_strtoupper($function_name), $column);
+
             if ($function_name === 'sum') {
                 if (count($this->query->getGrouped())) {
-                    $this->query->columns[] = $function_name;
+                    $this->query->columns[] = $function_column_name;
 
                     foreach ($this->result as &$row) {
-                        $row[$function_name] = $row['__group_count'] * $row[$column];
+                        $row[$function_column_name] = $row['__group_count'] * $row[$column];
                     }
 
                     unset($row);
@@ -99,17 +101,16 @@ class Select extends BaseQuery
                     $sum = $functions->sum($column);
 
                     if ($this->query->getColumns()) {
-                        $this->query->columns[] = $function_name;
+                        $this->query->columns[] = $function_column_name;
 
                         foreach ($this->result as &$row) {
-                            $row[$function_name] = $sum;
+                            $row[$function_column_name] = $sum;
                         }
 
                         unset($row);
                     } else {
-                        $this->query->columns[] = $function_name;
-
-                        $this->result = [0 => [$function_name => $sum]];
+                        $this->query->columns[] = $function_column_name;
+                        $this->result           = [0 => [$function_column_name => $sum]];
                     }
                 }
             }
@@ -127,16 +128,16 @@ class Select extends BaseQuery
                     $count = $functions->count($column);
 
                     if ($this->query->getColumns()) {
-                        $this->query->columns[] = $function_name;
+                        $this->query->columns[] = $function_column_name;
 
                         foreach ($this->result as &$row) {
-                            $row[$function_name] = $count;
+                            $row[$function_column_name] = $count;
                         }
 
                         unset($row);
                     } else {
-                        $this->query->columns[] = $function_name;
-                        $this->result = [0 => [$function_name => $count]];
+                        $this->query->columns[] = $function_column_name;
+                        $this->result           = [0 => [$function_column_name => $count]];
                     }
                 }
             }
@@ -145,16 +146,16 @@ class Select extends BaseQuery
                 $avg= $functions->avg($column);
 
                 if ($this->query->getColumns()) {
-                    $this->query->columns[] = $function_name;
+                    $this->query->columns[] = $function_column_name;
 
                     foreach ($this->result as &$row) {
-                        $row[$function_name] = $avg;
+                        $row[$function_column_name] = $avg;
                     }
 
                     unset($row);
                 } else {
-                    $this->query->columns[] = $function_name;
-                    $this->result = [0 => [$function_name => $avg]];
+                    $this->query->columns[] = $function_column_name;
+                    $this->result = [0 => [$function_column_name => $avg]];
                 }
             }
 
@@ -162,16 +163,16 @@ class Select extends BaseQuery
                 $min = $functions->min($column);
 
                 if ($this->query->getColumns()) {
-                    $this->query->columns[] = $function_name;
+                    $this->query->columns[] = $function_column_name;
 
                     foreach ($this->result as &$row) {
-                        $row[$function_name] = $min;
+                        $row[$function_column_name] = $min;
                     }
 
                     unset($row);
                 } else {
-                    $this->query->columns[] = $function_name;
-                    $this->result = [0 => [$function_name => $min]];
+                    $this->query->columns[] = $function_column_name;
+                    $this->result = [0 => [$function_column_name => $min]];
                 }
             }
 
@@ -179,16 +180,16 @@ class Select extends BaseQuery
                 $max = $functions->max($column);
 
                 if ($this->query->getColumns()) {
-                    $this->query->columns[] = $function_name;
+                    $this->query->columns[] = $function_column_name;
 
                     foreach ($this->result as &$row) {
-                        $row[$function_name] = $max;
+                        $row[$function_column_name] = $max;
                     }
 
                     unset($row);
                 } else {
-                    $this->query->columns[] = $function_name;
-                    $this->result = [0 => [$function_name => $max]];
+                    $this->query->columns[] = $function_column_name;
+                    $this->result = [0 => [$function_column_name => $max]];
                 }
             }
 
@@ -196,14 +197,14 @@ class Select extends BaseQuery
                 $median = $functions->median($column);
 
                 if ($this->query->getColumns()) {
-                    $this->query->columns[] = $function_name;
+                    $this->query->columns[] = $function_column_name;
 
                     foreach ($this->result as &$row) {
-                        $row[$function_name] = $median;
+                        $row[$function_column_name] = $median;
                     }
                 } else {
-                    $this->query->columns[] = $function_name;
-                    $this->result = [0 => [$function_name => $median]];
+                    $this->query->columns[] = $function_column_name;
+                    $this->result = [0 => [$function_column_name => $median]];
                 }
             }
         }
@@ -348,7 +349,11 @@ class Select extends BaseQuery
                                                 $joinTmp[] = array_merge($row, $joinedTableRows);
                                             }
                                         }
-                                    } else {                                        
+                                    } else {
+
+                                        /**
+                                         * @var Column $joinColumn
+                                         */
                                         foreach ($joinTable->getColumns() as $joinColumn) {
                                             $row[$joinColumn->getName()] = null;
                                         }

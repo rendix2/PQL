@@ -1,7 +1,6 @@
 <?php
 namespace query;
 
-use Query;
 use SplFileObject;
 use Table;
 use Nette\Utils\FileSystem;
@@ -123,7 +122,7 @@ class Update extends BaseQuery
             }
         }
 
-        $this->res = $res;
+        $this->result = $res;
     }
 }
 

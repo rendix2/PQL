@@ -19,9 +19,9 @@ final class Result implements ITable
     private $time;
     
     /**
-     * @var float $timeFormated
+     * @var float $timeFormatted
      */
-    private $timeFormated;
+    private $timeFormatted;
 
     /**
      * @var int|null $affectedRows
@@ -57,7 +57,7 @@ final class Result implements ITable
         $this->rowsCount    = count($rows);
         $this->columns      = $columns;
         $this->time         = $time;
-        $this->timeFormated = (float)number_format($time, 5);
+        $this->timeFormatted = (float)number_format($time, 5);
         $this->affectedRows = $affectedRows;
     }
 
@@ -68,7 +68,7 @@ final class Result implements ITable
     {
         $this->rows         = null;
         $this->time         = null;
-        $this->timeFormated = null;
+        $this->timeFormatted = null;
         $this->rowsCount    = null;
         $this->affectedRows = null;
         $this->columns      = null;

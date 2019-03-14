@@ -4,7 +4,6 @@ namespace query;
 use Column;
 use Table;
 use BTree\BtreeJ;
-use Query;
 
 class Insert extends BaseQuery
 {

@@ -1,7 +1,6 @@
 <?php
 use Tracy\Debugger;
 use Nette\Loaders\RobotLoader;
-use BTree\BtreeJ;
 
 require __DIR__ . '/vendor/autoload.php';
 

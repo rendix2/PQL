@@ -159,6 +159,8 @@ class Query
 
         $this->having    = [];
         $this->functions = [];
+
+        $this->columns = [];
     }
 
     /**
@@ -507,6 +509,7 @@ class Query
      * @param string $operator
      * @param mixed  $value
      *
+     * @return Query
      * @throws Exception
      */
     public function having($column, $operator, $value)
@@ -543,11 +546,11 @@ class Query
         }
         
         if (!$limit) {
-            throw new Exception('Zero limit does not make sence.');
+            throw new Exception('Zero limit does not make sense.');
         }
         
         if ($limit < 0) {
-            throw new Exception('Negative limit does not make sence.');
+            throw new Exception('Negative limit does not make sense.');
         }
 
         $this->limit = $limit;
@@ -690,6 +693,8 @@ class Query
      */
     public function run()
     {
+        dump($this, 'query');
+
         if ($this->res instanceof Result) {
             return $this->res;
         }
