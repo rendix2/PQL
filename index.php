@@ -74,7 +74,6 @@ $myNew = $database->getTable('test');
 
 $query = new Query($database);
 $res = $query->select(['id', 'text'])->from('test')->run();
-bdump($res);
 echo $res;
 
 /*
@@ -86,23 +85,22 @@ echo $res;
 
 $query = new Query($database);
 $res = $query->select(['id', 'text'])
-    ->count('test')
+    ->count('text')
     ->from('test')
     ->orderBy('id', false)
     ->orderBy('text')
     ->groupBy('text')
     ->where('id','>', 5)
-    ->having('count', '=', 2)
+    //->having('count', '=', 2)
     ->run();
-bdump($res);
 echo $res;
 
 $query = new Query($database);
 $res = $query->select(['id', 'text'])
+    ->count('text')
     ->from('test')
     ->where('id', 'IN', [1,3])
     ->run();
-bdump($res);
 echo $res;
 
 

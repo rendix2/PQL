@@ -205,6 +205,10 @@ class Table implements ITable
         $this->columns       = null;
         $this->columnsCount  = null;
         $this->columnsString = null;
+        $this->filePath      = null;
+        $this->tableDir      = null;
+        $this->indexDir      = null;
+        $this->indexes       = null;
     }
 
     /**

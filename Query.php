@@ -705,8 +705,6 @@ class Query
      */
     public function run()
     {
-        dump($this, 'query');
-
         if ($this->res instanceof Result) {
             return $this->res;
         }

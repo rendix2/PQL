@@ -373,6 +373,7 @@ class Select extends BaseQuery
 
     /**
      * @return array|Row[]
+     * @throws Exception
      */
     private function where()
     {
