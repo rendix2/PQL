@@ -554,7 +554,7 @@ class Query
     public function limit($limit)
     {
         if (!is_numeric($limit)) {
-            throw  new Exception('Limit is not a number.');
+            throw new Exception('Limit is not a number.');
         }
         
         if (!$limit) {
@@ -605,20 +605,24 @@ class Query
      */
     public function on($column, $operator, $value)
     {
+        $innerKey = count($this->innerJoin) - 1;
+
         /**
          * 
          * @var Table $last
          */
-        if (isset($this->innerJoin[count($this->innerJoin) - 1])) {
-            $last = $this->innerJoin[count($this->innerJoin) - 1];
+        if (isset($this->innerJoin[$innerKey])) {
+            $last = $this->innerJoin[$innerKey];
             
             if (!$last) {
                 throw new Exception('ON condition has no join.');
             }
         } else {
-            if (isset($this->leftJoin[count($this->leftJoin) - 1])) {
-                $last = $this->leftJoin[count($this->leftJoin) - 1];
-                
+            $leftKey = count($this->leftJoin) - 1;
+
+            if (isset($this->leftJoin[$leftKey])) {
+                $last = $this->leftJoin[$leftKey];
+
                 if (!$last) {
                     throw new Exception('ON condition has no join.');
                 }

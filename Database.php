@@ -66,9 +66,11 @@ class Database
             throw new Exception(sprintf('Database "%s" does not exist.', $name));
         }
 
+        $this->databaseDir = $database_dir;
+
         $size = 0;
-        
-        $files = Finder::findFiles('*')->from($database_dir);
+
+        $files = Finder::findFiles('*')->from($this->databaseDir);
 
         /**
          * @var $file SplFileInfo
@@ -83,7 +85,6 @@ class Database
         $this->tables = [];
 
         $this->tablesCount = $files->count();
-        $this->databaseDir = $database_dir;
     }
 
     /**
@@ -158,6 +159,33 @@ class Database
     public function getTable($tableName)
     {
         return new Table($this, $tableName);
+    }
+
+    /**
+     * @return int
+     */
+    public function calculateDatabaseSize()
+    {
+        $size = 0;
+
+        $files = Finder::findFiles('*')->from($this->databaseDir);
+
+        /**
+         * @var $file SplFileInfo
+         */
+        foreach ($files as $file) {
+            $size += $file->getSize();
+        }
+
+        return $size;
+    }
+
+    /**
+     * @param int $size
+     */
+    public function setSize($size)
+    {
+        $this->size = $size;
     }
 
     /**

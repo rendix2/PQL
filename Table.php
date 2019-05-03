@@ -93,7 +93,7 @@ class Table implements ITable
     private $database;
 
     /**
-     * @var array $columns
+     * @var Column[] $columns
      */
     private $columns;
 
@@ -181,7 +181,7 @@ class Table implements ITable
         
         foreach ($columnNames as $column) {
             $columnExploded = explode(self::COLUMN_DATA_DELIMITER, trim($column));
-            $columns[]      = new Column($columnExploded[0], $columnExploded[1]);
+            $columns[]      = new Column($columnExploded[0], $columnExploded[1], $this);
         }
 
         $this->columns       = $columns;
@@ -220,7 +220,7 @@ class Table implements ITable
     }
 
     /**
-     * @return array
+     * @return Column[]
      */
     public function getColumns()
     {
@@ -333,7 +333,9 @@ class Table implements ITable
     public static function create(Database $database, $name, array $columns)
     {
         if (file_exists(self::getFilePathFromDatabase($database, $name))) {
-            throw new Exception(sprintf('Table "%s" already exists in database "%s".', $name, $database->getName()));
+            $message = sprintf('Table "%s" already exists in database "%s".', $name, $database->getName());
+
+            throw new Exception($message);
         }
 
         $columnsNames = [];
@@ -364,7 +366,7 @@ class Table implements ITable
      */
     public function addColumn($name, $type)
     {
-        if(!in_array($type, Column::COLUMN_TYPE, true)) {
+        if(!in_array($type, Column::COLUMN_TYPES, true)) {
             throw new Exception('Unknown column type.');
         }
 
@@ -406,6 +408,76 @@ class Table implements ITable
         fclose($handle);
 
         return $this;
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return bool|int
+     * @throws Exception
+     */
+    public function deleteColumn($name)
+    {
+        // initial checks
+        if(!$this->columnsCount) {
+            $message = sprintf('Table %s does not have any column.', $this->name);
+
+            throw new Exception($message);
+        }
+
+        if (!$this->columnExists($name)) {
+            $message = sprintf('Column "%s" in table "%s" does not exist.', $name, $this->name);
+
+            throw new Exception($message);
+        }
+
+        // remove column
+        $explodedColumns = explode(self::COLUMN_DELIMITER, $this->columnsString);
+        $column2Delete = 0;
+
+        foreach ($explodedColumns as $column) {
+            $columnName = explode(self::COLUMN_DATA_DELIMITER, $column);
+
+            if ($columnName[Column::COLUMN_NAME] === $name) {
+                unset($explodedColumns[$column2Delete]);
+                break;
+            }
+
+            $column2Delete++;
+        }
+
+        $file = file($this->filePath);
+        $newRowsString = '';
+        $addNL = false;
+
+        foreach ($file as $keyRow => $row) {
+            $row = str_replace(["\r", "\n", "\r\n", PHP_EOL], "", $row);
+
+            $columns = explode(self::COLUMN_DELIMITER, $row);
+            unset($columns[$column2Delete]);
+            $newRowsString .= implode(self::COLUMN_DELIMITER, $columns);
+            $newRowsString .= PHP_EOL;
+        }
+
+        //return;
+        $result = file_put_contents($this->filePath, $newRowsString);
+
+        // recalculate data
+        $this->columnsString = implode(self::COLUMN_DELIMITER, $explodedColumns);
+        $this->size = filesize($this->filePath);
+        $this->columnsCount--;
+
+        foreach ($this->columns as $columnKey => $column) {
+            if ($column->getName() === $name) {
+                unset($this->columns[$columnKey]);
+            }
+        }
+
+        $this->columns = array_values($this->columns);
+        $database_size = $this->database->calculateDatabaseSize();
+        $this->database->setSize($database_size);
+
+        return $result;
     }
 
     /**

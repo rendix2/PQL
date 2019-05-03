@@ -73,8 +73,8 @@ $myNew = $database->getTable('test');
 
 
 $query = new Query($database);
-$res = $query->select(['id', 'text'])->from('test')->run();
-echo $res;
+//$res = $query->select(['id', 'text'])->from('test')->run();
+//echo $res;
 
 /*
 $query = new Query($database);
@@ -83,6 +83,7 @@ bdump($res);
 echo $res;
 */
 
+/*
 $query = new Query($database);
 $res = $query->select(['id', 'text'])
     ->count('text')
@@ -102,6 +103,10 @@ $res = $query->select(['id', 'text'])
     ->where('id', 'IN', [1,3])
     ->run();
 echo $res;
+*/
+
+
+$myNew->deleteColumn('b');
 
 
 //$query->update('myNew', ['prijmeni' => 'bbbb'])->where('jmeno', '=', 'a')->run();
