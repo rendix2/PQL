@@ -106,7 +106,7 @@ echo $res;
 */
 
 
-$myNew->deleteColumn('b');
+$myNew->addColumn('bffdddawdwadawawdwaddd', 'string');
 
 
 //$query->update('myNew', ['prijmeni' => 'bbbb'])->where('jmeno', '=', 'a')->run();

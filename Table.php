@@ -180,6 +180,8 @@ class Table implements ITable
         $columnNames = explode(self::COLUMN_DELIMITER, trim($fileContent[0]));
         
         foreach ($columnNames as $column) {
+            bdump($column);
+
             $columnExploded = explode(self::COLUMN_DATA_DELIMITER, trim($column));
             $columns[]      = new Column($columnExploded[0], $columnExploded[1], $this);
         }
@@ -366,46 +368,45 @@ class Table implements ITable
      */
     public function addColumn($name, $type)
     {
+        if($this->columnExists($name)) {
+            $message = sprintf('Table %s already has column "%s".', $this->name, $name);
+
+            throw new Exception($message);
+        }
+
         if(!in_array($type, Column::COLUMN_TYPES, true)) {
-            throw new Exception('Unknown column type.');
+            $message = sprintf('Unknown "%s" column type.', $type);
+
+            throw new Exception($message);
         }
 
-        $handle   = fopen($this->fileName,'r+b');
-        $firstRow = '';
+        $newColumn = self::COLUMN_DELIMITER . $name . self::COLUMN_DATA_DELIMITER . $type;
+        $firstRow  = $this->columnsString . $newColumn;
+        $file = file($this->filePath);
+        unset($file[0]);
 
-        while ($char = fread($handle, self::FIRST_LINE_LENGTH) !== "\n") {
-            $firstRow .= $char;
+        $handle = fopen($this->filePath, 'wb');
+        fwrite($handle, $firstRow . PHP_EOL);
+
+        foreach ($file as $line) {
+            $line = str_replace(["\r", "\n", "\r\n", PHP_EOL], '', $line);
+
+            fwrite($handle, $line . ', ' . PHP_EOL);
         }
 
-        $newsInFirstRow        = sprintf(', %s%s%s', $name, self::COLUMN_DATA_DELIMITER, $type);
-        $firstRow             .= $newsInFirstRow;
-        $newsInFirstRowLength  = mb_strlen($newsInFirstRow);
+        fclose($handle);
 
-        fwrite($handle, $firstRow);
-
-        $i   = 0;
-        $row = '';
-
-        $fileSize = $this->size + $newsInFirstRowLength;
-
-        while ($char = fread($handle, $fileSize)) {
-            $row .= $char;
-
-            if ($char === "\n" && $i > 1) {
-                $i++;
-
-                fwrite($handle, $row . self::COLUMN_DELIMITER);
-                $row = '';
-            }
-        }
-        $size = filesize($this->fileName);
+        $size = filesize($this->filePath);
 
         if ($size === false) {
             throw new Exception('There was problem during counting table size.');
         }
 
+        $this->database->setSize($this->database->calculateDatabaseSize());
         $this->size = $size;
-        fclose($handle);
+        $this->columns[] = new Column($name, $type, $this);
+        $this->columnsString = $firstRow;
+        $this->columnsCount++;
 
         return $this;
     }
@@ -413,7 +414,7 @@ class Table implements ITable
     /**
      * @param string $name
      *
-     * @return bool|int
+     * @return Table
      * @throws Exception
      */
     public function deleteColumn($name)
@@ -451,7 +452,7 @@ class Table implements ITable
         $addNL = false;
 
         foreach ($file as $keyRow => $row) {
-            $row = str_replace(["\r", "\n", "\r\n", PHP_EOL], "", $row);
+            $row = str_replace(["\r", "\n", "\r\n", PHP_EOL], '', $row);
 
             $columns = explode(self::COLUMN_DELIMITER, $row);
             unset($columns[$column2Delete]);
@@ -477,7 +478,7 @@ class Table implements ITable
         $database_size = $this->database->calculateDatabaseSize();
         $this->database->setSize($database_size);
 
-        return $result;
+        return $this;
     }
 
     /**

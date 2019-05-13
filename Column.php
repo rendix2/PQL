@@ -8,6 +8,26 @@ class Column
     const COLUMN_TYPES = ['int', 'string', 'float', 'bool'];
 
     /**
+     * @var string
+     */
+    const INTEGER = 'int';
+
+    /**
+     * @var string
+     */
+    const STRING = 'string';
+
+    /**
+     * @var string
+     */
+    const FLOAT = 'float';
+
+    /**
+     * @var string
+     */
+    const BOOL = 'bool';
+
+    /**
      * @var int
      */
     const COLUMN_NAME = 0;
@@ -28,20 +48,20 @@ class Column
     private $type;
 
     /**
-     * @var Table $table
+     * @var Table|null $table
      */
     private $table;
 
     /**
      * Column constructor.
      *
-     * @param string $name
-     * @param string $type
-     * @param Table  $table
+     * @param string     $name
+     * @param string     $type
+     * @param Table|null $table
      *
      * @throws Exception
      */
-    public function __construct($name, $type, Table $table)
+    public function __construct($name, $type, Table $table = null)
     {
         if (!in_array($type, self::COLUMN_TYPES, true)) {
             throw new Exception(sprintf('Unknown type "%s" of column "%s".', $type, $name));
@@ -66,6 +86,14 @@ class Column
     public function getType()
     {
         return $this->type;
+    }
+
+    /**
+     * @return Table|null
+     */
+    public function getTable()
+    {
+        return $this->table;
     }
 }
 
