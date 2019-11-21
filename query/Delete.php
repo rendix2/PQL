@@ -15,24 +15,23 @@ class Delete extends BaseQuery
     public function run()
     {
         $this->where();
-        $this->limit();       
-        
-        $tmpFileName = $this->query->getTable()->getFileName() . '.tmp';
+        $this->limit();
+
+        $tmpFileName = $this->query->getTable()->getFilePath() . '.tmp';
         
         $fileTemp = new SplFileObject($tmpFileName, 'a');
-        
-        $fileTemp->fwrite($this->query->getTable()->getColumnsString());
+        $fileTemp->fwrite($this->query->getTable()->getColumnsString() . $this->query->getTable()->getFileEnds());
         
         foreach ($this->query->getTable()->getRows() as $line => $row) {
             if (!in_array($line, $this->result, true)) {
-                $fileTemp->fwrite(implode(Table::COLUMN_DELIMITER, $row). "\n");
+                $fileTemp->fwrite(implode(Table::COLUMN_DELIMITER, $row));
             }
         }
         
         $fileTemp = null;        
         $tmpFile  = file_get_contents($tmpFileName);
-        
-        file_put_contents($this->query->getTable()->getFileName(), $tmpFile);
+
+        file_put_contents($this->query->getTable()->getFilePath(), $tmpFile);
                 
         FileSystem::delete($tmpFileName);
 

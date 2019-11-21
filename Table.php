@@ -67,7 +67,6 @@ class Table implements ITable
     private $indexDir;
 
     /**
-     *
      * @var string $fileName
      */
     private $fileName;
@@ -111,6 +110,11 @@ class Table implements ITable
      * @var array $indexes
      */
     private $indexes;
+
+    /**
+     * @var string $lineEnds
+     */
+    private $lineEnds;
 
     /**
      * Table constructor.
@@ -165,10 +169,12 @@ class Table implements ITable
         $this->indexDir = $index_dir;
         $this->indexes  = [];
 
+        $indexes = Finder::findFiles('*.' .self::INDEX_EXTENSION)->in($this->indexDir);
+
         /**
          * @var SplFileInfo $index
          */
-        foreach (Finder::findFiles('*.' .self::INDEX_EXTENSION)->in($this->indexDir) as $index) {
+        foreach ($indexes as $index) {
             $fileName = str_replace('.' . self::INDEX_EXTENSION, '', $index->getFilename());
 
             //$this->indexes[$fileName] = BtreeJ::read($this->indexDir . $index->getFilename());
@@ -178,10 +184,8 @@ class Table implements ITable
         $fileContent = file($filePath);
         $columns     = [];
         $columnNames = explode(self::COLUMN_DELIMITER, trim($fileContent[0]));
-        
-        foreach ($columnNames as $column) {
-            bdump($column);
 
+        foreach ($columnNames as $column) {
             $columnExploded = explode(self::COLUMN_DATA_DELIMITER, trim($column));
             $columns[]      = new Column($columnExploded[0], $columnExploded[1], $this);
         }
@@ -190,7 +194,21 @@ class Table implements ITable
         $this->columnsCount  = count($this->columns);
         $this->size          = $fileSize;
         $this->rowsCount     = count($fileContent) - 1;
-        $this->columnsString = substr($fileContent[0],0, -2); // remove new line
+
+        // check line ends
+        if (preg_match("#\\r\\n$#", $fileContent[0])) {
+            $this->columnsString = substr($fileContent[0],0, -2);
+            $this->lineEnds = "\r\n";
+        } elseif (preg_match("#\\n\\r$#", $fileContent[0])) {
+            $this->columnsString = substr($fileContent[0],0, -2);
+            $this->lineEnds = "\n\r";
+        } elseif (preg_match("#\\r$#", $fileContent[0])) {
+            $this->columnsString = substr($fileContent[0],0, -1);
+            $this->lineEnds = "\r";
+        } elseif (preg_match("#\\n$#", $fileContent[0])) {
+            $this->columnsString = substr($fileContent[0],0, -1);
+            $this->lineEnds = "\n";
+        }
     }
 
     /**
@@ -275,6 +293,14 @@ class Table implements ITable
     public function getTableDir()
     {
         return $this->tableDir;
+    }
+
+    /**
+     * @return string
+     */
+    public function getFileEnds()
+    {
+        return $this->lineEnds;
     }
 
     /**
@@ -369,7 +395,7 @@ class Table implements ITable
     public function addColumn($name, $type)
     {
         if($this->columnExists($name)) {
-            $message = sprintf('Table %s already has column "%s".', $this->name, $name);
+            $message = sprintf('Table "%s" already has column "%s".', $this->name, $name);
 
             throw new Exception($message);
         }
@@ -381,20 +407,25 @@ class Table implements ITable
         }
 
         $newColumn = self::COLUMN_DELIMITER . $name . self::COLUMN_DATA_DELIMITER . $type;
-        $firstRow  = $this->columnsString . $newColumn;
-        $file = file($this->filePath);
-        unset($file[0]);
+        $firstRow = $this->columnsString . $newColumn . $this->lineEnds;
+        $tmpFileName = $this->getFilePath() . '.tmp';
 
-        $handle = fopen($this->filePath, 'wb');
-        fwrite($handle, $firstRow . PHP_EOL);
+        $file = new SplFileObject($tmpFileName,'a');
 
-        foreach ($file as $line) {
-            $line = str_replace(["\r", "\n", "\r\n", PHP_EOL], '', $line);
+        $file->fwrite($firstRow);
+        $lastColumn = $this->columns[$this->columnsCount - 1]->getName();
 
-            fwrite($handle, $line . ', ' . PHP_EOL);
+        foreach ($this->getRows() as $row) {
+            $row[$lastColumn] = str_replace(["\r", "\n", "\r\n", PHP_EOL], '', $row[$lastColumn]);
+
+            $file->fwrite(implode(self::COLUMN_DELIMITER, $row) . ', null' . $this->lineEnds);
         }
 
-        fclose($handle);
+        $file = null;
+
+        $tmp = file_get_contents($tmpFileName);
+        file_put_contents($this->getFilePath(), $tmp);
+        FileSystem::delete($tmpFileName);
 
         $size = filesize($this->filePath);
 
@@ -514,46 +545,25 @@ class Table implements ITable
      */
     public function getRows($object = false)
     {
-        $rows       = $this->toArray();
-        $rowCounter = 0;        
-        $rowsObj    = [];
+        $columnNames = [];
+        $rows        = $this->toArray();
+        $rowsObj      = [];
+
+        unset($rows[0]);
+
+        foreach ($this->columns as $column) {
+            $columnNames[] = $column->getName();
+        }
         
         foreach ($rows as $row) {
-            if ($rowCounter === 0) {
-                $rowCounter++;
-                
-                continue;
-            }            
-            
-            $rowExploded       = explode(Table::COLUMN_DELIMITER, $row);            
-            $columnValuesArray = [];            
-            
-            foreach ($this->columns as $columnNumber => $columnValue ) {
-                foreach ($rowExploded as $explodedKey => $explodedValue) {
-                    if ($columnNumber === $explodedKey) {
-                        if ($columnValue->getType() === 'int') {
-                            $columnValuesArray[$columnValue->getName()] = (int)trim($explodedValue);
-                        } elseif($columnValue->getType() === 'string') {
-                            $columnValuesArray[$columnValue->getName()] = (string)trim($explodedValue);
-                        }  elseif($columnValue->getType() === 'float') {
-                            $columnValuesArray[$columnValue->getName()] = (float)trim($explodedValue);
-                        } elseif ( $columnValue->getType() === 'bool') {
-                            $columnValuesArray[$columnValue->getName()] = (bool)trim($explodedValue);
-                        } else {
-                            throw new Exception(sprintf('Column "%s" using unknown type "%s".', $columnValue->getName(), $columnValue->getType()));
-                        }
-                    }
-                }
-            }
+            $exploded = explode(self::COLUMN_DELIMITER, $row);
+            $columnValuesArray = array_combine($columnNames, $exploded);
             
             if ($object) {
                 $rowsObj[] = new Row($columnValuesArray);
             } else {
                 $rowsObj[] = $columnValuesArray;
             }
-            
-            $columnValuesArray = null;            
-            $rowCounter++;
         }
         
         return $rowsObj;        

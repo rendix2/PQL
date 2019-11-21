@@ -1,4 +1,7 @@
 <?php
+
+use Netpromotion\Profiler\Profiler;
+use Netpromotion\Profiler\Adapter\TracyBarAdapter;
 use Tracy\Debugger;
 use Nette\Loaders\RobotLoader;
 
@@ -12,6 +15,9 @@ $loader->register();
 
 Debugger::enable();
 Debugger::$maxDepth = 2000;
+Debugger::getBar()->addPanel(new TracyBarAdapter());
+Profiler::enable();
+
 echo '<meta charset="UTF-8">';
 
 /*
@@ -71,10 +77,42 @@ $myNew = $database->getTable('test');
 //bdump($myNew);
 //bdump($myNew->getRows());
 
+/*
+Profiler::start('adding');
+for ($i = 0; $i < 100; $i++) {
+    $insertQuery = new Query($database);
+    $res = $insertQuery->add('test', ['id' => $i, 'a' => $i, 'b' => $i, 'c' => $i, 'd' => $i])->run();
+}
+Profiler::finish('adding');
+*/
+
+/*
+Profiler::start('delete');
+$deleteQuery = new Query($database);
+$deleteQuery->delete('test')
+    ->where('a', '=', "44")
+    ->run();
+Profiler::finish('delete');
+*/
+
 
 $query = new Query($database);
-//$res = $query->select(['id', 'text'])->from('test')->run();
-//echo $res;
+$query->update('test', ['a' => '888'])->where('id', '=', '96')->run();
+
+
+
+Profiler::start('select');
+$query = new Query($database);
+
+$res = $query->select(['id', 'a'])
+    ->from('test')
+    ->where('id', '>', 0)
+    ->limit(50)
+    ->run();
+
+echo $res;
+$res = null;
+Profiler::finish('select');
 
 /*
 $query = new Query($database);
@@ -106,7 +144,12 @@ echo $res;
 */
 
 
-$myNew->addColumn('bffdddawdwadawawdwaddd', 'string');
+/*
+Profiler::start('add');
+$myNew->addColumn('testfd', Column::STRING);
+Profiler::finish('add');
+*/
+
 
 
 //$query->update('myNew', ['prijmeni' => 'bbbb'])->where('jmeno', '=', 'a')->run();

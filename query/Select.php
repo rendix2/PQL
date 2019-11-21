@@ -9,17 +9,6 @@ use Table;
 
 class Select extends BaseQuery
 {
-    /**
-     * Select constructor.
-     *
-     * @param Query $query
-     */
-    public function __construct(Query $query)
-    {
-        parent::__construct($query);
-
-        $this->result = $query->getTable()->getRows();
-    }
 
     /**
      * @return array|Row[]
@@ -27,6 +16,8 @@ class Select extends BaseQuery
     public function run()
     {
         $this->checkColumns();
+
+        $this->result = $this->query->getTable()->getRows();
         
         $this->innerJoin();
         $this->leftJoin();

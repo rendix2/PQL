@@ -5,6 +5,7 @@
         "nette/robot-loader": "^3.1",
         "tracy/tracy": "^2.5",
         "nette/safe-stream": "^2.3",
-        "ext-mbstring": "*"
+        "ext-mbstring": "*",
+        "netpromotion/profiler": "^1.3"
     }
 }

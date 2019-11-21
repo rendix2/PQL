@@ -141,7 +141,9 @@ class Database
         /**
          * @var SplFileInfo $file
          */
-        foreach (Finder::findFiles('*.' . Table::EXT)->from($this->getDatabaseDir()) as $file) {
+        $files = Finder::findFiles('*.' . Table::EXT)->from($this->getDatabaseDir());
+
+        foreach ($files as $file) {
             $extension = $file->getExtension();            
             $fileName = str_replace('.' . $extension, '', $file->getFilename());
             
@@ -201,7 +203,6 @@ class Database
         if (is_dir($path)) {
             throw new Exception('Database already exists.');
         } else {
-            
             try {
                 FileSystem::createDir($path);
 

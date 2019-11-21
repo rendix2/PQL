@@ -21,35 +21,20 @@ class Update extends BaseQuery
         $this->where();
         $this->limit();
 
-        $tmpFileName = $this->query->getTable()->getFileName() . '.tmp';
+        $tmpFileName = $this->query->getTable()->getFilePath() . '.tmp';
 
         $file = new SplFileObject($tmpFileName,'a');
-        /*
 
-        $file->next();
-        $line = 1;
-        while (!$file->eof()) {
-            $textLine = implode(Table::COLUMN_DELIMITER, $this->res[$line]);
-
-            if ($textLine !== $file->current()) {
-                $length = mb_strlen($file->current());
-
-                $file->fseek(-$length, SEEK_CUR);
-                $file->fwrite($textLine, $length);
-            }
-        }
-*/
-        
-        $file->fwrite($this->query->getTable()->getColumnsString());
+        $file->fwrite($this->query->getTable()->getColumnsString() . $this->query->getTable()->getFileEnds());
         
         foreach ($this->result as $values) {
-            $file->fwrite(implode(Table::COLUMN_DELIMITER, $values) . "\n");
+            $file->fwrite(implode(Table::COLUMN_DELIMITER, $values));
         }
         
         $file = null;
-        
         $tmp = file_get_contents($tmpFileName);
-        file_put_contents($this->query->getTable()->getFileName(), $tmp);
+
+        file_put_contents($this->query->getTable()->getFilePath(), $tmp);
         FileSystem::delete($tmpFileName);
 
         return count($this->result);
