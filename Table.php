@@ -556,6 +556,8 @@ class Table implements ITable
         }
         
         foreach ($rows as $row) {
+            $row = str_replace($this->lineEnds, '', $row);
+
             $exploded = explode(self::COLUMN_DELIMITER, $row);
             $columnValuesArray = array_combine($columnNames, $exploded);
             
