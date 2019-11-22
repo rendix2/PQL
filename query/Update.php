@@ -1,9 +1,9 @@
 <?php
 namespace query;
 
+use Nette\Utils\FileSystem;
 use SplFileObject;
 use Table;
-use Nette\Utils\FileSystem;
 
 /**
  * Class Update
@@ -54,28 +54,23 @@ class Update extends BaseQuery
             foreach ($rows as $rowNumber => $row) {
                 foreach ($row as $column => $value) {
                     if ($where['column'] === $column) {
-                        
-                        if ($where['operator'] === '=') {
-                            if ($where['value'] === $value) {                                                        
-                                foreach ($up as $upKey => $upValue) {
-                                    $res[$rowNumber][$upKey] = $upValue;
-                                }
+
+                        if ($where['operator'] === '=' && $where['value'] === $value) {
+                            foreach ($up as $upKey => $upValue) {
+                                $res[$rowNumber][$upKey] = $upValue;
                             }
                         }
 
-                        if ($where['operator'] === '>') {
-                            if ($where['value'] > $value) {
-                                foreach ($up as $upKey => $upValue) {
-                                    $res[$rowNumber][$upKey] = $upValue;
-                                }
+                        if ($where['operator'] === '>' && $where['value'] > $value) {
+                            foreach ($up as $upKey => $upValue) {
+                                $res[$rowNumber][$upKey] = $upValue;
                             }
+
                         }
 
-                        if ($where['operator'] === '>=') {
-                            if ($where['value'] >= $value) {
-                                foreach ($up as $upKey => $upValue) {
-                                    $res[$rowNumber][$upKey] = $upValue;
-                                }
+                        if ($where['operator'] === '>=' && $where['value'] >= $value) {
+                            foreach ($up as $upKey => $upValue) {
+                                $res[$rowNumber][$upKey] = $upValue;
                             }
                         }
 
@@ -87,19 +82,15 @@ class Update extends BaseQuery
                             }
                         }
 
-                        if ($where['operator'] === '<=') {
-                            if ($where['value'] <= $value) {
-                                foreach ($up as $upKey => $upValue) {
-                                    $res[$rowNumber][$upKey] = $upValue;
-                                }
+                        if ($where['operator'] === '<=' && $where['value'] <= $value) {
+                            foreach ($up as $upKey => $upValue) {
+                                $res[$rowNumber][$upKey] = $upValue;
                             }
                         }
 
-                        if ($where['operator'] === '!=' || $where['operator'] === '<>') {
-                            if ($where['value'] !== $value) {
-                                foreach ($up as $upKey => $upValue) {
-                                    $res[$rowNumber][$upKey] = $upValue;
-                                }
+                        if (($where['operator'] === '!=' || $where['operator'] === '<>') && $where['value'] !== $value) {
+                            foreach ($up as $upKey => $upValue) {
+                                $res[$rowNumber][$upKey] = $upValue;
                             }
                         }
                     }

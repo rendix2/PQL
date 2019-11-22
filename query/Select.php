@@ -233,40 +233,28 @@ class Select extends BaseQuery
                                             
                                         //parse ON condition
                                             
-                                        if ($condition['operator'] === '=') {
-                                            if ($value === $joinedTableRowsValue) {
-                                                $joinTmp[] = array_merge($row, $joinedTableRows);
-                                            }
+                                        if ($condition['operator'] === '=' && $value === $joinedTableRowsValue) {
+                                            $joinTmp[] = array_merge($row, $joinedTableRows);
                                         }
                                             
-                                        if ($condition['operator'] === '<') {
-                                            if ($value < $joinedTableRowsValue) {
-                                                $joinTmp[] = array_merge($row, $joinedTableRows);
-                                            }
+                                        if ($condition['operator'] === '<' && $value < $joinedTableRowsValue) {
+                                            $joinTmp[] = array_merge($row, $joinedTableRows);
                                         }
                                             
-                                        if ($condition['operator'] === '>') {
-                                            if ($value > $joinedTableRowsValue) {
-                                                $joinTmp[] = array_merge($row, $joinedTableRows);
-                                            }
+                                        if ($condition['operator'] === '>' && $value > $joinedTableRowsValue) {
+                                            $joinTmp[] = array_merge($row, $joinedTableRows);
                                         }
                                             
-                                        if ($condition['operator'] === '>=') {
-                                            if ($value >= $joinedTableRowsValue) {
-                                                $joinTmp[] = array_merge($row, $joinedTableRows);
-                                            }
+                                        if ($condition['operator'] === '>=' && $value >= $joinedTableRowsValue) {
+                                            $joinTmp[] = array_merge($row, $joinedTableRows);
                                         }
                                             
-                                        if ($condition['operator'] === '<=') {
-                                            if ($value <= $joinedTableRowsValue) {
-                                                $joinTmp[] = array_merge($row, $joinedTableRows);
-                                            }
+                                        if ($condition['operator'] === '<=' && $value <= $joinedTableRowsValue) {
+                                            $joinTmp[] = array_merge($row, $joinedTableRows);
                                         }
                                             
-                                        if ($condition['operator'] === '!=' || $condition['operator'] === '<>') {
-                                            if ($value !== $joinedTableRowsValue) {
-                                                $joinTmp[] = array_merge($row, $joinedTableRows);
-                                            }
+                                        if (($condition['operator'] === '!=' || $condition['operator'] === '<>') && $value !== $joinedTableRowsValue) {
+                                            $joinTmp[] = array_merge($row, $joinedTableRows);
                                         }
                                     }
                                 }
@@ -305,40 +293,28 @@ class Select extends BaseQuery
                                 foreach ($joinedTableRows as $columnName => $columnValue) {
                                     if ($columnName === $condition['value']) {
 
-                                        if ($condition['operator'] === '=') {
-                                            if ($value === $columnValue) {
-                                                $joinTmp[] = array_merge($row, $joinedTableRows);
-                                            }
+                                        if ($condition['operator'] === '=' && $value === $columnValue) {
+                                            $joinTmp[] = array_merge($row, $joinedTableRows);
                                         }
 
-                                        if ($condition['operator'] === '<') {
-                                            if ($value < $columnValue) {
-                                                $joinTmp[] = array_merge($row, $joinedTableRows);
-                                            }
+                                        if ($condition['operator'] === '<' && $value < $columnValue) {
+                                            $joinTmp[] = array_merge($row, $joinedTableRows);
                                         }
 
-                                        if ($condition['operator'] === '>') {
-                                            if ($value > $columnValue) {
-                                                $joinTmp[] = array_merge($row, $joinedTableRows);
-                                            }
+                                        if ($condition['operator'] === '>' && $value > $columnValue) {
+                                            $joinTmp[] = array_merge($row, $joinedTableRows);
                                         }
 
-                                        if ($condition['operator'] === '>=') {
-                                            if ($value >= $columnValue) {
-                                                $joinTmp[] = array_merge($row, $joinedTableRows);
-                                            }
+                                        if ($condition['operator'] === '>=' && $value >= $columnValue) {
+                                            $joinTmp[] = array_merge($row, $joinedTableRows);
                                         }
 
-                                        if ($condition['operator'] === '<=') {
-                                            if ($value <= $columnValue) {
-                                                $joinTmp[] = array_merge($row, $joinedTableRows);
-                                            }
+                                        if ($condition['operator'] === '<=' && $value <= $columnValue) {
+                                            $joinTmp[] = array_merge($row, $joinedTableRows);
                                         }
 
-                                        if ($condition['operator'] === '!=' || $condition['operator'] === '<>') {
-                                            if ($value !== $columnValue) {
-                                                $joinTmp[] = array_merge($row, $joinedTableRows);
-                                            }
+                                        if (($condition['operator'] === '!=' || $condition['operator'] === '<>') && $value !== $columnValue) {
+                                            $joinTmp[] = array_merge($row, $joinedTableRows);
                                         }
                                     } else {
 
@@ -567,40 +543,28 @@ class Select extends BaseQuery
             foreach ($this->result as $row) {
                 foreach ($row as $column => $value) {
                     if ($column === $having['column']) {
-                        if ($having['operator'] === '=') {
-                            if ($value === $having['value']) {
-                                $res[] = $row;
-                            }
+                        if ($having['operator'] === '=' && $value === $having['value']) {
+                            $res[] = $row;
                         }
 
-                        if ($having['operator'] === '>') {
-                            if ($value > $having['value']) {
-                                $res[] = $row;
-                            }
+                        if ($having['operator'] === '>' && $value > $having['value']) {
+                            $res[] = $row;
                         }
 
-                        if ($having['operator'] === '<') {
-                            if ($value < $having['value']) {
-                                $res[] = $row;
-                            }
+                        if ($having['operator'] === '<' && $value < $having['value']) {
+                            $res[] = $row;
                         }
 
-                        if ($having['operator'] === '>=') {
-                            if ($value >= $having['value']) {
-                                $res[] = $row;
-                            }
+                        if ($having['operator'] === '>=' && $value >= $having['value']) {
+                            $res[] = $row;
                         }
 
-                        if ($having['operator'] === '<=') {
-                            if ($value <= $having['value']) {
-                                $res[] = $row;
-                            }
+                        if ($having['operator'] === '<=' && $value <= $having['value']) {
+                            $res[] = $row;
                         }
 
-                        if ($having['operator'] === '!=' || $having['operator'] === '<>') {
-                            if ($value !== $having['value']) {
-                                $res[] = $row;
-                            }
+                        if (($having['operator'] === '!=' || $having['operator'] === '<>') && $value !== $having['value']) {
+                            $res[] = $row;
                         }
                     }
                 }
