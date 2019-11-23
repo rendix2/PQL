@@ -70,7 +70,7 @@ bdump($search, 'search');
 
 $database = new Database('test');
 
-$myNew = $database->getTable('test');
+//$myNew = $database->getTable('test');
 
 //bdump($database);
 //bdump($tables);
@@ -107,11 +107,12 @@ $query->update('test', ['a' => '888'])->where('id', '=', '96')->run();
 Profiler::start('select');
 $query = new Query($database);
 
-$res = $query->select(['id', 'a'])
+$res = $query->select(['id', 'datum', 'pocet'])
+    //->sum('pocet')
     ->from('test')
-    ->where('id', '>', "1")
-    ->where('id', '<', "4")
-    ->limit(50)
+    ->where('pocet', '>', '1')
+    //->where('pocet', '<', '50')
+    //->groupBy('datum')
     ->run();
 
 echo $res;
