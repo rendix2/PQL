@@ -117,6 +117,11 @@ class Table implements ITable
     private $lineEnds;
 
     /**
+     * @var int $lineEndsLength
+     */
+    private $lineEndsLength;
+
+    /**
      * Table constructor.
      *
      * @param Database $database
@@ -209,6 +214,8 @@ class Table implements ITable
             $this->columnsString = substr($fileContent[0],0, -1);
             $this->lineEnds = "\n";
         }
+
+        $this->lineEndsLength = mb_strlen($this->lineEnds);
     }
 
     /**
@@ -229,6 +236,7 @@ class Table implements ITable
         $this->tableDir      = null;
         $this->indexDir      = null;
         $this->indexes       = null;
+        $this->lineEnds      = null;
     }
 
     /**
@@ -301,6 +309,14 @@ class Table implements ITable
     public function getFileEnds()
     {
         return $this->lineEnds;
+    }
+
+    /**
+     * @return int
+     */
+    public function getFileEndsLength()
+    {
+        return $this->lineEndsLength;
     }
 
     /**
@@ -556,6 +572,8 @@ class Table implements ITable
         }
         
         foreach ($rows as $row) {
+            $row = str_replace($this->lineEnds, '', $row);
+
             $exploded = explode(self::COLUMN_DELIMITER, $row);
             $columnValuesArray = array_combine($columnNames, $exploded);
             

@@ -56,11 +56,35 @@ class Insert extends BaseQuery
             }
         }
 
+        $file = new \SplFileObject($this->query->getTable()->getFilePath(), 'a');
+
+        $line = implode(Table::COLUMN_DELIMITER, $row) ;
+
+        $written = $file->fwrite(
+            $line . $this->query->getTable()->getFileEnds(),
+            strlen($line) + $this->query->getTable()->getFileEndsLength()
+        );
+        $file = null;
+
+        return $written;
+
+        /*
+        foreach ($lines as $line) {
+            bdump($line);
+            $file->fwrite($line);
+        }
+
+        exit;
+        */
+
+
+        /*
         return file_put_contents(
             $this->query->getTable()->getFilePath(),
             "\n" . implode(Table::COLUMN_DELIMITER, $row),
             FILE_APPEND
         );
+        */
     }
 }
 

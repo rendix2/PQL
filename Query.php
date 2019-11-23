@@ -135,6 +135,11 @@ class Query
     private $res;
 
     /**
+     * @var string $timeLimit
+     */
+    private $timeLimit;
+
+    /**
      * Query constructor.
      *
      * @param Database $database
@@ -161,6 +166,9 @@ class Query
         $this->functions = [];
 
         $this->columns = [];
+
+        $this->timeLimit = ini_get('max_execution_time');
+        set_time_limit(0);
     }
 
     /**
@@ -197,6 +205,9 @@ class Query
         $this->functions = null;
 
         $this->res = null;
+
+        set_time_limit($this->timeLimit);
+        $this->timeLimit = null;
     }
 
     /**

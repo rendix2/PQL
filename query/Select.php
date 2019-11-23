@@ -18,15 +18,40 @@ class Select extends BaseQuery
         $this->checkColumns();
 
         $this->result = $this->query->getTable()->getRows();
+
+        //bdump($this->result, '$this->result SET');
         
         $this->innerJoin();
+
+        //bdump($this->result, '$this->result INNER');
+
         $this->leftJoin();
+
+        //bdump($this->result, '$this->result LEFT');
+
         $this->where();
+
+        bdump($this->result, '$this->result WHERE');
+
         $this->groupBy();
+
+        //bdump($this->result, '$this->result GROUP');
+
         $this->functions();
+
+        //bdump($this->result, '$this->result FUNCTIONS');
+
         $this->having();
+
+        //bdump($this->result, '$this->result HAVING');
+
         $this->orderBy();
+
+        //bdump($this->result, '$this->result ORDER');
+
         $this->limit();
+
+       // bdump($this->result, '$this->result LIMIT');
 
         return $this->createRows();
     }
@@ -363,6 +388,150 @@ class Select extends BaseQuery
     }
 
     /**
+     * @param array $rows
+     * @param array $condition
+     *
+     * @return array
+     *
+     * @throws Exception
+     */
+    private function doWhere(array $rows, array $condition)
+    {
+        $res = [];
+
+        foreach ($rows as $row) {
+            if ($condition['operator'] === '=') {
+                // if we have SubQuery
+                if ($condition['value'] instanceof Query) {
+                    $subQueryValue = $this->runSubQuery($condition);
+
+                    if ($row[$condition['column']] === $subQueryValue) {
+                        $res[] = $row;
+                    }
+                } else {
+                    if ($row[$condition['column']] === $condition['value']) {
+                        $res[] = $row;
+                    }
+                }
+            }
+
+            if ($condition['operator'] === '<') {
+                // if we have SubQuery
+                if ($condition['value'] instanceof Query) {
+                    $subQueryValue = $this->runSubQuery($condition);
+
+                    if ($row[$condition['column']] < $subQueryValue) {
+                        $res[] = $row;
+                    }
+                } else {
+                    if ($row[$condition['column']] < $condition['value']) {
+                        $res[] = $row;
+                    }
+                }
+            }
+
+            if ($condition['operator'] === '>') {
+                // if we have SubQuery
+                if ($condition['value'] instanceof Query) {
+                    $subQueryValue = $this->runSubQuery($condition);
+
+                    if ($row[$condition['column']] > $subQueryValue) {
+                        $res[] = $row;
+                    }
+                } else {
+                    if ($row[$condition['column']] > $condition['value']) {
+                        $res[] = $row;
+                    }
+                }
+            }
+
+            if ($condition['operator'] === '<=') {
+                // if we have SubQuery
+                if ($condition['value'] instanceof Query) {
+                    $subQueryValue = $this->runSubQuery($condition);
+
+                    if ($row[$condition['column']] <= $subQueryValue) {
+                        $res[] = $row;
+                    }
+                } else {
+                    if ($row[$condition['column']] <= $condition['value']) {
+                        $res[] = $row;
+                    }
+                }
+            }
+
+            if ($condition['operator'] === '>=') {
+                // if we have SubQuery
+                if ($condition['value'] instanceof Query) {
+                    $subQueryValue = $this->runSubQuery($condition);
+
+                    if ($row[$condition['column']] >= $subQueryValue) {
+                        $res[] = $row;
+                    }
+                } else {
+                    if ($row[$condition['column']] >= $condition['value']) {
+                        $res[] = $row;
+                    }
+                }
+            }
+
+            if ($condition['operator'] === '!=' || $condition['operator'] === '<>') {
+                // if we have SubQuery
+                if ($condition['value'] instanceof Query) {
+                    $subQueryValue = $this->runSubQuery($condition);
+
+                    if ($row[$condition['column']] !== $subQueryValue) {
+                        $res[] = $row;
+                    }
+                } else {
+                    if ($row[$condition['column']] !== $condition['value']) {
+                        $res[] = $row;
+                    }
+                }
+            }
+
+            if ($condition['operator'] === 'in') {
+                if ($condition['value'] instanceof Query) {
+                    $subQueryValues = $condition['value']->run();
+
+                    if (count($subQueryValues->getColumns()) !== 1) {
+                        throw new Exception('Subquery returned more than one column');
+                    }
+
+                    foreach ($subQueryValues->getRows() as $subRow) {
+                        $col = $subRow->getColumns()[0];
+
+                        if ($subRow->get()->{$col} === $row[$condition['column']]) {
+                            $res[] = $row;
+                        }
+                    }
+                } else if (is_array($condition['value'])) {
+                    foreach ($condition['value'] as $inValue) {
+                        if ($inValue === $row[$condition['column']]) {
+                            $res[] = $row;
+                        }
+                    }
+                }
+            }
+
+            if ($condition['operator'] === 'between') {
+                if ($row[$condition['column']] > $condition['value'][0] && $row[$condition['column']] < $condition['value'][1]) {
+                    $res[] = $row;
+                }
+            }
+
+            if ($condition['operator'] === 'between_in') {
+                if ($row[$condition['column']] >= $condition['value'][0] && $row[$condition['column']] <= $condition['value'][1]) {
+                    $res[] = $row;
+                }
+            }
+        }
+
+        return $res;
+    }
+
+
+    /**
      * @return array|Row[]
      * @throws Exception
      */
@@ -371,143 +540,12 @@ class Select extends BaseQuery
         if (!count($this->query->getWhereCondition())) {
             return $this->result;
         }
-        
-        $res = [];
-            
-        /**
-         * @var Row $tmpRow
-         */
-        foreach ($this->result as $tmpRow) {
-            foreach ($this->query->getWhereCondition() as $condition) {
-                if ($condition['operator'] === '=') {
-                    // if we have SubQuery
-                    if ($condition['value'] instanceof Query) {
-                        $subQueryValue = $this->runSubQuery($condition);
 
-                        if ($tmpRow[$condition['column']] === $subQueryValue) {
-                            $res[] = $tmpRow;
-                        }
-                    } else {
-                        if ($tmpRow[$condition['column']] === $condition['value']) {
-                            $res[] = $tmpRow;
-                        }
-                    }
-                }
-                    
-                if ($condition['operator'] === '<') {
-                    // if we have SubQuery
-                    if ($condition['value'] instanceof Query) {
-                        $subQueryValue = $this->runSubQuery($condition);
-
-                        if ($tmpRow[$condition['column']] < $subQueryValue) {
-                            $res[] = $tmpRow;
-                        }
-                    } else {
-                        if ($tmpRow[$condition['column']] < $condition['value']) {
-                            $res[] = $tmpRow;
-                        }
-                    }
-                }
-                    
-                if ($condition['operator'] === '>') {
-                    // if we have SubQuery
-                    if ($condition['value'] instanceof Query) {
-                        $subQueryValue = $this->runSubQuery($condition);
-
-                        if ($tmpRow[$condition['column']] > $subQueryValue) {
-                            $res[] = $tmpRow;
-                        }
-                    } else {
-                        if ($tmpRow[$condition['column']] > $condition['value']) {
-                            $res[] = $tmpRow;
-                        }
-                    }
-                }
-
-                if ($condition['operator'] === '<=') {
-                    // if we have SubQuery
-                    if ($condition['value'] instanceof Query) {
-                        $subQueryValue = $this->runSubQuery($condition);
-
-                        if ($tmpRow[$condition['column']] <= $subQueryValue) {
-                            $res[] = $tmpRow;
-                        }
-                    } else {
-                        if ($tmpRow[$condition['column']] <= $condition['value']) {
-                            $res[] = $tmpRow;
-                        }
-                    }
-                }
-                    
-                if ($condition['operator'] === '>=') {
-                    // if we have SubQuery
-                    if ($condition['value'] instanceof Query) {
-                        $subQueryValue = $this->runSubQuery($condition);
-
-                        if ($tmpRow[$condition['column']] >= $subQueryValue) {
-                            $res[] = $tmpRow;
-                        }
-                    } else {
-                        if ($tmpRow[$condition['column']] >= $condition['value']) {
-                            $res[] = $tmpRow;
-                        }
-                    }
-                }
-                    
-                if ($condition['operator'] === '!=' || $condition['operator'] === '<>') {
-                    // if we have SubQuery
-                    if ($condition['value'] instanceof Query) {
-                        $subQueryValue = $this->runSubQuery($condition);
-
-                        if ($tmpRow[$condition['column']] !== $subQueryValue) {
-                            $res[] = $tmpRow;
-                        }
-                    } else {
-                        if ($tmpRow[$condition['column']] !== $condition['value']) {
-                            $res[] = $tmpRow;
-                        }
-                    }
-                }
-
-                if ($condition['operator'] === 'in') {
-                    if ($condition['value'] instanceof Query) {
-                        $subQueryValues = $condition['value']->run();
-
-                        if (count($subQueryValues->getColumns()) !== 1) {
-                            throw new Exception('Subquery returned more than one column');
-                        }
-
-                        foreach ($subQueryValues->getRows() as $subRow) {
-                            $col = $subRow->getColumns()[0];
-
-                            if ($subRow->get()->{$col} === $tmpRow[$condition['column']]) {
-                                $res[] = $tmpRow;
-                            }
-                        }
-                    } else if (is_array($condition['value'])) {
-                        foreach ($condition['value'] as $inValue) {
-                            if ($inValue === $tmpRow[$condition['column']]) {
-                                $res[] = $tmpRow;
-                            }
-                        }
-                    }
-                }
-
-                if ($condition['operator'] === 'between') {
-                    if ($tmpRow[$condition['column']] > $condition['value'][0] && $tmpRow[$condition['column']] < $condition['value'][1]) {
-                        $res[] = $tmpRow;
-                    }
-                }
-
-                if ($condition['operator'] === 'between_in') {
-                    if ($tmpRow[$condition['column']] >= $condition['value'][0] && $tmpRow[$condition['column']] <= $condition['value'][1]) {
-                        $res[] = $tmpRow;
-                    }
-                }
-            }
+        foreach ($this->query->getWhereCondition() as $i => $condition) {
+            $this->result = $this->doWhere($this->result, $condition);
         }
 
-        return $this->result = $res;
+        return $this->result;
     }
 
     /**

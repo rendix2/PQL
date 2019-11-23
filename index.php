@@ -79,9 +79,10 @@ $myNew = $database->getTable('test');
 
 /*
 Profiler::start('adding');
-for ($i = 0; $i < 100; $i++) {
+for ($i = 0; $i < 10000; $i++) {
     $insertQuery = new Query($database);
-    $res = $insertQuery->add('test', ['id' => $i, 'a' => $i, 'b' => $i, 'c' => $i, 'd' => $i])->run();
+    $res = $insertQuery->add('test', ['id' => $i, 'a' => chr($i)])->run();
+    $insertQuery = null;
 }
 Profiler::finish('adding');
 */
@@ -96,8 +97,10 @@ Profiler::finish('delete');
 */
 
 
+/*
 $query = new Query($database);
 $query->update('test', ['a' => '888'])->where('id', '=', '96')->run();
+*/
 
 
 
@@ -106,13 +109,26 @@ $query = new Query($database);
 
 $res = $query->select(['id', 'a'])
     ->from('test')
-    ->where('id', '>', 0)
+    ->where('id', '>', "1")
+    ->where('id', '<', "4")
     ->limit(50)
     ->run();
 
 echo $res;
 $res = null;
 Profiler::finish('select');
+
+
+/*
+$j = new \BTree\BtreeJ();
+//$j->create($j);
+
+for ($i = 1; $i <= 10; $i++) {
+    $j->insert($i);
+}
+
+bdump($j, '$j');
+*/
 
 /*
 $query = new Query($database);
