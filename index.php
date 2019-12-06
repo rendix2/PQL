@@ -110,9 +110,13 @@ $res = $query->select(['id', 'datum', 'pocet'])
     //->sum('pocet')
     ->from('test')
     ->where('pocet', '>', '1')
-    //->where('pocet', '<', '50')
-    //->groupBy('datum')
-    ->run();
+    ->where('pocet', '<', '50')
+    ->groupBy('datum')
+    ->orderBy('pocet')
+    ->limit(5);
+
+echo $res;
+    $res = $res->run();
 
 echo $res;
 $res = null;
