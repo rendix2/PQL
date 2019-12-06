@@ -159,6 +159,8 @@ class Query
         $this->onCondition    = [];
         $this->whereCondition = [];
 
+        $this->orderBy = [];
+
         $this->updateData = [];
         $this->insertData = [];
 
@@ -208,6 +210,118 @@ class Query
 
         set_time_limit($this->timeLimit);
         $this->timeLimit = null;
+    }
+
+    /**
+     * prints query in SQL
+     *
+     * @return string
+     */
+    public function __toString()
+    {
+        if ($this->isSelect) {
+            $select = 'SELECT ' . implode(', ', $this->columns) . '<br>';
+            $from = ' FROM ' . $this->table->getName() . '<br>';
+
+            $innerJoin = '';
+
+            if (count($this->innerJoin)) {
+                foreach ($this->innerJoin as $table) {
+                    $innerJoin .= ' INNER JOIN ' . $table->getName() . '<br>';
+
+                    $i = 0;
+
+                    foreach ($this->onCondition as $condition) {
+                        if ($condition['table']->getName() === $table->getName()) {
+                            if ($i === 0) {
+                                $innerJoin .= ' <br> &nbsp;&nbsp;&nbsp;&nbsp;ON ' . $condition['column'] . ' ' . $condition['operator'] . ' ' . $condition['value'];
+                            } else {
+                                $innerJoin .= ' <br> &nbsp;&nbsp;&nbsp;&nbsp;AND ' . $condition['column'] . ' ' . $condition['operator'] . ' ' . $condition['value'];
+                            }
+
+                            $i++;
+                        }
+                    }
+                }
+            }
+
+            $leftJoin = '';
+
+            if (count($this->leftJoin)) {
+                foreach ($this->leftJoin as $table) {
+                    $leftJoin .= ' LEFT JOIN ' . $table->getName() . '<br>';
+
+                    $i = 0;
+
+                    foreach ($this->onCondition as $condition) {
+                        if ($condition['table']->getName() === $table->getName()) {
+                            if ($i === 0) {
+                                $leftJoin .= ' <br> &nbsp;&nbsp;&nbsp;&nbsp;ON ' . $condition['column'] . ' ' . $condition['operator'] . ' ' . $condition['value'];
+                            } else {
+                                $leftJoin .= ' <br> &nbsp;&nbsp;&nbsp;&nbsp;AND ' . $condition['column'] . ' ' . $condition['operator'] . ' ' . $condition['value'];
+                            }
+
+                            $i++;
+                        }
+                    }
+                }
+            }
+
+            $whereCount = count($this->whereCondition);
+            $where = '';
+
+            if ($whereCount) {
+                $where = ' WHERE ';
+
+                --$whereCount;
+
+                foreach ($this->whereCondition as $i => $whereCondition) {
+                    $where .= ' ' . $whereCondition['column'] . ' ' . $whereCondition['operator'] . ' ' . $whereCondition['value'];
+
+                    if ($whereCount !== $i) {
+                        $where .= ' <br> &nbsp;&nbsp;&nbsp;&nbsp;AND';
+                    }
+                }
+            }
+
+            $orderBy = '';
+
+            if (count($this->orderBy)) {
+                $orderBy = '<br> ORDER BY ';
+
+                foreach ($this->orderBy as $orderedBy) {
+                    $orderBy .= $orderedBy['column'] . ' ' . ($orderedBy['asc'] ? 'ASC' : 'DESC');
+                }
+            }
+
+            $groupBy = '';
+
+            if (count($this->groupBy)) {
+                $groupBy = '<br> GROUP BY ';
+
+                foreach ($this->groupBy as $groupedBy) {
+                    $groupBy .= $groupedBy . ' ';
+                }
+            }
+
+            $having = '';
+
+            if (count($this->having)) {
+                $having = ' <br> HAVING';
+
+                foreach ($this->having as $havingCondition) {
+                    $having.= $havingCondition['column'] . ' ' . $havingCondition['operator'] . ' ' . $havingCondition['value'];
+                }
+            }
+
+            $limit = '';
+
+            if ($this->limit) {
+                $limit = '<br> LIMIT ' . $this->limit;
+            }
+
+            return $select . $from . $innerJoin . $leftJoin . $where . $orderBy . $groupBy . $having . $limit;
+        }
     }
 
     /**
