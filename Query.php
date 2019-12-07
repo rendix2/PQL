@@ -521,17 +521,17 @@ class Query
             throw new Exception(sprintf('Column "%s" does not exist.', $column));
         }*/
 
-        if (!in_array($condition->getOperator(), Operator::ENABLED_OPERATORS, true)) {
+        if (!Operator::isOperatorValid($condition->getOperator())) {
             throw new Exception(sprintf('Unknown operator "%s".', $condition->getOperator()));
         }
 
-        if ($condition->getOperator() === 'between' || $condition->getOperator() === 'between_in') {
+        if ($condition->getOperator() === Operator::BETWEEN || $condition->getOperator() === Operator::BETWEEN_INCLUSIVE) {
             if (!is_array($condition->getValue()) && !is_array($condition->getColumn())) {
-                throw new Exception('Parameter for between must be array');
+                throw new Exception('Parameter for between must be array.');
             }
 
             if (count($condition->getValue()) !== 2 && count($condition->getColumn()) !== 2) {
-                throw new Exception('I need two parameters');
+                throw new Exception('I need two parameters.');
             }
         }
 

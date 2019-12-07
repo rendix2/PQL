@@ -28,6 +28,7 @@ class ConditionHelper
         $hasSubQueryColumn = $condition->getColumn() instanceof Query;
         $isValueArray = is_array($condition->getValue());
         $isColumnArray = is_array($condition->getColumn());
+        $isBetweenOperator = $condition->getOperator() === Operator::BETWEEN || $condition->getOperator() === Operator::BETWEEN_INCLUSIVE;
 
         // set flags
         if ($hasSubQueryColumn || $hasSubQueryValue) {
@@ -36,10 +37,10 @@ class ConditionHelper
             $issetRowAColumnRowBValue = false;
             $issetRowAValueRowBColumn = false;
         } elseif ($isColumnArray) {
-            if ($condition->getOperator() === 'in') {
+            if ($condition->getOperator() === Operator::IN) {
                 $issetRowAColumn = false;
                 $issetRowAValue = true;
-            } elseif ($condition->getOperator() === 'between' || $condition->getOperator() === 'between_in') {
+            } elseif ($isBetweenOperator) {
                 $issetRowAColumn = true;
                 $issetRowAValue = false;
             }
@@ -47,10 +48,10 @@ class ConditionHelper
             $issetRowAColumnRowBValue = false;
             $issetRowAValueRowBColumn = false;
         } elseif ($isValueArray) {
-            if ($condition->getOperator() === 'in') {
+            if ($condition->getOperator() === Operator::IN) {
                 $issetRowAColumn = true;
                 $issetRowAValue = false;
-            } elseif ($condition->getOperator() === 'between' || $condition->getOperator() === 'between_in') {
+            } elseif ($isBetweenOperator) {
                 $issetRowAColumn = false;
                 $issetRowAValue = true;
             }
@@ -114,7 +115,7 @@ class ConditionHelper
             }
         }
 
-        if ($condition->getOperator() === '>') {
+        if ($condition->getOperator() === Operator::GREATER_THAN) {
             // column > 5
             if ($issetRowAColumn && $rowA[$condition->getColumn()] > $condition->getValue()) {
                 return true;
@@ -164,7 +165,7 @@ class ConditionHelper
             }
         }
 
-        if ($condition->getOperator() === '>=') {
+        if ($condition->getOperator() === Operator::GREATER_EQUAL_THAN) {
             // column >= 5
             if ($issetRowAColumn && $rowA[$condition->getColumn()] >= $condition->getValue()) {
                 return true;
@@ -214,7 +215,7 @@ class ConditionHelper
             }
         }
 
-        if ($condition->getOperator() === '<') {
+        if ($condition->getOperator() === Operator::LESS_THAN) {
             // column < 5
             if ($issetRowAColumn && $rowA[$condition->getColumn()] < $condition->getValue()) {
                 return true;
@@ -264,7 +265,7 @@ class ConditionHelper
             }
         }
 
-        if ($condition->getOperator() === '<=') {
+        if ($condition->getOperator() === Operator::LESS_EQUAL_THAN) {
             // column <= 5
             if ($issetRowAColumn && $rowA[$condition->getColumn()] <= $condition->getValue()) {
                 return true;
@@ -314,7 +315,7 @@ class ConditionHelper
             }
         }
 
-        if ($condition->getOperator() === '!=' || $condition->getOperator() === '<>') {
+        if ($condition->getOperator() === Operator::NON_EQUAL || $condition->getOperator() === Operator::LESS_AND_GREATER_THAN) {
             // column != 5
             if ($issetRowAColumn && $rowA[$condition->getColumn()] !== $condition->getValue()) {
                 return true;
@@ -364,7 +365,7 @@ class ConditionHelper
             }
         }
 
-        if ($condition->getOperator() === 'in') {
+        if ($condition->getOperator() === Operator::IN) {
             // column IN (5)
             if ($issetRowAColumn && in_array($rowA[$condition->getColumn()], $condition->getValue(), true)) {
                 return true;
@@ -404,7 +405,7 @@ class ConditionHelper
             }
         }
 
-        if ($condition->getOperator() === 'between') {
+        if ($condition->getOperator() === Operator::BETWEEN) {
             if (!$issetRowAColumn &&
                 $rowA[$condition->getColumn()] > $condition->getValue()[0] &&
                 $rowA[$condition->getColumn()] < $condition->getValue()[1]
@@ -420,7 +421,7 @@ class ConditionHelper
             }
         }
 
-        if ($condition->getOperator() === 'between_in') {
+        if ($condition->getOperator() === Operator::BETWEEN_INCLUSIVE) {
             if (!$issetRowAColumn &&
                 $rowA[$condition->getColumn()] >= $condition->getValue()[0] &&
                 $rowA[$condition->getColumn()] <= $condition->getValue()[1]
