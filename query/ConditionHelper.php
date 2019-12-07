@@ -3,6 +3,7 @@
 namespace query;
 
 use Condition;
+use Operator;
 use Query;
 use SubQueryHelper;
 use Table;
@@ -63,7 +64,7 @@ class ConditionHelper
             $issetRowAValueRowBColumn = isset($rowA[$condition->getValue()], $rowB[$condition->getColumn()]);
         }
 
-        if ($condition->getOperator() === '=') {
+        if ($condition->getOperator() === Operator::EQUAL) {
             // column = 5
             if ($issetRowAColumn && $rowA[$condition->getColumn()] === $condition->getValue()) {
                 return true;
