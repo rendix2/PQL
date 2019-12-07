@@ -37,7 +37,7 @@ class Query
     private $table;
 
     /**
-     * @var array $condition
+     * @var Condition[] $condition
      */
     private $whereCondition;
 
@@ -59,26 +59,25 @@ class Query
 
     /**
      *
-     * @var Table[] $leftJoin
+     * @var array $leftJoin
      */
     private $leftJoin;
 
     /**
+     * @var array $rightJoin
+     */
+    private $rightJoin;
+
+    /**
      *
-     * @var Table[] $innerJoin
+     * @var array $innerJoin
      */
     private $innerJoin;
 
     /**
-     *
-     * @var array $onCondition
+     * @var Table[] $crossJoin
      */
-    private $onCondition;
-
-    /**
-     * @var string $query
-     */
-    private $query;
+    private $crossJoin;
 
     /**
      * @var int $limit
@@ -155,8 +154,9 @@ class Query
 
         $this->innerJoin = [];
         $this->leftJoin  = [];
+        $this->rightJoin = [];
+        $this->crossJoin = [];
 
-        $this->onCondition    = [];
         $this->whereCondition = [];
 
         $this->orderBy = [];
@@ -188,13 +188,14 @@ class Query
         $this->orderBy = null;
         $this->groupBy = null;
 
-        $this->leftJoin    = null;
-        $this->innerJoin   = null;
-        $this->onCondition = null;
+        $this->innerJoin = null;
+
+        $this->crossJoin = null;
+
+        $this->leftJoin  = null;
+        $this->rightJoin = null;
 
         $this->limit = null;
-
-        $this->query = null;
 
         $this->isSelect = null;
         $this->isDelete = null;
@@ -219,109 +220,9 @@ class Query
      */
     public function __toString()
     {
-        if ($this->isSelect) {
-            $select = 'SELECT ' . implode(', ', $this->columns) . '<br>';
-            $from = ' FROM ' . $this->table->getName() . '<br>';
+        $queryPrinter = new QueryPrinter($this);
 
-            $innerJoin = '';
-
-            if (count($this->innerJoin)) {
-                foreach ($this->innerJoin as $table) {
-                    $innerJoin .= ' INNER JOIN ' . $table->getName() . '<br>';
-
-                    $i = 0;
-
-                    foreach ($this->onCondition as $condition) {
-                        if ($condition['table']->getName() === $table->getName()) {
-                            if ($i === 0) {
-                                $innerJoin .= ' <br> &nbsp;&nbsp;&nbsp;&nbsp;ON ' . $condition['column'] . ' ' . $condition['operator'] . ' ' . $condition['value'];
-                            } else {
-                                $innerJoin .= ' <br> &nbsp;&nbsp;&nbsp;&nbsp;AND ' . $condition['column'] . ' ' . $condition['operator'] . ' ' . $condition['value'];
-                            }
-
-                            $i++;
-                        }
-                    }
-                }
-            }
-
-            $leftJoin = '';
-
-            if (count($this->leftJoin)) {
-                foreach ($this->leftJoin as $table) {
-                    $leftJoin .= ' LEFT JOIN ' . $table->getName() . '<br>';
-
-                    $i = 0;
-
-                    foreach ($this->onCondition as $condition) {
-                        if ($condition['table']->getName() === $table->getName()) {
-                            if ($i === 0) {
-                                $leftJoin .= ' <br> &nbsp;&nbsp;&nbsp;&nbsp;ON ' . $condition['column'] . ' ' . $condition['operator'] . ' ' . $condition['value'];
-                            } else {
-                                $leftJoin .= ' <br> &nbsp;&nbsp;&nbsp;&nbsp;AND ' . $condition['column'] . ' ' . $condition['operator'] . ' ' . $condition['value'];
-                            }
-
-                            $i++;
-                        }
-                    }
-                }
-            }
-
-            $whereCount = count($this->whereCondition);
-            $where = '';
-
-            if ($whereCount) {
-                $where = ' WHERE ';
-
-                --$whereCount;
-
-                foreach ($this->whereCondition as $i => $whereCondition) {
-                    $where .= ' ' . $whereCondition['column'] . ' ' . $whereCondition['operator'] . ' ' . $whereCondition['value'];
-
-                    if ($whereCount !== $i) {
-                        $where .= ' <br> &nbsp;&nbsp;&nbsp;&nbsp;AND';
-                    }
-                }
-            }
-
-            $orderBy = '';
-
-            if (count($this->orderBy)) {
-                $orderBy = '<br> ORDER BY ';
-
-                foreach ($this->orderBy as $orderedBy) {
-                    $orderBy .= $orderedBy['column'] . ' ' . ($orderedBy['asc'] ? 'ASC' : 'DESC');
-                }
-            }
-
-            $groupBy = '';
-
-            if (count($this->groupBy)) {
-                $groupBy = '<br> GROUP BY ';
-
-                foreach ($this->groupBy as $groupedBy) {
-                    $groupBy .= $groupedBy . ' ';
-                }
-            }
-
-            $having = '';
-
-            if (count($this->having)) {
-                $having = ' <br> HAVING';
-
-                foreach ($this->having as $havingCondition) {
-                    $having.= $havingCondition['column'] . ' ' . $havingCondition['operator'] . ' ' . $havingCondition['value'];
-                }
-            }
-
-            $limit = '';
-
-            if ($this->limit) {
-                $limit = '<br> LIMIT ' . $this->limit;
-            }
-
-            return $select . $from . $innerJoin . $leftJoin . $where . $orderBy . $groupBy . $having . $limit;
-        }
+        return $queryPrinter->printQuery();
     }
 
     /**
@@ -333,7 +234,7 @@ class Query
     }
 
     /**
-     * @return array
+     * @return Condition[]
      */
     public function getWhereCondition()
     {
@@ -365,7 +266,7 @@ class Query
     }
 
     /**
-     * @return array|Table[]
+     * @return array
      */
     public function getInnerJoin()
     {
@@ -373,7 +274,7 @@ class Query
     }
 
     /**
-     * @return array|Table[]
+     * @return array
      */
     public function getLeftJoin()
     {
@@ -383,9 +284,17 @@ class Query
     /**
      * @return array
      */
-    public function getOnCondition()
+    public function getRightJoin()
     {
-        return $this->onCondition;
+        return $this->rightJoin;
+    }
+
+    /**
+     * @return array
+     */
+    public function getCrossJoin()
+    {
+        return $this->crossJoin;
     }
 
     /**
@@ -447,6 +356,38 @@ class Query
     public function getDatabase()
     {
         return $this->database;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isSelect()
+    {
+        return $this->isSelect;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isInsert()
+    {
+        return $this->isInsert;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isUpdate()
+    {
+        return $this->isUpdate;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isDelete()
+    {
+        return $this->isDelete;
     }
 
     /**
@@ -570,37 +511,33 @@ class Query
     }
 
     /**
-     * @param string $column
-     * @param string $operator
-     * @param mixed  $value
+     * @param Condition $condition
      *
      * @return Query
      * @throws Exception
      */
-    public function where($column, $operator, $value)
+    public function where(Condition $condition)
     {
         /*
         if (!$this->table->columnExists($column)) {
             throw new Exception(sprintf('Column "%s" does not exist.', $column));
         }*/
 
-        $operator = mb_strtolower($operator);
-
-        if (!in_array($operator, self::ENABLED_OPERATORS, true)) {
-            throw  new Exception(sprintf('Unknown operator "%s".', $operator));
+        if (!in_array($condition->getOperator(), self::ENABLED_OPERATORS, true)) {
+            throw new Exception(sprintf('Unknown operator "%s".', $condition->getOperator()));
         }
 
-        if ($operator === 'between' || $operator === 'between_in') {
-            if (!is_array($value)) {
+        if ($condition->getOperator() === 'between' || $condition->getOperator() === 'between_in') {
+            if (!is_array($condition->getValue()) && !is_array($condition->getColumn())) {
                 throw new Exception('Parameter for between must be array');
             }
 
-            if (count($value) !== 2) {
+            if (count($condition->getValue()) !== 2 && count($condition->getColumn()) !== 2) {
                 throw new Exception('I need two parameters');
             }
         }
 
-        $this->whereCondition[] = ['column' => $column, 'operator' => $operator, 'value' => $value];
+        $this->whereCondition[] = $condition;
 
         return $this;
     }
@@ -697,72 +634,73 @@ class Query
 
     /**
      * @param string $table
+     * @param array $onConditions
      *
      * @return Query
+     * @throws Exception
      */
-    public function leftJoin($table)
+    public function leftJoin($table, array $onConditions)
     {
-        $this->leftJoin[] = new Table($this->database, $table);
+        foreach ($onConditions as $onCondition) {
+            if (!($onCondition instanceof Condition)) {
+                throw new Exception('Given param is not Condition');
+            }
+        }
+
+        $this->leftJoin[] = ['table' => new Table($this->database, $table), 'onConditions' => $onConditions];
         
         return $this;
     }
 
     /**
      * @param string $table
-     * 
+     * @param array $onConditions
+     *
      * @return Query
+     * @throws Exception
      */
-    public function innerJoin($table)
+    public function rightJoin($table, array $onConditions)
     {
-        $this->innerJoin[] = new Table($this->database, $table);
+        foreach ($onConditions as $onCondition) {
+            if (!($onCondition instanceof Condition)) {
+                throw new Exception('Given param is not Condition');
+            }
+        }
+
+        $this->rightJoin[] = ['table' => new Table($this->database, $table), 'onConditions' => $onConditions];
+
+        return $this;
+    }
+
+    /**
+     * @param string $table
+     * @param Condition[] $onConditions
+     *
+     * @return Query
+     * @throws Exception
+     */
+    public function innerJoin($table, array $onConditions)
+    {
+        foreach ($onConditions as $onCondition) {
+            if (!($onCondition instanceof Condition)) {
+                throw new Exception('Given param is not Condition');
+            }
+        }
+
+        $this->innerJoin[] = ['table' => new Table($this->database, $table), 'onConditions' => $onConditions];
         
         return $this;
     }
 
     /**
-     *
-     * @param string $column
-     * @param string $operator
-     * @param mixed  $value
+     * @param string $table
      *
      * @return Query
-     * @throws Exception
      */
-    public function on($column, $operator, $value)
+    public function crossJoin($table)
     {
-        $innerKey = count($this->innerJoin) - 1;
+        $this->crossJoin[] = new Table($this->database, $table);
 
-        /**
-         * 
-         * @var Table $last
-         */
-        if (isset($this->innerJoin[$innerKey])) {
-            $last = $this->innerJoin[$innerKey];
-            
-            if (!$last) {
-                throw new Exception('ON condition has no join.');
-            }
-        } else {
-            $leftKey = count($this->leftJoin) - 1;
-
-            if (isset($this->leftJoin[$leftKey])) {
-                $last = $this->leftJoin[$leftKey];
-
-                if (!$last) {
-                    throw new Exception('ON condition has no join.');
-                }
-            } else {
-                throw new Exception('ON condition has no join.');
-            }
-        }
-        
-        $this->onCondition[] = [
-            'column'   => $column,
-            'operator' => $operator,
-            'value'    => $value,
-            'table'    => $last->getName()
-        ];
-        
         return $this;
     }
 

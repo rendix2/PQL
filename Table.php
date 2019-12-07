@@ -237,6 +237,7 @@ class Table implements ITable
         $this->indexDir      = null;
         $this->indexes       = null;
         $this->lineEnds      = null;
+        $this->lineEndsLength = null;
     }
 
     /**
@@ -576,7 +577,23 @@ class Table implements ITable
 
             $exploded = explode(self::COLUMN_DELIMITER, $row);
             $columnValuesArray = array_combine($columnNames, $exploded);
-            
+
+            foreach ($this->columns as $column) {
+                if ($column->getType() === Column::BOOL) {
+                    $columnValuesArray[$column->getName()] = (bool) $columnValuesArray[$column->getName()];
+                } elseif ($column->getType() === Column::FLOAT) {
+                    $columnValuesArray[$column->getName()] = (float) $columnValuesArray[$column->getName()];
+                } elseif ($column->getType() === Column::INTEGER) {
+                    $columnValuesArray[$column->getName()] = (int) $columnValuesArray[$column->getName()];
+                } elseif ($column->getType() === Column::STRING) {
+                    $columnValuesArray[$column->getName()] = (string)$columnValuesArray[$column->getName()];
+                } else {
+                    $message = sprintf('Unknown column type "%s".', $column->getType());
+
+                    throw new Exception($message);
+                }
+            }
+
             if ($object) {
                 $rowsObj[] = new Row($columnValuesArray);
             } else {

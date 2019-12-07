@@ -7,9 +7,13 @@ use Query;
 use Row;
 use Table;
 
+/**
+ * Class Select
+ *
+ * @package query
+ */
 class Select extends BaseQuery
 {
-
     /**
      * @return array|Row[]
      */
@@ -25,13 +29,21 @@ class Select extends BaseQuery
 
         //bdump($this->result, '$this->result INNER');
 
+        $this->crossJoin();
+
+        //bdump($this->result, '$this->result CROSS');
+
         $this->leftJoin();
 
         //bdump($this->result, '$this->result LEFT');
 
+        $this->rightJoin();
+
+        //bdump($this->result, '$this->result RIGHT');
+
         $this->where();
 
-        bdump($this->result, '$this->result WHERE');
+        //bdump($this->result, '$this->result WHERE');
 
         $this->groupBy();
 
@@ -69,12 +81,24 @@ class Select extends BaseQuery
          * @var Column $column
          */
         foreach ($this->query->getInnerJoin() as $table) {
-            foreach ($table->getColumns() as $column) {
+            foreach ($table['table']->getColumns() as $column) {
                 $columns[] = $column->getName();
             }
         }
         
         foreach ($this->query->getLeftJoin() as $table) {
+            foreach ($table['table']->getColumns() as $column) {
+                $columns[] = $column->getName();
+            }
+        }
+
+        foreach ($this->query->getRightJoin() as $table) {
+            foreach ($table['table']->getColumns() as $column) {
+                $columns[] = $column->getName();
+            }
+        }
+
+        foreach ($this->query->getCrossJoin() as $table) {
             foreach ($table->getColumns() as $column) {
                 $columns[] = $column->getName();
             }
@@ -248,6 +272,87 @@ class Select extends BaseQuery
     }
 
     /**
+     * @param array $temporaryTable
+     * @param array $joinedTable
+     * @param array $conditions
+     *
+     * @return array
+     */
+    private function doInnerJoin(array $temporaryTable, array $joinedTable, array $conditions)
+    {
+        $innerJoinResult = [];
+
+        foreach ($temporaryTable as $temporaryRow) {
+            foreach ($joinedTable as $joinedRow) {
+                foreach ($conditions as $condition) {
+                    if (ConditionHelper::condition($condition, $temporaryRow, $joinedRow)) {
+                        $innerJoinResult[] = array_merge($temporaryRow, $joinedRow);
+                    }
+                }
+            }
+        }
+
+        return $innerJoinResult;
+    }
+
+    /**
+     * @param array $temporaryTable
+     * @param array $joinedTable
+     * @param array $conditions
+     * @return array
+     */
+    private function doLeftJoin(array $temporaryTable, array $joinedTable, array $conditions)
+    {
+        $innerJoinResult = [];
+        $joinedColumnsTmp = array_keys($joinedTable[0]);
+
+        $joinedColumns = [];
+
+        foreach ($joinedColumnsTmp as $joinedColumn) {
+            $joinedColumns[$joinedColumn] = null;
+        }
+
+        foreach ($temporaryTable as $temporaryRow) {
+            $joined = false;
+
+            foreach ($joinedTable as $joinedRow) {
+                foreach ($conditions as $condition) {
+                    if (ConditionHelper::condition($condition, $temporaryRow, $joinedRow)) {
+                        $innerJoinResult[] = array_merge($temporaryRow, $joinedRow);
+
+                        $joined = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!$joined) {
+                $innerJoinResult[] = array_merge($temporaryRow, $joinedColumns);
+            }
+        }
+
+        return $innerJoinResult;
+    }
+
+    /**
+     * @param array $temporaryTable
+     * @param array $joinedTable
+     * @return array
+     */
+    private function doCrossJoin(array $temporaryTable, array $joinedTable)
+    {
+        $crossJoinResult = [];
+
+        foreach ($temporaryTable as $temporaryRow) {
+            foreach ($joinedTable as $joinedRow) {
+                $crossJoinResult[] = array_merge($temporaryRow, $joinedRow);
+            }
+        }
+
+        return $crossJoinResult;
+    }
+
+    /**
      * @return array|Row[]
      * @throws Exception
      */
@@ -256,60 +361,32 @@ class Select extends BaseQuery
         if (!count($this->query->getInnerJoin())) {
             return $this->result;
         }
-        
-        if (!count($this->query->getOnCondition())) {
-            throw new Exception('No ON condition.');
-        }            
-        
-        $joinTmp = [];
-            
-        /**
-         * @var Table $joinTable
-         */
-        foreach ($this->query->getInnerJoin() as $joinTable) {                
-            foreach ($this->query->getOnCondition() as $condition) {
-                foreach ($this->result as $row) {
-                    foreach ($row as $column => $value) {
-                        if ($column === $condition['column'] && $joinTable->getName() === $condition['table']) {
-                            foreach ($joinTable->getRows() as $joinedTableRows ) {
-                                foreach ($joinedTableRows as $joinedTableRowsKey => $joinedTableRowsValue) {
-                                    if ($joinedTableRowsKey === $condition['value'] ) {
-                                            
-                                        //parse ON condition
-                                            
-                                        if ($condition['operator'] === '=' && $value === $joinedTableRowsValue) {
-                                            $joinTmp[] = array_merge($row, $joinedTableRows);
-                                        }
-                                            
-                                        if ($condition['operator'] === '<' && $value < $joinedTableRowsValue) {
-                                            $joinTmp[] = array_merge($row, $joinedTableRows);
-                                        }
-                                            
-                                        if ($condition['operator'] === '>' && $value > $joinedTableRowsValue) {
-                                            $joinTmp[] = array_merge($row, $joinedTableRows);
-                                        }
-                                            
-                                        if ($condition['operator'] === '>=' && $value >= $joinedTableRowsValue) {
-                                            $joinTmp[] = array_merge($row, $joinedTableRows);
-                                        }
-                                            
-                                        if ($condition['operator'] === '<=' && $value <= $joinedTableRowsValue) {
-                                            $joinTmp[] = array_merge($row, $joinedTableRows);
-                                        }
-                                            
-                                        if (($condition['operator'] === '!=' || $condition['operator'] === '<>') && $value !== $joinedTableRowsValue) {
-                                            $joinTmp[] = array_merge($row, $joinedTableRows);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+
+        foreach ($this->query->getInnerJoin() as $innerJoinedTable) {
+            if (!count($innerJoinedTable['onConditions'])) {
+                throw new Exception('No ON condition.');
             }
+
+            $this->result = $this->doInnerJoin($this->result, $innerJoinedTable['table']->getRows(), $innerJoinedTable['onConditions']);
         }
-        
-        return $this->result = $joinTmp;
+
+        return $this->result;
+    }
+
+    /**
+     * @return array
+     */
+    private function crossJoin()
+    {
+        if (!count($this->query->getCrossJoin())) {
+            return $this->result;
+        }
+
+        foreach ($this->query->getCrossJoin() as $crossJoinedTable) {
+            $this->result = $this->doCrossJoin($this->result, $crossJoinedTable->getRows());
+        }
+
+        return $this->result;
     }
 
     /**
@@ -321,65 +398,37 @@ class Select extends BaseQuery
         if (!count($this->query->getLeftJoin())) {
             return $this->result;
         }
-        
-        if (!count($this->query->getOnCondition())) {
-            throw new Exception('No ON condition.');
-        }
-        
-        $joinTmp = [];
-        
-        foreach ($this->query->getLeftJoin() as $joinTable) {
-            foreach ($this->query->getOnCondition() as $condition) {
-                foreach ($this->result as $row) {
-                    foreach ($row as $column => $value) {
-                        if ($column === $condition['column']) {
-                            foreach ($joinTable->getRows() as $joinedTableRows) {
-                                foreach ($joinedTableRows as $columnName => $columnValue) {
-                                    if ($columnName === $condition['value']) {
 
-                                        if ($condition['operator'] === '=' && $value === $columnValue) {
-                                            $joinTmp[] = array_merge($row, $joinedTableRows);
-                                        }
-
-                                        if ($condition['operator'] === '<' && $value < $columnValue) {
-                                            $joinTmp[] = array_merge($row, $joinedTableRows);
-                                        }
-
-                                        if ($condition['operator'] === '>' && $value > $columnValue) {
-                                            $joinTmp[] = array_merge($row, $joinedTableRows);
-                                        }
-
-                                        if ($condition['operator'] === '>=' && $value >= $columnValue) {
-                                            $joinTmp[] = array_merge($row, $joinedTableRows);
-                                        }
-
-                                        if ($condition['operator'] === '<=' && $value <= $columnValue) {
-                                            $joinTmp[] = array_merge($row, $joinedTableRows);
-                                        }
-
-                                        if (($condition['operator'] === '!=' || $condition['operator'] === '<>') && $value !== $columnValue) {
-                                            $joinTmp[] = array_merge($row, $joinedTableRows);
-                                        }
-                                    } else {
-
-                                        /**
-                                         * @var Column $joinColumn
-                                         */
-                                        foreach ($joinTable->getColumns() as $joinColumn) {
-                                            $row[$joinColumn->getName()] = null;
-                                        }
-                                   
-                                        $joinTmp[$columnName] = $row;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+        foreach ($this->query->getleftJoin() as $leftJoinedTable) {
+            if (!count($leftJoinedTable['onConditions'])) {
+                throw new Exception('No ON condition.');
             }
+
+            $this->result = $this->doLeftJoin($this->result, $leftJoinedTable['table']->getRows(), $leftJoinedTable['onConditions']);
         }
 
-        return $this->result = $joinTmp;
+        return $this->result;
+    }
+
+    /**
+     * @return array
+     * @throws Exception
+     */
+    private function rightJoin()
+    {
+        if (!count($this->query->getRightJoin())) {
+            return $this->result;
+        }
+
+        foreach ($this->query->getRightJoin() as $rightJoinedTable) {
+            if (!count($rightJoinedTable['onConditions'])) {
+                throw new Exception('No ON condition.');
+            }
+
+            $this->result = $this->doLeftJoin($rightJoinedTable['table']->getRows(), $this->result, $rightJoinedTable['onConditions']);
+        }
+
+        return $this->result;
     }
 
     /**
@@ -390,139 +439,17 @@ class Select extends BaseQuery
      *
      * @throws Exception
      */
-    private function doWhere(array $rows, array $condition)
+    private function doWhere(array $rows, \Condition $condition)
     {
-        $res = [];
+        $whered = [];
 
         foreach ($rows as $row) {
-            if ($condition['operator'] === '=') {
-                // if we have SubQuery
-                if ($condition['value'] instanceof Query) {
-                    $subQueryValue = $this->runSubQuery($condition);
-
-                    if ($row[$condition['column']] === $subQueryValue) {
-                        $res[] = $row;
-                    }
-                } else {
-                    if ($row[$condition['column']] === $condition['value']) {
-                        $res[] = $row;
-                    }
-                }
-            }
-
-            if ($condition['operator'] === '<') {
-                // if we have SubQuery
-                if ($condition['value'] instanceof Query) {
-                    $subQueryValue = $this->runSubQuery($condition);
-
-                    if ($row[$condition['column']] < $subQueryValue) {
-                        $res[] = $row;
-                    }
-                } else {
-                    if ($row[$condition['column']] < $condition['value']) {
-                        $res[] = $row;
-                    }
-                }
-            }
-
-            if ($condition['operator'] === '>') {
-                // if we have SubQuery
-                if ($condition['value'] instanceof Query) {
-                    $subQueryValue = $this->runSubQuery($condition);
-
-                    if ($row[$condition['column']] > $subQueryValue) {
-                        $res[] = $row;
-                    }
-                } else {
-                    if ($row[$condition['column']] > $condition['value']) {
-                        $res[] = $row;
-                    }
-                }
-            }
-
-            if ($condition['operator'] === '<=') {
-                // if we have SubQuery
-                if ($condition['value'] instanceof Query) {
-                    $subQueryValue = $this->runSubQuery($condition);
-
-                    if ($row[$condition['column']] <= $subQueryValue) {
-                        $res[] = $row;
-                    }
-                } else {
-                    if ($row[$condition['column']] <= $condition['value']) {
-                        $res[] = $row;
-                    }
-                }
-            }
-
-            if ($condition['operator'] === '>=') {
-                // if we have SubQuery
-                if ($condition['value'] instanceof Query) {
-                    $subQueryValue = $this->runSubQuery($condition);
-
-                    if ($row[$condition['column']] >= $subQueryValue) {
-                        $res[] = $row;
-                    }
-                } else {
-                    if ($row[$condition['column']] >= $condition['value']) {
-                        $res[] = $row;
-                    }
-                }
-            }
-
-            if ($condition['operator'] === '!=' || $condition['operator'] === '<>') {
-                // if we have SubQuery
-                if ($condition['value'] instanceof Query) {
-                    $subQueryValue = $this->runSubQuery($condition);
-
-                    if ($row[$condition['column']] !== $subQueryValue) {
-                        $res[] = $row;
-                    }
-                } else {
-                    if ($row[$condition['column']] !== $condition['value']) {
-                        $res[] = $row;
-                    }
-                }
-            }
-
-            if ($condition['operator'] === 'in') {
-                if ($condition['value'] instanceof Query) {
-                    $subQueryValues = $condition['value']->run();
-
-                    if (count($subQueryValues->getColumns()) !== 1) {
-                        throw new Exception('Subquery returned more than one column');
-                    }
-
-                    foreach ($subQueryValues->getRows() as $subRow) {
-                        $col = $subRow->getColumns()[0];
-
-                        if ($subRow->get()->{$col} === $row[$condition['column']]) {
-                            $res[] = $row;
-                        }
-                    }
-                } else if (is_array($condition['value'])) {
-                    foreach ($condition['value'] as $inValue) {
-                        if ($inValue === $row[$condition['column']]) {
-                            $res[] = $row;
-                        }
-                    }
-                }
-            }
-
-            if ($condition['operator'] === 'between') {
-                if ($row[$condition['column']] > $condition['value'][0] && $row[$condition['column']] < $condition['value'][1]) {
-                    $res[] = $row;
-                }
-            }
-
-            if ($condition['operator'] === 'between_in') {
-                if ($row[$condition['column']] >= $condition['value'][0] && $row[$condition['column']] <= $condition['value'][1]) {
-                    $res[] = $row;
-                }
+            if (ConditionHelper::condition($condition, $row, [])) {
+                $whered[] = $row;
             }
         }
 
-        return $res;
+        return $whered;
     }
 
 
@@ -536,7 +463,7 @@ class Select extends BaseQuery
             return $this->result;
         }
 
-        foreach ($this->query->getWhereCondition() as $i => $condition) {
+        foreach ($this->query->getWhereCondition() as $condition) {
             $this->result = $this->doWhere($this->result, $condition);
         }
 

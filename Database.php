@@ -96,6 +96,7 @@ class Database
         $this->name        = null;
         $this->size        = null;
         $this->tablesCount = null;
+        $this->databaseDir = null;
     }
 
     /**

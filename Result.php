@@ -75,6 +75,45 @@ final class Result implements ITable
     }
 
     /**
+     * @return string
+     */
+    public function __toString()
+    {
+        if (count($this->rows)) {
+            $table  = '<table border="1">';
+            $table .= '<thead><tr>';
+
+            foreach ($this->columns as $column) {
+                $table .= sprintf('<td>%s</td>', $column);
+            }
+
+            $table.= '</tr></thead><tbody>';
+
+            foreach ($this->rows as $row) {
+                $table .= '<tr>';
+
+                foreach ($this->columns as $columnList) {
+                    $value = $row->get()->{$columnList};
+
+                    if ($value === null) {
+                        $value = '<i>NULL</i>';
+                    }
+
+                    $table .= sprintf('<td>%s</td>', mb_convert_encoding($value, 'utf8'));
+                }
+
+                $table .= '</tr>';
+            }
+
+            $table .= '</tbody></table>';
+
+            return $table;
+        }
+
+        return 'No result';
+    }
+
+    /**
      * @return array
      */
     public function getColumns()
@@ -90,44 +129,5 @@ final class Result implements ITable
     public function getRows($object = false)
     {
         return $this->rows;
-    }
-
-    /**
-     * @return string
-     */
-    public function __toString()
-    {
-        if (count($this->rows)) {
-            $table  = '<table border="1">';
-            $table .= '<thead><tr>';
-
-            foreach ($this->columns as $column) {
-                $table .= sprintf('<td>%s</td>', $column);
-            }
-
-            $table.= '</tr></thead><tbody>';
-            
-            foreach ($this->rows as $row) {
-                $table .= '<tr>';
-
-                foreach ($this->columns as $columnList) {   
-                    $value = $row->get()->{$columnList};
-                    
-                    if ($value === null) {
-                        $value = '<i>NULL</i>';
-                    }
-                    
-                    $table .= sprintf('<td>%s</td>', mb_convert_encoding($value, 'utf8')); 
-                }
-
-                $table .= '</tr>';
-            }
-
-            $table .= '</tbody></table>';
-
-            return $table;
-        }
-
-        return 'No result';
     }
 }
