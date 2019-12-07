@@ -521,10 +521,6 @@ class Query
             throw new Exception(sprintf('Column "%s" does not exist.', $column));
         }*/
 
-        if (!Operator::isOperatorValid($condition->getOperator())) {
-            throw new Exception(sprintf('Unknown operator "%s".', $condition->getOperator()));
-        }
-
         if ($condition->getOperator() === Operator::BETWEEN || $condition->getOperator() === Operator::BETWEEN_INCLUSIVE) {
             if (!is_array($condition->getValue()) && !is_array($condition->getColumn())) {
                 throw new Exception('Parameter for between must be array.');

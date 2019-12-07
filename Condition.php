@@ -22,12 +22,18 @@ class Condition
 
     /**
      * Condition constructor.
-     * @param $column
-     * @param $operator
-     * @param $value
+     * @param string|array|Query $column
+     * @param string             $operator
+     * @param string|array|Query $value
+     *
+     * @throws Exception
      */
     public function __construct($column, $operator, $value)
     {
+        if (!Operator::isOperatorValid($operator)) {
+            throw new Exception(sprintf('Unknown operator "%s".', $operator));
+        }
+
         $this->column = $column;
         $this->operator = mb_strtolower($operator);
         $this->value = $value;
