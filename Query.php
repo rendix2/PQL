@@ -19,8 +19,6 @@ use query\Update;
  */
 class Query
 {
-    const ENABLED_OPERATORS = ['=', '<', '>', '<=', '>=', '!=', '<>', 'in', 'between', 'between_in'];
-
     /**
      * @var Database $database
      */
@@ -523,7 +521,7 @@ class Query
             throw new Exception(sprintf('Column "%s" does not exist.', $column));
         }*/
 
-        if (!in_array($condition->getOperator(), self::ENABLED_OPERATORS, true)) {
+        if (!in_array($condition->getOperator(), Operator::ENABLED_OPERATORS, true)) {
             throw new Exception(sprintf('Unknown operator "%s".', $condition->getOperator()));
         }
 
@@ -594,7 +592,7 @@ class Query
         }
         */
 
-        if (!in_array($operator, self::ENABLED_OPERATORS, true)) {
+        if (!in_array($operator, Operator::ENABLED_OPERATORS, true)) {
             throw  new Exception(sprintf('Unknown operator "%s".', $column));
         }
 
