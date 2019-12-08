@@ -333,7 +333,7 @@ class Select extends BaseQuery
              * @var Condition $condition
              */
             foreach ($leftJoinedTable['onConditions'] as $condition) {
-                $this->result = NestedLoopJoin::leftJoin($this->result, $leftJoinedTable['table']->getRows(), $condition);
+                $this->result = HashJoin::leftJoin($this->result, $leftJoinedTable['table']->getRows(), $condition);
             }
         }
 
@@ -359,7 +359,7 @@ class Select extends BaseQuery
              * @var Condition $condition
              */
             foreach ($rightJoinedTable['onConditions'] as $condition) {
-                $this->result = NestedLoopJoin::rightJoin($rightJoinedTable['table']->getRows(), $this->result, $condition);
+                $this->result = HashJoin::rightJoin($this->result, $rightJoinedTable['table']->getRows(), $condition);
             }
         }
 

@@ -3,6 +3,7 @@
 namespace query\Join;
 
 use Condition;
+use Exception;
 
 /**
  * Class HashJoin
@@ -50,7 +51,7 @@ class HashJoin implements IJoin
 
     public static function rightJoin(array $tableA, array $tableB, Condition $condition)
     {
-        throw new  Exception('');
+        throw new Exception('');
     }
 
     public static function innerJoin(array $tableA, array $tableB, Condition $condition)

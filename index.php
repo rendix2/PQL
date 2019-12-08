@@ -194,7 +194,7 @@ $query->select(['article_id', 'article_text', 'user_id', 'user_name', 'comment_t
             //new Condition('article_text', '=', 'user_name'),
         ]
     )
-    ->leftJoin('comments', [new Condition('article_id', '=', 'comment_article_id')]);
+    ->rightJoin('comments', [new Condition('article_id', '=', 'comment_article_id')]);
     //->where(new Condition('user_id', '!=', 2));
     //->where(new Condition('article_id', '!=', 2));
 
