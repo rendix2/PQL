@@ -635,6 +635,10 @@ class Query
      */
     public function leftJoin($table, array $onConditions)
     {
+        if (!count($onConditions)) {
+            throw new Exception('No ON condition.');
+        }
+
         foreach ($onConditions as $onCondition) {
             if (!($onCondition instanceof Condition)) {
                 throw new Exception('Given param is not Condition');
@@ -655,6 +659,10 @@ class Query
      */
     public function rightJoin($table, array $onConditions)
     {
+        if (!count($onConditions)) {
+            throw new Exception('No ON condition.');
+        }
+
         foreach ($onConditions as $onCondition) {
             if (!($onCondition instanceof Condition)) {
                 throw new Exception('Given param is not Condition');
@@ -675,6 +683,10 @@ class Query
      */
     public function innerJoin($table, array $onConditions)
     {
+        if (!count($onConditions)) {
+            throw new Exception('No ON condition.');
+        }
+
         foreach ($onConditions as $onCondition) {
             if (!($onCondition instanceof Condition)) {
                 throw new Exception('Given param is not Condition');

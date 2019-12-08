@@ -2,8 +2,12 @@
 namespace query;
 
 use Column;
+use Condition;
 use Exception;
+use Operator;
 use Query;
+use query\Join\NestedLoopJoin;
+use query\Join\HashJoin;
 use Row;
 use Table;
 
@@ -272,87 +276,6 @@ class Select extends BaseQuery
     }
 
     /**
-     * @param array $temporaryTable
-     * @param array $joinedTable
-     * @param array $conditions
-     *
-     * @return array
-     */
-    private function doInnerJoin(array $temporaryTable, array $joinedTable, array $conditions)
-    {
-        $innerJoinResult = [];
-
-        foreach ($temporaryTable as $temporaryRow) {
-            foreach ($joinedTable as $joinedRow) {
-                foreach ($conditions as $condition) {
-                    if (ConditionHelper::condition($condition, $temporaryRow, $joinedRow)) {
-                        $innerJoinResult[] = array_merge($temporaryRow, $joinedRow);
-                    }
-                }
-            }
-        }
-
-        return $innerJoinResult;
-    }
-
-    /**
-     * @param array $temporaryTable
-     * @param array $joinedTable
-     * @param array $conditions
-     * @return array
-     */
-    private function doLeftJoin(array $temporaryTable, array $joinedTable, array $conditions)
-    {
-        $innerJoinResult = [];
-        $joinedColumnsTmp = array_keys($joinedTable[0]);
-
-        $joinedColumns = [];
-
-        foreach ($joinedColumnsTmp as $joinedColumn) {
-            $joinedColumns[$joinedColumn] = null;
-        }
-
-        foreach ($temporaryTable as $temporaryRow) {
-            $joined = false;
-
-            foreach ($joinedTable as $joinedRow) {
-                foreach ($conditions as $condition) {
-                    if (ConditionHelper::condition($condition, $temporaryRow, $joinedRow)) {
-                        $innerJoinResult[] = array_merge($temporaryRow, $joinedRow);
-
-                        $joined = true;
-                        break;
-                    }
-                }
-            }
-
-            if (!$joined) {
-                $innerJoinResult[] = array_merge($temporaryRow, $joinedColumns);
-            }
-        }
-
-        return $innerJoinResult;
-    }
-
-    /**
-     * @param array $temporaryTable
-     * @param array $joinedTable
-     * @return array
-     */
-    private function doCrossJoin(array $temporaryTable, array $joinedTable)
-    {
-        $crossJoinResult = [];
-
-        foreach ($temporaryTable as $temporaryRow) {
-            foreach ($joinedTable as $joinedRow) {
-                $crossJoinResult[] = array_merge($temporaryRow, $joinedRow);
-            }
-        }
-
-        return $crossJoinResult;
-    }
-
-    /**
      * @return array|Row[]
      * @throws Exception
      */
@@ -363,11 +286,17 @@ class Select extends BaseQuery
         }
 
         foreach ($this->query->getInnerJoin() as $innerJoinedTable) {
-            if (!count($innerJoinedTable['onConditions'])) {
-                throw new Exception('No ON condition.');
+            /**
+             * @var Condition $condition
+             */
+            foreach ($innerJoinedTable['onConditions'] as $condition) {
+                // equi join
+                if ($condition->getOperator() === Operator::EQUAL) {
+                    $this->result = HashJoin::innerJoin($this->result, $innerJoinedTable['table']->getRows(), $condition);
+                } else {
+                    $this->result = NestedLoopJoin::innerJoin($this->result, $innerJoinedTable['table']->getRows(), $condition);
+                }
             }
-
-            $this->result = $this->doInnerJoin($this->result, $innerJoinedTable['table']->getRows(), $innerJoinedTable['onConditions']);
         }
 
         return $this->result;
@@ -383,7 +312,7 @@ class Select extends BaseQuery
         }
 
         foreach ($this->query->getCrossJoin() as $crossJoinedTable) {
-            $this->result = $this->doCrossJoin($this->result, $crossJoinedTable->getRows());
+            $this->result = NestedLoopJoin::crossJoin($this->result, $crossJoinedTable->getRows());
         }
 
         return $this->result;
@@ -400,11 +329,12 @@ class Select extends BaseQuery
         }
 
         foreach ($this->query->getleftJoin() as $leftJoinedTable) {
-            if (!count($leftJoinedTable['onConditions'])) {
-                throw new Exception('No ON condition.');
+            /**
+             * @var Condition $condition
+             */
+            foreach ($leftJoinedTable['onConditions'] as $condition) {
+                $this->result = NestedLoopJoin::leftJoin($this->result, $leftJoinedTable['table']->getRows(), $condition);
             }
-
-            $this->result = $this->doLeftJoin($this->result, $leftJoinedTable['table']->getRows(), $leftJoinedTable['onConditions']);
         }
 
         return $this->result;
@@ -425,7 +355,12 @@ class Select extends BaseQuery
                 throw new Exception('No ON condition.');
             }
 
-            $this->result = $this->doLeftJoin($rightJoinedTable['table']->getRows(), $this->result, $rightJoinedTable['onConditions']);
+            /**
+             * @var Condition $condition
+             */
+            foreach ($rightJoinedTable['onConditions'] as $condition) {
+                $this->result = NestedLoopJoin::rightJoin($rightJoinedTable['table']->getRows(), $this->result, $condition);
+            }
         }
 
         return $this->result;
@@ -439,19 +374,18 @@ class Select extends BaseQuery
      *
      * @throws Exception
      */
-    private function doWhere(array $rows, \Condition $condition)
+    private function doWhere(array $rows, Condition $condition)
     {
-        $whered = [];
+        $whereResult = [];
 
         foreach ($rows as $row) {
             if (ConditionHelper::condition($condition, $row, [])) {
-                $whered[] = $row;
+                $whereResult[] = $row;
             }
         }
 
-        return $whered;
+        return $whereResult;
     }
-
 
     /**
      * @return array|Row[]

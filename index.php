@@ -67,6 +67,84 @@ bdump($search, 'search');
 
 //Table::create($database, 'test', ['id', 'jmeno']);
 
+/*
+function hashJoin($table1, $table2, $condition) {
+    // hash phase
+    $h = [];
+
+    /*
+    $columns = array_keys($table2[0]);
+    $columnToLeftJoin = [];
+
+    foreach ($columns as $column) {
+        $columnToLeftJoin[$column] = null;
+    }
+
+    unset($columnToLeftJoin[$index2]);
+    */
+
+/*
+    foreach ($table2 as $s) {
+        $h[$s[$condition[1]]][] = $s;
+    }
+
+    // join phase
+    $result = [];
+
+    foreach ($table1 as $r) {
+        if (isset($h[$r[$condition[0]]])) {
+            foreach ($h[$r[$condition[0]]] as $s) {
+                $result[] = array_merge($s, $r);
+            }
+        } else {
+            // $result[] = array_merge($r, $columnToLeftJoin);
+        }
+    }
+
+    return $result;
+}
+
+$table1 = [
+    ['clanek_id' => 1, 'author_id' => 1, 'text' => "foo1"],
+    ['clanek_id' => 2, 'author_id' => 2, 'text' => "foo2"],
+    ['clanek_id' => 3, 'author_id' => 3, 'text' => "foo3"],
+    ['clanek_id' => 4, 'author_id' => 4, 'text' => "foo4"],
+    ['clanek_id' => 5, 'author_id' => 5, 'text' => "foo5"],
+    ['clanek_id' => 6, 'author_id' => 8, 'text' => "foo6"]
+];
+
+$table2 = [
+    ['user_id' => 1, 'user_name' => "A", 'user_surname' => "Whales"],
+    ['user_id' => 2, 'user_name' => "B", 'user_surname' => "Spiders"],
+    ['user_id' => 3, 'user_name' => "C", 'user_surname' => "Ghosts"],
+    ['user_id' => 4, 'user_name' => "D", 'user_surname' => "Zombies"],
+    ['user_id' => 5, 'user_name' => "E", 'user_surname' => "Buffy"],
+    ['user_id' => 8, 'user_name' => "E", 'user_surname' => "foo6d"]
+];
+
+    $cond = [
+        ['author_id', 'user_id'],
+        ['text', 'user_surname']
+    ];
+
+$result = $table1;
+
+
+foreach ($cond as $condItem) {
+    $result = hashJoin($result, $table2, $condItem);
+
+    //bdump($result, '$result');
+}
+
+
+//bdump($joined, '$joined');
+
+foreach ($result as $row) {
+    bdump($row, '$row');
+
+}
+
+*/
 
 $database = new Database('test');
 
@@ -109,9 +187,16 @@ $query = new Query($database);
 
 $query->select(['article_id', 'article_text', 'user_id', 'user_name', 'comment_text'])
     ->from('articles')
-    ->innerJoin('users', [new Condition('article_user_id', '=', 'user_id')])
-    ->leftJoin('comments', [new Condition('article_id', '=', 'comment_article_id')])
-    ->where(new Condition('user_id', '!=', 2));
+    ->innerJoin(
+        'users',
+        [
+            new Condition('article_user_id', '=', 'user_id'),
+            //new Condition('article_text', '=', 'user_name'),
+        ]
+    )
+    ->leftJoin('comments', [new Condition('article_id', '=', 'comment_article_id')]);
+    //->where(new Condition('user_id', '!=', 2));
+    //->where(new Condition('article_id', '!=', 2));
 
 echo $query;
 
