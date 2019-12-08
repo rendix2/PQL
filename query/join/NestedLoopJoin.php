@@ -5,18 +5,32 @@ namespace query\Join;
 use Condition;
 use query\ConditionHelper;
 
+/**
+ * Class NestedLoopJoin
+ *
+ * Simplest algorithm for joining two tables
+ *
+ * @package query\Join
+ */
 class NestedLoopJoin implements IJoin
 {
-    public static function leftJoin(array $tableA, array $tableB, Condition $condition)
+    private static function createNullColumns(array $table)
     {
-        $leftJoinResult = [];
-        $joinedColumnsTmp = array_keys($tableB[0]);
-
+        $joinedColumnsTmp = array_keys($table[0]);
         $joinedColumns = [];
 
         foreach ($joinedColumnsTmp as $joinedColumn) {
             $joinedColumns[$joinedColumn] = null;
         }
+
+        return $joinedColumns;
+    }
+
+    public static function leftJoin(array $tableA, array $tableB, Condition $condition)
+    {
+        $leftJoinResult = [];
+
+        $rightNullJoinedColumns = self::createNullColumns($tableB);
 
         foreach ($tableA as $temporaryRow) {
             $joined = false;
@@ -31,7 +45,7 @@ class NestedLoopJoin implements IJoin
             }
 
             if (!$joined) {
-                $leftJoinResult[] = array_merge($temporaryRow, $joinedColumns);
+                $leftJoinResult[] = array_merge($temporaryRow, $rightNullJoinedColumns);
             }
         }
 
@@ -40,7 +54,28 @@ class NestedLoopJoin implements IJoin
 
     public static function rightJoin(array $tableA, array $tableB, Condition $condition)
     {
-        throw new Exception('');
+        $rightJoinResult = [];
+
+        $leftNullJoinedColumns = self::createNullColumns($tableA);
+
+        foreach ($tableB as $temporaryRow) {
+            $joined = false;
+
+            foreach ($tableA as $joinedRow) {
+                if (ConditionHelper::condition($condition, $temporaryRow, $joinedRow)) {
+                    $rightJoinResult[] = array_merge($temporaryRow, $joinedRow);
+
+                    $joined = true;
+                    break;
+                }
+            }
+
+            if (!$joined) {
+                $rightJoinResult[] = array_merge($temporaryRow, $leftNullJoinedColumns);
+            }
+        }
+
+        return $rightJoinResult;
     }
 
     public static function innerJoin(array $tableA, array $tableB, Condition $condition)
@@ -69,5 +104,49 @@ class NestedLoopJoin implements IJoin
         }
 
         return $crossJoinResult;
+    }
+
+    public static function fullJoin(array $tableA, array $tableB, Condition $condition)
+    {
+        $fullJoinResult = [];
+
+        $leftNullJoinedColumns = self::createNullColumns($tableA);
+        $rightNullJoinedColumns = self::createNullColumns($tableB);
+
+        foreach ($tableA as $temporaryRow) {
+            $joined = false;
+
+            foreach ($tableB as $joinedRow) {
+                if (ConditionHelper::condition($condition, $temporaryRow, $joinedRow)) {
+                    $fullJoinResult[] = array_merge($temporaryRow, $joinedRow);
+
+                    $joined = true;
+                    break;
+                }
+            }
+
+            if (!$joined) {
+                $fullJoinResult[] = array_merge($temporaryRow, $rightNullJoinedColumns);
+            }
+        }
+
+        foreach ($tableB as $temporaryRow) {
+            $joined = false;
+
+            foreach ($tableA as $joinedRow) {
+                if (ConditionHelper::condition($condition, $temporaryRow, $joinedRow)) {
+                    $fullJoinResult[] = array_merge($temporaryRow, $joinedRow);
+
+                    $joined = true;
+                    break;
+                }
+            }
+
+            if (!$joined) {
+                $fullJoinResult[] = array_merge($temporaryRow, $leftNullJoinedColumns);
+            }
+        }
+
+        return array_unique($fullJoinResult);
     }
 }
