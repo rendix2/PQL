@@ -100,6 +100,15 @@ class QueryPrinter
             }
         }
 
+        $fullJoin = '';
+
+        if (count($this->query->getFullJoin())) {
+            foreach ($this->query->getFullJoin() as $table) {
+                $fullJoin .= ' <br>FULL JOIN ' . $table['table']->getName();
+                $fullJoin .= $this->printOnConditions($table['onConditions']);
+            }
+        }
+
         $whereCount = count($this->query->getWhereCondition());
         $where = '';
 
@@ -169,6 +178,6 @@ class QueryPrinter
             $limit = '<br> LIMIT ' . $this->query->getLimit();
         }
 
-        return $select . $from . $innerJoin . $crossJoin . $leftJoin . $rightJoin . $where . $orderBy . $groupBy . $having . $limit . '<br><br>';
+        return $select . $from . $innerJoin . $crossJoin . $leftJoin . $rightJoin . $fullJoin . $where . $orderBy . $groupBy . $having . $limit . '<br><br>';
     }
 }

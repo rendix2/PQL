@@ -45,6 +45,10 @@ class Select extends BaseQuery
 
         //bdump($this->result, '$this->result RIGHT');
 
+        $this->fullJoin();
+
+        //bdump($this->result, '$this->result FULL');
+
         $this->where();
 
         //bdump($this->result, '$this->result WHERE');
@@ -367,12 +371,38 @@ class Select extends BaseQuery
     }
 
     /**
-     * @param array $rows
-     * @param array $condition
-     *
      * @return array
      *
      * @throws Exception
+     */
+    private function fullJoin()
+    {
+        if (!count($this->query->getFullJoin())) {
+            return $this->result;
+        }
+
+        foreach ($this->query->getFullJoin() as $fullJoinedTable) {
+            if (!count($fullJoinedTable['onConditions'])) {
+                throw new Exception('No ON condition.');
+            }
+
+            /**
+             * @var Condition $condition
+             */
+            foreach ($fullJoinedTable['onConditions'] as $condition) {
+                $this->result = NestedLoopJoin::fullJoin($this->result, $fullJoinedTable['table']->getRows(), $condition);
+            }
+        }
+
+        return $this->result;
+    }
+
+    /**
+     * @param array     $rows
+     * @param Condition $condition
+     *
+     * @return array
+     *
      */
     private function doWhere(array $rows, Condition $condition)
     {

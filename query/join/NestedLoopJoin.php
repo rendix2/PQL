@@ -54,28 +54,7 @@ class NestedLoopJoin implements IJoin
 
     public static function rightJoin(array $tableA, array $tableB, Condition $condition)
     {
-        $rightJoinResult = [];
-
-        $leftNullJoinedColumns = self::createNullColumns($tableA);
-
-        foreach ($tableB as $temporaryRow) {
-            $joined = false;
-
-            foreach ($tableA as $joinedRow) {
-                if (ConditionHelper::condition($condition, $temporaryRow, $joinedRow)) {
-                    $rightJoinResult[] = array_merge($temporaryRow, $joinedRow);
-
-                    $joined = true;
-                    break;
-                }
-            }
-
-            if (!$joined) {
-                $rightJoinResult[] = array_merge($temporaryRow, $leftNullJoinedColumns);
-            }
-        }
-
-        return $rightJoinResult;
+        throw new \Exception('Unsupported operation.');
     }
 
     public static function innerJoin(array $tableA, array $tableB, Condition $condition)

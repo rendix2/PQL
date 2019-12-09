@@ -45,7 +45,6 @@ class Query
     private $orderBy;
 
     /**
-     *
      * @var array $having
      */
     private $having;
@@ -65,6 +64,11 @@ class Query
      * @var array $rightJoin
      */
     private $rightJoin;
+
+    /**
+     * @var array $fullJoin
+     */
+    private $fullJoin;
 
     /**
      *
@@ -150,22 +154,29 @@ class Query
         $this->isUpdate = false;
         $this->isSelect = false;
 
+        $this->columns = [];
+
         $this->innerJoin = [];
+
+        $this->crossJoin = [];
+
         $this->leftJoin  = [];
         $this->rightJoin = [];
-        $this->crossJoin = [];
+
+        $this->fullJoin  = [];
 
         $this->whereCondition = [];
 
         $this->orderBy = [];
 
+        $this->groupBy = [];
+
+        $this->having = [];
+
         $this->updateData = [];
         $this->insertData = [];
 
-        $this->having    = [];
         $this->functions = [];
-
-        $this->columns = [];
 
         $this->timeLimit = ini_get('max_execution_time');
         set_time_limit(0);
@@ -177,14 +188,10 @@ class Query
     public function __destruct()
     {
         $this->database = null;
-        $this->columns  = null;
-        $this->table    = null;
 
-        $this->whereCondition = null;
-        $this->having         = null;
+        $this->columns = null;
 
-        $this->orderBy = null;
-        $this->groupBy = null;
+        $this->table = null;
 
         $this->innerJoin = null;
 
@@ -192,6 +199,16 @@ class Query
 
         $this->leftJoin  = null;
         $this->rightJoin = null;
+
+        $this->fullJoin = null;
+
+        $this->whereCondition = null;
+
+        $this->groupBy = null;
+
+        $this->having = null;
+
+        $this->orderBy = null;
 
         $this->limit = null;
 
@@ -285,6 +302,14 @@ class Query
     public function getRightJoin()
     {
         return $this->rightJoin;
+    }
+
+    /**
+     * @return array
+     */
+    public function getFullJoin()
+    {
+        return $this->fullJoin;
     }
 
     /**
@@ -647,6 +672,30 @@ class Query
 
         $this->leftJoin[] = ['table' => new Table($this->database, $table), 'onConditions' => $onConditions];
         
+        return $this;
+    }
+
+    /**
+     * @param string $table
+     * @param array  $onConditions
+     *
+     * @return $this
+     * @throws Exception
+     */
+    public function fullJoin($table, array $onConditions)
+    {
+        if (!count($onConditions)) {
+            throw new Exception('No ON condition.');
+        }
+
+        foreach ($onConditions as $onCondition) {
+            if (!($onCondition instanceof Condition)) {
+                throw new Exception('Given param is not Condition');
+            }
+        }
+
+        $this->fullJoin[] = ['table' => new Table($this->database, $table), 'onConditions' => $onConditions];
+
         return $this;
     }
 
