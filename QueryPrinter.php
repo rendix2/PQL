@@ -37,7 +37,64 @@ class QueryPrinter
             return $this->select();
         } elseif ($this->query->isInsert()) {
             return $this->insertInto();
+        } elseif ($this->query->isDelete()) {
+            return $this->delete();
         }
+    }
+
+    /**
+     * @return string
+     */
+    private function printWhere()
+    {
+        $whereCount = count($this->query->getWhereCondition());
+        $where = '';
+
+        if ($whereCount) {
+            $where = ' <br>WHERE ';
+
+            --$whereCount;
+
+            foreach ($this->query->getWhereCondition() as $i => $whereCondition) {
+                if ($whereCondition->getValue() instanceof Query) {
+                    $value = '(' . (string)$whereCondition->getValue() . ')';
+                } elseif (is_array($whereCondition->getValue())) {
+                    $value =  '(' . implode(',', $whereCondition->getValue()) . ')';
+                } else {
+                    $value = $whereCondition->getValue();
+                }
+
+                if ($whereCondition->getColumn() instanceof Query) {
+                    $column = '(' . (string)$whereCondition->getColumn() . ')';
+                } elseif (is_array($whereCondition->getColumn())) {
+                    $column = implode(',', $whereCondition->getColumn());
+                } else {
+                    $column = $whereCondition->getColumn();
+                }
+
+                $where .= ' ' . $column . ' ' . mb_strtoupper($whereCondition->getOperator()) . ' ' . $value;
+
+                if ($whereCount !== $i) {
+                    $where .= ' <br> &nbsp;&nbsp;&nbsp;&nbsp;AND';
+                }
+            }
+        }
+
+        return $where;
+    }
+
+    /**
+     * @return string
+     */
+    private function printLimit()
+    {
+        $limit = '';
+
+        if ($this->query->getLimit()) {
+            $limit = '<br> LIMIT ' . $this->query->getLimit();
+        }
+
+        return $limit;
     }
 
     /**
@@ -111,38 +168,7 @@ class QueryPrinter
             }
         }
 
-        $whereCount = count($this->query->getWhereCondition());
-        $where = '';
-
-        if ($whereCount) {
-            $where = ' <br>WHERE ';
-
-            --$whereCount;
-
-            foreach ($this->query->getWhereCondition() as $i => $whereCondition) {
-                if ($whereCondition->getValue() instanceof Query) {
-                    $value = '(' . (string)$whereCondition->getValue() . ')';
-                } elseif (is_array($whereCondition->getValue())) {
-                    $value =  '(' . implode(',', $whereCondition->getValue()) . ')';
-                } else {
-                    $value = $whereCondition->getValue();
-                }
-
-                if ($whereCondition->getColumn() instanceof Query) {
-                    $column = '(' . (string)$whereCondition->getColumn() . ')';
-                } elseif (is_array($whereCondition->getColumn())) {
-                    $column = implode(',', $whereCondition->getColumn());
-                } else {
-                    $column = $whereCondition->getColumn();
-                }
-
-                $where .= ' ' . $column . ' ' . mb_strtoupper($whereCondition->getOperator()) . ' ' . $value;
-
-                if ($whereCount !== $i) {
-                    $where .= ' <br> &nbsp;&nbsp;&nbsp;&nbsp;AND';
-                }
-            }
-        }
+        $where = $this->printWhere();
 
         $orderBy = '';
 
@@ -174,11 +200,7 @@ class QueryPrinter
             }
         }
 
-        $limit = '';
-
-        if ($this->query->getLimit()) {
-            $limit = '<br> LIMIT ' . $this->query->getLimit();
-        }
+        $limit = $this->printLimit();
 
         return $select . $from . $innerJoin . $crossJoin . $leftJoin . $rightJoin . $fullJoin . $where . $orderBy . $groupBy . $having . $limit . '<br><br>';
     }
@@ -195,5 +217,18 @@ class QueryPrinter
         $values = '(' . implode(', ', $values). ')';
 
         return 'INSERT INTO ' . $columns . ' VALUES ' . $values;
+    }
+
+    /**
+     * @return string
+     */
+    private function delete()
+    {
+        $delete = 'DELETE FROM ' . $this->query->getTable()->getName();
+
+        $where = $this->printWhere();
+        $limit = $this->printLimit();
+
+        return $delete . $where . $limit;
     }
 }
