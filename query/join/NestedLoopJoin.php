@@ -3,6 +3,7 @@
 namespace query\Join;
 
 use Condition;
+use Exception;
 use query\ConditionHelper;
 
 /**
@@ -14,23 +15,14 @@ use query\ConditionHelper;
  */
 class NestedLoopJoin implements IJoin
 {
-    private static function createNullColumns(array $table)
-    {
-        $joinedColumnsTmp = array_keys($table[0]);
-        $joinedColumns = [];
-
-        foreach ($joinedColumnsTmp as $joinedColumn) {
-            $joinedColumns[$joinedColumn] = null;
-        }
-
-        return $joinedColumns;
-    }
-
+    /**
+     * @inheritDoc
+     */
     public static function leftJoin(array $tableA, array $tableB, Condition $condition)
     {
         $leftJoinResult = [];
 
-        $rightNullJoinedColumns = self::createNullColumns($tableB);
+        $rightNullJoinedColumns = OuterJoinHelper::createNullColumns($tableB);
 
         foreach ($tableA as $temporaryRow) {
             $joined = false;
@@ -52,11 +44,18 @@ class NestedLoopJoin implements IJoin
         return $leftJoinResult;
     }
 
+    /**
+     * @inheritDoc
+     * @throws Exception
+     */
     public static function rightJoin(array $tableA, array $tableB, Condition $condition)
     {
-        throw new \Exception('Unsupported operation.');
+        throw new Exception('Unsupported operation.');
     }
 
+    /**
+     * @inheritDoc
+     */
     public static function innerJoin(array $tableA, array $tableB, Condition $condition)
     {
         $innerJoinResult = [];
@@ -72,6 +71,12 @@ class NestedLoopJoin implements IJoin
         return $innerJoinResult;
     }
 
+    /**
+     * @param array $tableA
+     * @param array $tableB
+     *
+     * @return array
+     */
     public static function crossJoin(array $tableA, array $tableB)
     {
         $crossJoinResult = [];
@@ -85,12 +90,19 @@ class NestedLoopJoin implements IJoin
         return $crossJoinResult;
     }
 
+    /**
+     * @param array     $tableA
+     * @param array     $tableB
+     * @param Condition $condition
+     *
+     * @return array
+     */
     public static function fullJoin(array $tableA, array $tableB, Condition $condition)
     {
         $fullJoinResult = [];
 
-        $leftNullJoinedColumns = self::createNullColumns($tableA);
-        $rightNullJoinedColumns = self::createNullColumns($tableB);
+        $leftNullJoinedColumns = OuterJoinHelper::createNullColumns($tableA);
+        $rightNullJoinedColumns = OuterJoinHelper::createNullColumns($tableB);
 
         foreach ($tableA as $temporaryRow) {
             $joined = false;

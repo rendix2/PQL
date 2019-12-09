@@ -14,18 +14,15 @@ use Exception;
  */
 class HashJoin implements IJoin
 {
-
+    /**
+     * @inheritDoc
+     */
     public static function leftJoin(array $tableA, array $tableB, Condition $condition)
     {
         // hash phase
         $h = [];
 
-        $columns = array_keys($tableB[0]);
-        $columnToLeftJoin = [];
-
-        foreach ($columns as $column) {
-            $columnToLeftJoin[$column] = null;
-        }
+        $columnToLeftJoin = OuterJoinHelper::createNullColumns($tableB);
 
         unset($columnToLeftJoin[$condition->getValue()]);
 
@@ -49,11 +46,18 @@ class HashJoin implements IJoin
         return $leftJoinResult;
     }
 
+    /**
+     * @inheritDoc
+     * @throws Exception
+     */
     public static function rightJoin(array $tableA, array $tableB, Condition $condition)
     {
         throw new Exception('');
     }
 
+    /**
+     * @inheritDoc
+     */
     public static function innerJoin(array $tableA, array $tableB, Condition $condition)
     {
         // hash phase
