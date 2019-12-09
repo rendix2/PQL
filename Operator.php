@@ -19,7 +19,8 @@ class Operator
         self::LESS_AND_GREATER_THAN,
         self::IN,
         self::BETWEEN,
-        self::BETWEEN_INCLUSIVE
+        self::BETWEEN_INCLUSIVE,
+        self::REGULAR_EXPRESSION,
     ];
 
     /**
@@ -71,6 +72,11 @@ class Operator
      * @var string
      */
     const BETWEEN_INCLUSIVE = 'between_in';
+
+    /**
+     * @var string
+     */
+    const REGULAR_EXPRESSION = 'regexp';
 
     /**
      * @param string $operator

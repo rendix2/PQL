@@ -437,6 +437,21 @@ class ConditionHelper
             }
         }
 
+        if ($condition->getOperator() === Operator::REGULAR_EXPRESSION) {
+            $quotedValue = preg_quote($condition->getValue(), '#');
+            $quotedColumn= preg_quote($condition->getColumn(), '#');
+
+            // column regexp [a-z]
+            if ($issetRowAColumn && preg_match('#'. $quotedValue .'#', $rowA[$condition->getColumn()])) {
+                return true;
+            }
+
+            // [a-z] regexp column
+            if ($issetRowAColumn && preg_match('#'. $quotedColumn .'#', $rowA[$condition->getValue()])) {
+                return true;
+            }
+        }
+
         return false;
     }
 }
