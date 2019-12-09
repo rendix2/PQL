@@ -447,7 +447,7 @@ class ConditionHelper
             }
 
             // [a-z] regexp column
-            if ($issetRowAColumn && preg_match('#'. $quotedColumn .'#', $rowA[$condition->getValue()])) {
+            if ($issetRowAValue && preg_match('#'. $quotedColumn .'#', $rowA[$condition->getValue()])) {
                 return true;
             }
         }
