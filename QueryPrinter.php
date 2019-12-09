@@ -30,6 +30,7 @@ class QueryPrinter
 
     /**
      * @return string
+     * @throws Exception
      */
     public function printQuery()
     {
@@ -39,6 +40,10 @@ class QueryPrinter
             return $this->insertInto();
         } elseif ($this->query->isDelete()) {
             return $this->delete();
+        } elseif ($this->query->isDelete()) {
+            return $this->delete();
+        } else {
+            throw new Exception('Unknown query type.');
         }
     }
 
@@ -230,5 +235,34 @@ class QueryPrinter
         $limit = $this->printLimit();
 
         return $delete . $where . $limit;
+    }
+
+    /**
+     * @return string
+     */
+    public function update()
+    {
+        $update = 'UPDATE ' . $this->query->getTable();
+
+        $set = ' SET ';
+
+        $i = 0;
+        $count = count($this->query->getUpdateData());
+
+        foreach ($this->query->getUpdateData() as $column => $value) {
+            $i++;
+
+            $set .= $column . ' = ' . $value;
+
+            if ($count !== $i) {
+                $set .= ', ';
+            }
+        }
+
+        $where = $this->printWhere();
+        $limit = $this->printLimit();
+
+        return $update . $set . $where . $limit;
+
     }
 }
