@@ -46,49 +46,46 @@ class Update extends BaseQuery
     private function where()
     {
         $up     = $this->query->getUpdateData();
-        $wheres = $this->query->getWhereCondition();
+        $whereConditions = $this->query->getWhereCondition();
         $rows   = $this->query->getTable()->getRows();
         $res    = $rows;
 
-        foreach ($wheres as $where) {
+        foreach ($whereConditions as $whereCondition) {
             foreach ($rows as $rowNumber => $row) {
                 foreach ($row as $column => $value) {
-                    if ($where['column'] === $column) {
+                    if ($whereCondition['column'] === $column) {
 
-                        if ($where['operator'] === '=' && $where['value'] === $value) {
+                        if ($whereCondition['operator'] === '=' && $whereCondition['value'] === $value) {
                             foreach ($up as $upKey => $upValue) {
                                 $res[$rowNumber][$upKey] = $upValue;
                             }
                         }
 
-                        if ($where['operator'] === '>' && $where['value'] > $value) {
-                            foreach ($up as $upKey => $upValue) {
-                                $res[$rowNumber][$upKey] = $upValue;
-                            }
-
-                        }
-
-                        if ($where['operator'] === '>=' && $where['value'] >= $value) {
+                        if ($whereCondition['operator'] === '>' && $whereCondition['value'] > $value) {
                             foreach ($up as $upKey => $upValue) {
                                 $res[$rowNumber][$upKey] = $upValue;
                             }
                         }
 
-                        if ($where['operator'] === '<') {
-                            if ($where['value'] < $value) {
-                                foreach ($up as $upKey => $upValue) {
-                                    $res[$rowNumber][$upKey] = $upValue;
-                                }
-                            }
-                        }
-
-                        if ($where['operator'] === '<=' && $where['value'] <= $value) {
+                        if ($whereCondition['operator'] === '>=' && $whereCondition['value'] >= $value) {
                             foreach ($up as $upKey => $upValue) {
                                 $res[$rowNumber][$upKey] = $upValue;
                             }
                         }
 
-                        if (($where['operator'] === '!=' || $where['operator'] === '<>') && $where['value'] !== $value) {
+                        if (($whereCondition['operator'] === '<') && $whereCondition['value'] < $value) {
+                            foreach ($up as $upKey => $upValue) {
+                                $res[$rowNumber][$upKey] = $upValue;
+                            }
+                        }
+
+                        if ($whereCondition['operator'] === '<=' && $whereCondition['value'] <= $value) {
+                            foreach ($up as $upKey => $upValue) {
+                                $res[$rowNumber][$upKey] = $upValue;
+                            }
+                        }
+
+                        if (($whereCondition['operator'] === '!=' || $whereCondition['operator'] === '<>') && $whereCondition['value'] !== $value) {
                             foreach ($up as $upKey => $upValue) {
                                 $res[$rowNumber][$upKey] = $upValue;
                             }

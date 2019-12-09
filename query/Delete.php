@@ -43,35 +43,35 @@ class Delete extends BaseQuery
      */
     private function where()
     {
-        $wheres = $this->query->getWhereCondition();
-        $rows   = $this->query->getTable()->getRows();
-        $result = [];
+        $whereConditions = $this->query->getWhereCondition();
+        $rows            = $this->query->getTable()->getRows();
+        $result          = [];
 
-        foreach ($wheres as $where) {
+        foreach ($whereConditions as $whereCondition) {
             foreach ($rows as $rowNumber => $row) {
                 foreach ($row as $column => $value) {
-                    if ($where['column'] === $column) {
-                        if ($where['operator'] === '=' && $where['value'] === $value) {
+                    if ($whereCondition['column'] === $column) {
+                        if ($whereCondition['operator'] === '=' && $whereCondition['value'] === $value) {
                           $result[] = $rowNumber;
                         }
 
-                        if ($where['operator'] === '>' && $where['value'] > $value) {
+                        if ($whereCondition['operator'] === '>' && $whereCondition['value'] > $value) {
                             $result[] = $rowNumber;
                         }
 
-                        if ($where['operator'] === '>=' && $where['value'] >= $value) {
+                        if ($whereCondition['operator'] === '>=' && $whereCondition['value'] >= $value) {
                             $result[] = $rowNumber;
                         }
 
-                        if ($where['operator'] === '<' && $where['value'] < $value) {
+                        if ($whereCondition['operator'] === '<' && $whereCondition['value'] < $value) {
                             $result[] = $rowNumber;
                         }
 
-                        if ($where['operator'] === '<=' && $where['value'] <= $value) {
+                        if ($whereCondition['operator'] === '<=' && $whereCondition['value'] <= $value) {
                             $result[] = $rowNumber;
                         }
 
-                        if (($where['operator'] === '!=' || $where['operator'] === '<>') && $where['value'] !== $value) {
+                        if (($whereCondition['operator'] === '!=' || $whereCondition['operator'] === '<>') && $whereCondition['value'] !== $value) {
                             $result[] = $rowNumber;
                         }
                     }
