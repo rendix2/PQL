@@ -35,6 +35,8 @@ class QueryPrinter
     {
         if ($this->query->isSelect()) {
             return $this->select();
+        } elseif ($this->query->isInsert()) {
+            return $this->insertInto();
         }
     }
 
@@ -179,5 +181,19 @@ class QueryPrinter
         }
 
         return $select . $from . $innerJoin . $crossJoin . $leftJoin . $rightJoin . $fullJoin . $where . $orderBy . $groupBy . $having . $limit . '<br><br>';
+    }
+
+    /**
+     * @return string
+     */
+    private function insertInto()
+    {
+        $columns = array_keys($this->query->getInsertData());
+        $values  = array_values($this->query->getInsertData());
+
+        $columns = '(' . implode(', ', $columns). ')';
+        $values = '(' . implode(', ', $values). ')';
+
+        return 'INSERT INTO ' . $columns . ' VALUES ' . $values;
     }
 }
