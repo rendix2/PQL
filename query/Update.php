@@ -28,7 +28,7 @@ class Update extends BaseQuery
         $file->fwrite($this->query->getTable()->getColumnsString() . $this->query->getTable()->getFileEnds());
         
         foreach ($this->result as $values) {
-            $file->fwrite(implode(Table::COLUMN_DELIMITER, $values));
+            $file->fwrite(implode(Table::COLUMN_DELIMITER, $values) . $this->query->getTable()->getFileEnds());
         }
         
         $file = null;
@@ -41,6 +41,26 @@ class Update extends BaseQuery
     }
 
     /**
+     * @param array      $rows
+     * @param \Condition $condition
+     * @param array      $up
+     *
+     * @return array
+     */
+    private function doWhere(array $rows, \Condition $condition, array $up)
+    {
+        foreach ($rows as $rowNumber => $row) {
+            if (ConditionHelper::condition($condition, $row, [])) {
+                foreach ($up as $upKey => $upValue) {
+                    $rows[$rowNumber][$upKey] = $upValue;
+                }
+            }
+        }
+
+        return $rows;
+    }
+
+    /**
      * where conditions
      */
     private function where()
@@ -48,54 +68,12 @@ class Update extends BaseQuery
         $up     = $this->query->getUpdateData();
         $whereConditions = $this->query->getWhereCondition();
         $rows   = $this->query->getTable()->getRows();
-        $res    = $rows;
 
         foreach ($whereConditions as $whereCondition) {
-            foreach ($rows as $rowNumber => $row) {
-                foreach ($row as $column => $value) {
-                    if ($whereCondition['column'] === $column) {
-
-                        if ($whereCondition['operator'] === '=' && $whereCondition['value'] === $value) {
-                            foreach ($up as $upKey => $upValue) {
-                                $res[$rowNumber][$upKey] = $upValue;
-                            }
-                        }
-
-                        if ($whereCondition['operator'] === '>' && $whereCondition['value'] > $value) {
-                            foreach ($up as $upKey => $upValue) {
-                                $res[$rowNumber][$upKey] = $upValue;
-                            }
-                        }
-
-                        if ($whereCondition['operator'] === '>=' && $whereCondition['value'] >= $value) {
-                            foreach ($up as $upKey => $upValue) {
-                                $res[$rowNumber][$upKey] = $upValue;
-                            }
-                        }
-
-                        if (($whereCondition['operator'] === '<') && $whereCondition['value'] < $value) {
-                            foreach ($up as $upKey => $upValue) {
-                                $res[$rowNumber][$upKey] = $upValue;
-                            }
-                        }
-
-                        if ($whereCondition['operator'] === '<=' && $whereCondition['value'] <= $value) {
-                            foreach ($up as $upKey => $upValue) {
-                                $res[$rowNumber][$upKey] = $upValue;
-                            }
-                        }
-
-                        if (($whereCondition['operator'] === '!=' || $whereCondition['operator'] === '<>') && $whereCondition['value'] !== $value) {
-                            foreach ($up as $upKey => $upValue) {
-                                $res[$rowNumber][$upKey] = $upValue;
-                            }
-                        }
-                    }
-                }
-            }
+            $rows = $this->doWhere($rows, $whereCondition, $up);
         }
 
-        $this->result = $res;
+        $this->result = $rows;
     }
 }
 

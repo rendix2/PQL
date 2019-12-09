@@ -194,9 +194,36 @@ $query->select(['article_id', 'article_text', 'user_id', 'user_name', 'comment_t
             //new Condition('article_text', '=', 'user_name'),
         ]
     )
-    ->rightJoin('comments', [new Condition('article_id', '=', 'comment_article_id')]);
+    ->leftJoin('comments', [new Condition('article_id', '=', 'comment_article_id')]);
     //->where(new Condition('user_id', '!=', 2));
     //->where(new Condition('article_id', '!=', 2));
+
+echo $query;
+
+echo $query->run();
+
+
+$query = new Query($database);
+$query->update('articles', ['article_text' => 'a'])
+    ->where(new Condition('article_id', '=', 1))
+    ->run();
+
+
+
+$query = new Query($database);
+
+$query->select(['article_id', 'article_text', 'user_id', 'user_name', 'comment_text'])
+    ->from('articles')
+    ->innerJoin(
+        'users',
+        [
+            new Condition('article_user_id', '=', 'user_id'),
+            //new Condition('article_text', '=', 'user_name'),
+        ]
+    )
+    ->leftJoin('comments', [new Condition('article_id', '=', 'comment_article_id')]);
+//->where(new Condition('user_id', '!=', 2));
+//->where(new Condition('article_id', '!=', 2));
 
 echo $query;
 
