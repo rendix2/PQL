@@ -23,10 +23,8 @@ class Delete extends BaseQuery
         $fileTemp = new SplFileObject($tmpFileName, 'a');
         $fileTemp->fwrite($this->query->getTable()->getColumnsString() . $this->query->getTable()->getFileEnds());
         
-        foreach ($this->query->getTable()->getRows() as $line => $row) {
-            if (!in_array($line, $this->result, true)) {
-                $fileTemp->fwrite(implode(Table::COLUMN_DELIMITER, $row) . $this->query->getTable()->getFileEnds());
-            }
+        foreach ($this->result as $line => $row) {
+            $fileTemp->fwrite(implode(Table::COLUMN_DELIMITER, $row) . $this->query->getTable()->getFileEnds());
         }
         
         $fileTemp = null;        
@@ -47,15 +45,13 @@ class Delete extends BaseQuery
      */
     private function doWhere(array $rows, Condition $condition)
     {
-        $result = [];
-
         foreach ($rows as $rowNumber => $row) {
             if (ConditionHelper::condition($condition, $row, [])) {
-                $result[] = $rowNumber;
+                unset($rows[$rowNumber]);
             }
         }
 
-        return $result;
+        return $this->result = $rows;
     }
 
     /**
