@@ -1,6 +1,7 @@
 <?php
 namespace query;
 
+use Condition;
 use Nette\Utils\FileSystem;
 use SplFileObject;
 use Table;
@@ -42,12 +43,12 @@ class Update extends BaseQuery
 
     /**
      * @param array      $rows
-     * @param \Condition $condition
+     * @param Condition $condition
      * @param array      $up
      *
      * @return array
      */
-    private function doWhere(array $rows, \Condition $condition, array $up)
+    private function doWhere(array $rows, Condition $condition, array $up)
     {
         foreach ($rows as $rowNumber => $row) {
             if (ConditionHelper::condition($condition, $row, [])) {

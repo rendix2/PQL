@@ -1,6 +1,7 @@
 <?php
 namespace query;
 
+use Condition;
 use Exception;
 use Nette\Utils\FileSystem;
 use SplFileObject;
@@ -24,7 +25,7 @@ class Delete extends BaseQuery
         
         foreach ($this->query->getTable()->getRows() as $line => $row) {
             if (!in_array($line, $this->result, true)) {
-                $fileTemp->fwrite(implode(Table::COLUMN_DELIMITER, $row));
+                $fileTemp->fwrite(implode(Table::COLUMN_DELIMITER, $row) . $this->query->getTable()->getFileEnds());
             }
         }
         
@@ -39,47 +40,37 @@ class Delete extends BaseQuery
     }
 
     /**
+     * @param array     $rows
+     * @param Condition $condition
+     *
+     * @return array
+     */
+    private function doWhere(array $rows, Condition $condition)
+    {
+        $result = [];
+
+        foreach ($rows as $rowNumber => $row) {
+            if (ConditionHelper::condition($condition, $row, [])) {
+                $result[] = $rowNumber;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
      *
      */
     private function where()
     {
         $whereConditions = $this->query->getWhereCondition();
         $rows            = $this->query->getTable()->getRows();
-        $result          = [];
 
         foreach ($whereConditions as $whereCondition) {
-            foreach ($rows as $rowNumber => $row) {
-                foreach ($row as $column => $value) {
-                    if ($whereCondition['column'] === $column) {
-                        if ($whereCondition['operator'] === '=' && $whereCondition['value'] === $value) {
-                          $result[] = $rowNumber;
-                        }
-
-                        if ($whereCondition['operator'] === '>' && $whereCondition['value'] > $value) {
-                            $result[] = $rowNumber;
-                        }
-
-                        if ($whereCondition['operator'] === '>=' && $whereCondition['value'] >= $value) {
-                            $result[] = $rowNumber;
-                        }
-
-                        if ($whereCondition['operator'] === '<' && $whereCondition['value'] < $value) {
-                            $result[] = $rowNumber;
-                        }
-
-                        if ($whereCondition['operator'] === '<=' && $whereCondition['value'] <= $value) {
-                            $result[] = $rowNumber;
-                        }
-
-                        if (($whereCondition['operator'] === '!=' || $whereCondition['operator'] === '<>') && $whereCondition['value'] !== $value) {
-                            $result[] = $rowNumber;
-                        }
-                    }
-                }
-            }
+            $rows = $this->doWhere($rows, $whereCondition);
         }
 
-        $this->result = $result;
+        $this->result = $rows;
     }
 }
 
