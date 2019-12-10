@@ -105,7 +105,6 @@ class Query
     private $isUpdate;
 
     /**
-     *
      * @var bool $isDelete
      */
     private $isDelete;
@@ -464,7 +463,6 @@ class Query
     {
         $this->functions[] = ['column' => $column, 'function' => 'min'];
 
-        //$this->columns[] = 'min';
         $this->isSelect  = true;
 
         return $this;

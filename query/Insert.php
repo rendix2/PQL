@@ -67,24 +67,6 @@ class Insert extends BaseQuery
         $file = null;
 
         return $written;
-
-        /*
-        foreach ($lines as $line) {
-            bdump($line);
-            $file->fwrite($line);
-        }
-
-        exit;
-        */
-
-
-        /*
-        return file_put_contents(
-            $this->query->getTable()->getFilePath(),
-            "\n" . implode(Table::COLUMN_DELIMITER, $row),
-            FILE_APPEND
-        );
-        */
     }
 }
 
