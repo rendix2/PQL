@@ -257,6 +257,22 @@ $res = null;
 */
 Profiler::finish('select');
 
+/*
+$table = [
+    ['order_id' => 1, 'order_date' => '15-15-15',],
+    ['order_id' => 2, 'order_date' => '14-14-14',],
+    ['order_id' => 3, 'order_date' => '13-13-13',]
+];
+
+$tableB = [
+    ['user_id' => 2, 'user_name' => 'b', 'user_order_id' => 3],
+    ['user_id' => 1, 'user_name' => 'a', 'user_order_id' => 2],
+];
+
+$condition = new Condition('order_id', '=', 'user_order_id');
+
+bdump(\query\Join\SortMergeJoin::innerJoin($table, $tableB, $condition));
+*/
 
 /*
 $j = new \BTree\BtreeJ();
