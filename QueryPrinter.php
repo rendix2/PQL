@@ -34,16 +34,17 @@ class QueryPrinter
      */
     public function printQuery()
     {
-        if ($this->query->isSelect()) {
-            return $this->select();
-        } elseif ($this->query->isInsert()) {
-            return $this->insertInto();
-        } elseif ($this->query->isDelete()) {
-            return $this->delete();
-        } elseif ($this->query->isUpdate()) {
-            return $this->update();
-        } else {
-            throw new Exception('Unknown query type.');
+        switch ($this->query->getType()) {
+            case Query::SELECT:
+                return $this->select();
+            case Query::INSERT:
+                return $this->insertInto();
+            case Query::DELETE:
+                return $this->delete();
+            case Query::UPDATE:
+                return $this->update();
+            default:
+                throw new Exception('Unknown query type.');
         }
     }
 

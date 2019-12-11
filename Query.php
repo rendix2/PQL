@@ -20,6 +20,31 @@ use query\Update;
 class Query
 {
     /**
+     * @var string
+     */
+    const SELECT = 'select';
+
+    /**
+     * @var string
+     */
+    const INSERT = 'insert';
+
+    /**
+     * @var string
+     */
+    const UPDATE = 'update';
+
+    /**
+     * @var string
+     */
+    const DELETE = 'delete';
+
+    /**
+     * @var string
+     */
+    const INSERT_SELECT = 'insert_select';
+
+    /**
      * @var Database $database
      */
     private $database;
@@ -87,27 +112,9 @@ class Query
     private $limit;
 
     /**
-     *
-     * @var bool $isSelect
+     * @var string $type
      */
-    private $isSelect;
-
-    /**
-     *
-     * @var bool $isInsert
-     */
-    private $isInsert;
-
-    /**
-     *
-     * @var bool $isUpdate
-     */
-    private $isUpdate;
-
-    /**
-     * @var bool $isDelete
-     */
-    private $isDelete;
+    private $type;
 
     /**
      * @var array $updateData
@@ -147,11 +154,6 @@ class Query
     public function __construct(Database $database)
     {
         $this->database = $database;
-
-        $this->isDelete = false;
-        $this->isInsert = false;
-        $this->isUpdate = false;
-        $this->isSelect = false;
 
         $this->columns = [];
 
@@ -211,10 +213,7 @@ class Query
 
         $this->limit = null;
 
-        $this->isSelect = null;
-        $this->isDelete = null;
-        $this->isUpdate = null;
-        $this->isInsert = null;
+        $this->type = null;
 
         $this->insertData = null;
         $this->updateData = null;
@@ -373,43 +372,19 @@ class Query
     }
 
     /**
+     * @return string
+     */
+    public function getType()
+    {
+        return $this->type;
+    }
+
+    /**
      * @return Database
      */
     public function getDatabase()
     {
         return $this->database;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isSelect()
-    {
-        return $this->isSelect;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isInsert()
-    {
-        return $this->isInsert;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isUpdate()
-    {
-        return $this->isUpdate;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isDelete()
-    {
-        return $this->isDelete;
     }
 
     /**
@@ -421,7 +396,7 @@ class Query
     {
         $this->functions[] = ['column' => $column, 'function' => 'count'];
 
-        $this->isSelect  = true;
+        $this->type = self::SELECT;
 
         return $this;
     }
@@ -435,7 +410,7 @@ class Query
     {
         $this->functions[] = ['column' => $column, 'function' => 'sum'];
 
-        $this->isSelect  = true;
+        $this->type = self::SELECT;
 
         return $this;
     }
@@ -449,7 +424,7 @@ class Query
     {
         $this->functions[] = ['column' => $column, 'function' => 'avg'];
 
-        $this->isSelect  = true;
+        $this->type =self::SELECT;
 
         return $this;
     }
@@ -463,7 +438,7 @@ class Query
     {
         $this->functions[] = ['column' => $column, 'function' => 'min'];
 
-        $this->isSelect  = true;
+        $this->type = self::SELECT;
 
         return $this;
     }
@@ -477,7 +452,7 @@ class Query
     {
         $this->functions[] = ['column' => $column, 'function' => 'max'];
 
-        $this->isSelect  = true;
+        $this->type = self::SELECT;
 
         return $this;
     }
@@ -491,7 +466,7 @@ class Query
     {
         $this->functions[] = ['column' => $column, 'function' => 'median'];
 
-        $this->isSelect  = true;
+        $this->type = self::SELECT;
 
         return $this;
     }
@@ -513,7 +488,7 @@ class Query
         }
         */
 
-        $this->isSelect = true;
+        $this->type = self::SELECT;
         $this->columns  = $columns;
 
         return $this;
@@ -766,7 +741,7 @@ class Query
      */
     public function update($table, array $data)
     {
-        $this->isUpdate   = true;
+        $this->type       = self::UPDATE;
         $this->updateData = $data;
         $this->table      = new Table($this->database, $table);
 
@@ -782,7 +757,7 @@ class Query
      */
     public function add($table, array $data)
     {
-        $this->isInsert   = true;
+        $this->type       = self::INSERT;
         $this->insertData = $data;
         $this->table      = new Table($this->database, $table);
         
@@ -804,8 +779,8 @@ class Query
      */
     public function delete($table)
     {
-        $this->isDelete = true;
-        $this->table    = new Table($this->database, $table);
+        $this->type  = self::DELETE;
+        $this->table = new Table($this->database, $table);
 
         return $this;
     }
@@ -819,9 +794,10 @@ class Query
     {
         return new FakeTable([], []);
     }
-    
+
     /**
      * @return Result
+     * @throws Exception
      */
     public function run()
     {
@@ -830,41 +806,38 @@ class Query
         }
 
          $startTime = microtime(true);
-         
-         if ($this->isSelect) {
-             $select      = new Select($this);
-             $columnObj   = $select->run();
-             $endTime     = microtime(true);
-             $executeTime = $endTime - $startTime;
-             
-             return $this->res = new Result($this->columns, $columnObj, $executeTime);
-         }
 
-         if ($this->isInsert) {
-             $insert       = new Insert($this);
-             $affectedRows = $insert->run();
-             $endTime      = microtime(true);
-             $executeTime  = $endTime - $startTime;
+        switch ($this->type) {
+            case self::SELECT:
+                $select      = new Select($this);
+                $columnObj   = $select->run();
+                $endTime     = microtime(true);
+                $executeTime = $endTime - $startTime;
 
-             return $this->res = new Result([], [], $executeTime, $affectedRows);
-         }
+                return $this->res = new Result($this->columns, $columnObj, $executeTime);
+            case self::INSERT:
+                $insert       = new Insert($this);
+                $affectedRows = $insert->run();
+                $endTime      = microtime(true);
+                $executeTime  = $endTime - $startTime;
 
-         if ($this->isUpdate) {
-             $update       = new Update($this);
-             $affectedRows = $update->run();
-             $endTime      = microtime(true);
-             $executeTime  = $endTime - $startTime;
+                return $this->res = new Result([], [], $executeTime, $affectedRows);
+            case self::UPDATE:
+                $update       = new Update($this);
+                $affectedRows = $update->run();
+                $endTime      = microtime(true);
+                $executeTime  = $endTime - $startTime;
 
-             return $this->res = new Result([], [], $executeTime, $affectedRows);
-         }
+                return $this->res = new Result([], [], $executeTime, $affectedRows);
+            case self::DELETE:
+                $delete       = new Delete($this);
+                $affectedRows = $delete->run();
+                $endTime      = microtime(true);
+                $executeTime  = $endTime - $startTime;
 
-         if ($this->isDelete) {
-             $delete       = new Delete($this);
-             $affectedRows = $delete->run();
-             $endTime      = microtime(true);
-             $executeTime  = $endTime - $startTime;
-
-             return $this->res = new Result([], [], $executeTime, $affectedRows);
-         }
+                return $this->res = new Result([], [], $executeTime, $affectedRows);
+            default:
+                throw new Exception('Unknown query type.');
+        }
     }
 }
