@@ -280,6 +280,9 @@ $condition = new Condition('article_user_id', '=', 'user_id');
 
 bdump(\query\Join\NestedLoopJoin::fullJoin($table, $tableA, $condition));
 
+dump(\query\Join\NestedLoopJoin::leftJoin($table, $tableA, $condition), 'LEFT NLJ');
+dump(\query\Join\HashJoin::rightJoin($table, $tableA, $condition), 'RIGHT HASH');
+
 
 /*
 $j = new \BTree\BtreeJ();

@@ -24,8 +24,6 @@ class HashJoin implements IJoin
 
         $columnToLeftJoin = OuterJoinHelper::createNullColumns($tableB);
 
-        unset($columnToLeftJoin[$condition->getValue()]);
-
         foreach ($tableB as $s) {
             $h[$s[$condition->getValue()]][] = $s;
         }
@@ -48,11 +46,32 @@ class HashJoin implements IJoin
 
     /**
      * @inheritDoc
-     * @throws Exception
      */
     public static function rightJoin(array $tableA, array $tableB, Condition $condition)
     {
-        throw new Exception('');
+        // hash phase
+        $h = [];
+
+        $columnToLeftJoin = OuterJoinHelper::createNullColumns($tableA);
+
+        foreach ($tableA as $s) {
+            $h[$s[$condition->getColumn()]][] = $s;
+        }
+
+        // join phase
+        $leftJoinResult = [];
+
+        foreach ($tableB as $r) {
+            if (isset($h[$r[$condition->getValue()]])) {
+                foreach ($h[$r[$condition->getValue()]] as $s) {
+                    $leftJoinResult[] = array_merge($s, $r);
+                }
+            } else {
+                $leftJoinResult[] = array_merge($r, $columnToLeftJoin);
+            }
+        }
+
+        return $leftJoinResult;
     }
 
     /**
