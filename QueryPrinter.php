@@ -104,6 +104,20 @@ class QueryPrinter
     }
 
     /**
+     * @return string
+     */
+    private function printOffset()
+    {
+        $offset = '';
+
+        if ($this->query->getOffset() !== 0) {
+            $offset = '<br> OFFSET ' . $this->query->getOffset();
+        }
+
+        return $offset;
+    }
+
+    /**
      * @param array $conditions
      * @return string
      */
@@ -206,9 +220,10 @@ class QueryPrinter
             }
         }
 
-        $limit = $this->printLimit();
+        $limit  = $this->printLimit();
+        $offset = $this->printOffset();
 
-        return $select . $from . $innerJoin . $crossJoin . $leftJoin . $rightJoin . $fullJoin . $where . $orderBy . $groupBy . $having . $limit . '<br><br>';
+        return $select . $from . $innerJoin . $crossJoin . $leftJoin . $rightJoin . $fullJoin . $where . $orderBy . $groupBy . $having . $limit . $offset . '<br><br>';
     }
 
     /**
@@ -233,10 +248,11 @@ class QueryPrinter
     {
         $delete = 'DELETE FROM ' . $this->query->getTable()->getName();
 
-        $where = $this->printWhere();
-        $limit = $this->printLimit();
+        $where  = $this->printWhere();
+        $limit  = $this->printLimit();
+        $offset = $this->printOffset();
 
-        return $delete . $where . $limit . '<br><br>';
+        return $delete . $where . $limit . $offset . '<br><br>';
     }
 
     /**
@@ -261,9 +277,10 @@ class QueryPrinter
             }
         }
 
-        $where = $this->printWhere();
-        $limit = $this->printLimit();
+        $where  = $this->printWhere();
+        $limit  = $this->printLimit();
+        $offset = $this->printOffset();
 
-        return $update . $set . $where . $limit . '<br><br>';
+        return $update . $set . $where . $limit . $offset . '<br><br>';
     }
 }

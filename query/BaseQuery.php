@@ -91,13 +91,13 @@ abstract class BaseQuery
      */
     protected function limit()
     {
-        if (!$this->query->getLimit()) {
+        if (!$this->query->getLimit() && $this->query->getOffset() === 0) {
             return $this->result;
         }
 
         $rowsCount = count($this->result);
         $limit     = $this->query->getLimit() > $rowsCount ? $rowsCount : $this->query->getLimit();
 
-        return $this->result = array_slice($this->result,0, $limit,true);
+        return $this->result = array_slice($this->result, $this->query->getOffset(), $limit,true);
     }
 }

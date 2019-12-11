@@ -96,7 +96,6 @@ class Query
     private $fullJoin;
 
     /**
-     *
      * @var array $innerJoin
      */
     private $innerJoin;
@@ -105,6 +104,11 @@ class Query
      * @var Table[] $crossJoin
      */
     private $crossJoin;
+
+    /**
+     * @var int $offset
+     */
+    private $offset;
 
     /**
      * @var int $limit
@@ -174,6 +178,8 @@ class Query
 
         $this->having = [];
 
+        $this->offset = 0;
+
         $this->updateData = [];
         $this->insertData = [];
 
@@ -212,6 +218,8 @@ class Query
         $this->orderBy = null;
 
         $this->limit = null;
+
+        $this->offset = null;
 
         $this->type = null;
 
@@ -268,6 +276,14 @@ class Query
     public function getOrderBy()
     {
         return $this->orderBy;
+    }
+
+    /**
+     * @return int
+     */
+    public function getOffset()
+    {
+        return $this->offset;
     }
 
     /**
@@ -611,7 +627,7 @@ class Query
             throw new Exception('Limit is not a number.');
         }
         
-        if (!$limit) {
+        if ($limit === 0) {
             throw new Exception('Zero limit does not make sense.');
         }
         
@@ -620,6 +636,31 @@ class Query
         }
 
         $this->limit = $limit;
+
+        return $this;
+    }
+
+    /**
+     * @param int $offset
+     *
+     * @return Query
+     * @throws Exception
+     */
+    public function offset($offset)
+    {
+        if (!is_numeric($offset)) {
+            throw new Exception('Offset is not a number.');
+        }
+
+        if ($offset === 0) {
+            throw new Exception('Zero offset does not make sense.');
+        }
+
+        if ($offset < 0) {
+            throw new Exception('Negative offset does not make sense.');
+        }
+
+        $this->offset = $offset;
 
         return $this;
     }
