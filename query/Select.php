@@ -5,6 +5,7 @@ use Column;
 use Condition;
 use Exception;
 use Operator;
+use OrderBy;
 use Query;
 use query\Join\NestedLoopJoin;
 use query\Join\HashJoin;
@@ -532,10 +533,13 @@ class Select extends BaseQuery
                 $tmp[$column][$key] = $value;
             }
         }
-            
-        foreach ($this->query->getOrderBy() as $value) {
-            $tmpSort[] = array_column($tmp, $value['column']);
-            $tmpSort[] = $value['asc'] ? SORT_ASC : SORT_DESC;
+
+        /**
+         * @var OrderBy $orderBy
+         */
+        foreach ($this->query->getOrderBy() as $orderBy) {
+            $tmpSort[] = array_column($tmp, $orderBy->getColumn());
+            $tmpSort[] = $orderBy->getSortingConst();
             $tmpSort[] = SORT_REGULAR;
         }
             

@@ -271,7 +271,7 @@ class Query
     }
 
     /**
-     * @return array
+     * @return OrderBy[]
      */
     public function getOrderBy()
     {
@@ -563,7 +563,7 @@ class Query
             throw new Exception(sprintf('Column "%s" does not exist.', $column));
         }
 
-        $this->orderBy[] = ['column' => $column, 'asc' => $asc];
+        $this->orderBy[] = new OrderBy($column, $asc);
 
         return $this;
     }
