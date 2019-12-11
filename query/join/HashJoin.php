@@ -75,6 +75,21 @@ class HashJoin implements IJoin
     }
 
     /**
+     * @param array     $tableA
+     * @param array     $tableB
+     * @param Condition $condition
+     *
+     * @return array
+     */
+    public static function fullJoin(array $tableA, array $tableB, Condition $condition)
+    {
+        $left = self::leftJoin($tableA, $tableB, $condition);
+        $right = self::rightJoin($tableA, $tableB, $condition);
+
+        return OuterJoinHelper::removeDuplicities($left, $right);
+    }
+
+    /**
      * @inheritDoc
      */
     public static function innerJoin(array $tableA, array $tableB, Condition $condition)

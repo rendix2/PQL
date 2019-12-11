@@ -278,10 +278,13 @@ $tableA = [
 
 $condition = new Condition('article_user_id', '=', 'user_id');
 
-bdump(\query\Join\NestedLoopJoin::fullJoin($table, $tableA, $condition));
+bdump(\query\Join\NestedLoopJoin::fullJoin($table, $tableA, $condition), 'FULL NLJ');
+//bdump(\query\Join\HashJoin::fullJoin($table, $tableA, $condition), 'FULL HASH');
 
-dump(\query\Join\NestedLoopJoin::leftJoin($table, $tableA, $condition), 'LEFT NLJ');
-dump(\query\Join\HashJoin::rightJoin($table, $tableA, $condition), 'RIGHT HASH');
+//dump(\query\Join\NestedLoopJoin::leftJoin($table, $tableA, $condition), 'LEFT NLJ');
+//dump(\query\Join\HashJoin::rightJoin($table, $tableA, $condition), 'RIGHT HASH');
+//dump(\query\Join\SortMergeJoin::leftJoin($table, $tableA, $condition), 'LEFT MERGE');
+//dump(\query\Join\SortMergeJoin::rightJoin($table, $tableA, $condition), 'RIGHT MERGE');
 
 
 /*
