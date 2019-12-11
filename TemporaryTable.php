@@ -9,7 +9,6 @@
 /**
  * Class TemporaryTable
  *
- * @author Tomáš Babický tomas.babicky@websta.de
  */
 class TemporaryTable implements ITable
 {
