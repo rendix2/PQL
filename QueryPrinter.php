@@ -6,7 +6,7 @@
 class QueryPrinter
 {
     /**
-     * @var Query
+     * @var Query $query
      */
     private $query;
 
@@ -40,8 +40,8 @@ class QueryPrinter
             return $this->insertInto();
         } elseif ($this->query->isDelete()) {
             return $this->delete();
-        } elseif ($this->query->isDelete()) {
-            return $this->delete();
+        } elseif ($this->query->isUpdate()) {
+            return $this->update();
         } else {
             throw new Exception('Unknown query type.');
         }
@@ -215,13 +215,14 @@ class QueryPrinter
      */
     private function insertInto()
     {
-        $columns = array_keys($this->query->getInsertData());
-        $values  = array_values($this->query->getInsertData());
+        $columns   = array_keys($this->query->getInsertData());
+        $values    = array_values($this->query->getInsertData());
+        $tableName = $this->query->getTable()->getName();
 
         $columns = '(' . implode(', ', $columns). ')';
-        $values = '(' . implode(', ', $values). ')';
+        $values  = '(' . implode(', ', $values). ')';
 
-        return 'INSERT INTO ' . $columns . ' VALUES ' . $values;
+        return 'INSERT INTO ' . $tableName . '  ' . $columns . ' VALUES ' . $values . '<br><br>';
     }
 
     /**
@@ -234,7 +235,7 @@ class QueryPrinter
         $where = $this->printWhere();
         $limit = $this->printLimit();
 
-        return $delete . $where . $limit;
+        return $delete . $where . $limit . '<br><br>';
     }
 
     /**
@@ -262,7 +263,6 @@ class QueryPrinter
         $where = $this->printWhere();
         $limit = $this->printLimit();
 
-        return $update . $set . $where . $limit;
-
+        return $update . $set . $where . $limit . '<br><br>';
     }
 }
