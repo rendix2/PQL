@@ -125,11 +125,14 @@ class QueryPrinter
     {
         $onCondition = '';
 
+        /**
+         * @var Condition $condition
+         */
         foreach ($conditions as $i => $condition) {
             if ($i === 0) {
-                $onCondition .= ' <br> &nbsp;&nbsp;&nbsp;&nbsp;ON ' . $condition->getColumn() . ' ' . $condition->getOperator() . ' ' . $condition->getValue();
+                $onCondition .= ' <br> &nbsp;&nbsp;&nbsp;&nbsp;ON '. (string) $condition;
             } else {
-                $onCondition .= ' <br> &nbsp;&nbsp;&nbsp;&nbsp;AND ' . $condition->getColumn() . ' ' . $condition->getOperator() . ' ' . $condition->getValue();
+                $onCondition .= ' <br> &nbsp;&nbsp;&nbsp;&nbsp;AND '. (string) $condition;
             }
         }
 
@@ -196,7 +199,7 @@ class QueryPrinter
             $orderBy = '<br> ORDER BY ';
 
             foreach ($this->query->getOrderBy() as $orderedBy) {
-                $orderBy .= $orderedBy['column'] . ' ' . ($orderedBy['asc'] ? 'ASC' : 'DESC');
+                $orderBy .= (string) $orderedBy;
             }
         }
 
@@ -219,7 +222,7 @@ class QueryPrinter
              * @var Condition $havingCondition
              */
             foreach ($this->query->getHavingConditions() as $havingCondition) {
-                $having.= $havingCondition->getColumn(). ' ' . $havingCondition->getOperator() . ' ' . $havingCondition->getValue();
+                $having.= (string) $havingCondition;
             }
         }
 
