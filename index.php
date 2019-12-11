@@ -257,22 +257,29 @@ $res = null;
 */
 Profiler::finish('select');
 
-/*
+
 $table = [
-    ['order_id' => 1, 'order_date' => '15-15-15',],
-    ['order_id' => 2, 'order_date' => '14-14-14',],
-    ['order_id' => 3, 'order_date' => '13-13-13',]
+    ['article_id' => 1, 'article_text' => 'test',  'article_date' => '15-15-15', 'article_user_id' => 1],
+    ['article_id' => 2, 'article_text' => 'test2','article_date' => '14-14-14', 'article_user_id' => 2],
+    ['article_id' => 3, 'article_text' => 'test3','article_date' => '13-13-13', 'article_user_id' => 2],
+    ['article_id' => 4, 'article_text' => '4','article_date' => '12-12-12', 'article_user_id' => 1],
+    ['article_id' => 4, 'article_text' => '5','article_date' => '11-11-11', 'article_user_id' => 12],
+    ['article_id' => 4, 'article_text' => '6','article_date' => '10-10-10', 'article_user_id' => 4],
+    ['article_id' => 4, 'article_text' => '7','article_date' => '9-9-9', 'article_user_id' => 4],
 ];
 
-$tableB = [
-    ['user_id' => 2, 'user_name' => 'b', 'user_order_id' => 3],
-    ['user_id' => 1, 'user_name' => 'a', 'user_order_id' => 2],
+$tableA = [
+    ['user_id' => 1, 'user_name' => 'a', ],
+    ['user_id' => 2, 'user_name' => 'b', ],
+    ['user_id' => 3, 'user_name' => 'c', ],
+    ['user_id' => 4, 'user_name' => 'd', ],
+    ['user_id' => 4, 'user_name' => 'e', ],
 ];
 
-$condition = new Condition('order_id', '=', 'user_order_id');
+$condition = new Condition('article_user_id', '=', 'user_id');
 
-bdump(\query\Join\SortMergeJoin::innerJoin($table, $tableB, $condition));
-*/
+bdump(\query\Join\NestedLoopJoin::fullJoin($table, $tableA, $condition));
+
 
 /*
 $j = new \BTree\BtreeJ();

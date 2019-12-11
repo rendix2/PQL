@@ -32,7 +32,6 @@ class NestedLoopJoin implements IJoin
                     $leftJoinResult[] = array_merge($temporaryRow, $joinedRow);
 
                     $joined = true;
-                    break;
                 }
             }
 
@@ -46,11 +45,10 @@ class NestedLoopJoin implements IJoin
 
     /**
      * @inheritDoc
-     * @throws Exception
      */
     public static function rightJoin(array $tableA, array $tableB, Condition $condition)
     {
-        throw new Exception('Unsupported operation.');
+        return self::leftJoin($tableB, $tableA, $condition);
     }
 
     /**
@@ -91,33 +89,33 @@ class NestedLoopJoin implements IJoin
     }
 
     /**
-     * @param array     $tableA
-     * @param array     $tableB
+     * @param array $tableA
+     * @param array $tableB
      * @param Condition $condition
      *
      * @return array
      */
     public static function fullJoin(array $tableA, array $tableB, Condition $condition)
     {
-        $fullJoinResult = [];
-
         $leftNullJoinedColumns = OuterJoinHelper::createNullColumns($tableA);
         $rightNullJoinedColumns = OuterJoinHelper::createNullColumns($tableB);
+
+        $left  = [];
+        $right = [];
 
         foreach ($tableA as $temporaryRow) {
             $joined = false;
 
             foreach ($tableB as $joinedRow) {
                 if (ConditionHelper::condition($condition, $temporaryRow, $joinedRow)) {
-                    $fullJoinResult[] = array_merge($temporaryRow, $joinedRow);
+                    $left[] = array_merge($temporaryRow, $joinedRow);
 
                     $joined = true;
-                    break;
                 }
             }
 
             if (!$joined) {
-                $fullJoinResult[] = array_merge($temporaryRow, $rightNullJoinedColumns);
+                $left[] = array_merge($temporaryRow, $rightNullJoinedColumns);
             }
         }
 
@@ -126,18 +124,30 @@ class NestedLoopJoin implements IJoin
 
             foreach ($tableA as $joinedRow) {
                 if (ConditionHelper::condition($condition, $temporaryRow, $joinedRow)) {
-                    $fullJoinResult[] = array_merge($temporaryRow, $joinedRow);
+                    $right[] = array_merge($temporaryRow, $joinedRow);
 
                     $joined = true;
-                    break;
                 }
             }
 
             if (!$joined) {
-                $fullJoinResult[] = array_merge($temporaryRow, $leftNullJoinedColumns);
+                $right[] = array_merge($temporaryRow, $leftNullJoinedColumns);
             }
         }
 
-        return array_unique($fullJoinResult);
+        $fullJoinResult = [];
+
+        foreach ($left as $rowL) {
+            foreach ($right as $rowR) {
+                $merged = array_merge($rowL, $rowR);
+
+                if (array_intersect($rowL, $rowR) === $merged) {
+                    $fullJoinResult[] = $merged;
+                    break;
+                }
+            }
+        }
+
+        return $fullJoinResult;
     }
 }
