@@ -97,57 +97,9 @@ class NestedLoopJoin implements IJoin
      */
     public static function fullJoin(array $tableA, array $tableB, Condition $condition)
     {
-        $leftNullJoinedColumns = OuterJoinHelper::createNullColumns($tableA);
-        $rightNullJoinedColumns = OuterJoinHelper::createNullColumns($tableB);
+        $left  = self::leftJoin($tableA, $tableB, $condition);
+        $right = self::rightJoin($tableA, $tableB, $condition);
 
-        $left  = [];
-        $right = [];
-
-        foreach ($tableA as $temporaryRow) {
-            $joined = false;
-
-            foreach ($tableB as $joinedRow) {
-                if (ConditionHelper::condition($condition, $temporaryRow, $joinedRow)) {
-                    $left[] = array_merge($temporaryRow, $joinedRow);
-
-                    $joined = true;
-                }
-            }
-
-            if (!$joined) {
-                $left[] = array_merge($temporaryRow, $rightNullJoinedColumns);
-            }
-        }
-
-        foreach ($tableB as $temporaryRow) {
-            $joined = false;
-
-            foreach ($tableA as $joinedRow) {
-                if (ConditionHelper::condition($condition, $temporaryRow, $joinedRow)) {
-                    $right[] = array_merge($temporaryRow, $joinedRow);
-
-                    $joined = true;
-                }
-            }
-
-            if (!$joined) {
-                $right[] = array_merge($temporaryRow, $leftNullJoinedColumns);
-            }
-        }
-
-        $fullJoinResult = [];
-
-        foreach ($left as $rowL) {
-            foreach ($right as $rowR) {
-                $merged = array_merge($rowL, $rowR);
-
-                if (array_intersect($rowL, $rowR) === $merged) {
-                    $fullJoinResult[] = $merged;
-                    break;
-                }
-            }
-        }
-
-        return $fullJoinResult;
+        return OuterJoinHelper::removeDuplicities($left, $right);
     }
 }

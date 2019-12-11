@@ -16,6 +16,8 @@ namespace query\Join;
 class OuterJoinHelper
 {
     /**
+     * used in left and right joins
+     *
      * @param array $table
      *
      * @return array
@@ -30,5 +32,31 @@ class OuterJoinHelper
         }
 
         return $joinedColumns;
+    }
+
+    /**
+     * used in fullJoin
+     *
+     * @param array $tableA
+     * @param array $tableB
+     *
+     * @return array
+     */
+    public static function removeDuplicities(array $tableA, array $tableB)
+    {
+        $fullJoinResult = [];
+
+        foreach ($tableA as $rowA) {
+            foreach ($tableB as $rowB) {
+                $merged = array_merge($rowA, $rowB);
+
+                if (array_intersect($rowA, $rowB) === $merged) {
+                    $fullJoinResult[] = $merged;
+                    break;
+                }
+            }
+        }
+
+        return $fullJoinResult;
     }
 }
