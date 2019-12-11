@@ -70,9 +70,9 @@ class Query
     private $orderBy;
 
     /**
-     * @var array $having
+     * @var Condition[] $havingConditions
      */
-    private $having;
+    private $havingConditions;
 
     /**
      * @var array $groupBy
@@ -176,7 +176,7 @@ class Query
 
         $this->groupBy = [];
 
-        $this->having = [];
+        $this->havingConditions = [];
 
         $this->offset = 0;
 
@@ -213,7 +213,7 @@ class Query
 
         $this->groupBy = null;
 
-        $this->having = null;
+        $this->havingConditions = null;
 
         $this->orderBy = null;
 
@@ -353,9 +353,9 @@ class Query
     /**
      * @return array
      */
-    public function getHaving()
+    public function getHavingConditions()
     {
-        return $this->having;
+        return $this->havingConditions;
     }
 
     /**
@@ -606,11 +606,7 @@ class Query
             throw  new Exception(sprintf('Unknown operator "%s".', $column));
         }
 
-        $this->having[] = [
-          'column'   => $column,
-          'operator' => $operator,
-          'value'    => $value
-        ];
+        $this->havingConditions[] = new Condition($column, $operator, $value);
 
         return $this;
     }

@@ -478,49 +478,41 @@ class Select extends BaseQuery
     }
 
     /**
+     * @param array     $rows
+     * @param Condition $condition
+     *
+     * @return array
+     */
+    private function doHaving(array $rows, Condition $condition)
+    {
+        $havingResult = [];
+
+        foreach ($rows as $row) {
+            if (ConditionHelper::condition($condition, $row, [])) {
+                $havingResult[] = $row;
+            }
+        }
+
+        return $havingResult;
+    }
+
+    /**
      * @return array|Row[]
      */
     private function having()
     {
-        if (!count($this->query->getHaving())) {
+        if (!count($this->query->getHavingConditions())) {
             return $this->result;
         }
 
-        $res = [];
-
-        foreach ($this->query->getHaving() as $having) {
-            foreach ($this->result as $row) {
-                foreach ($row as $column => $value) {
-                    if ($column === $having['column']) {
-                        if ($having['operator'] === '=' && $value === $having['value']) {
-                            $res[] = $row;
-                        }
-
-                        if ($having['operator'] === '>' && $value > $having['value']) {
-                            $res[] = $row;
-                        }
-
-                        if ($having['operator'] === '<' && $value < $having['value']) {
-                            $res[] = $row;
-                        }
-
-                        if ($having['operator'] === '>=' && $value >= $having['value']) {
-                            $res[] = $row;
-                        }
-
-                        if ($having['operator'] === '<=' && $value <= $having['value']) {
-                            $res[] = $row;
-                        }
-
-                        if (($having['operator'] === '!=' || $having['operator'] === '<>') && $value !== $having['value']) {
-                            $res[] = $row;
-                        }
-                    }
-                }
-            }
+        /**
+         * @var Condition $havingCondition
+         */
+        foreach ($this->query->getHavingConditions() as $havingCondition) {
+            $this->result = $this->doHaving($this->result, $havingCondition);
         }
 
-        return $this->result = $res;
+        return $this->result;
     }
 
     /**

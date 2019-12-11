@@ -212,11 +212,14 @@ class QueryPrinter
 
         $having = '';
 
-        if (count($this->query->getHaving())) {
+        if (count($this->query->getHavingConditions())) {
             $having = ' <br> HAVING';
 
-            foreach ($this->query->getHaving() as $havingCondition) {
-                $having.= $havingCondition['column'] . ' ' . $havingCondition['operator'] . ' ' . $havingCondition['value'];
+            /**
+             * @var Condition $havingCondition
+             */
+            foreach ($this->query->getHavingConditions() as $havingCondition) {
+                $having.= $havingCondition->getColumn(). ' ' . $havingCondition->getOperator() . ' ' . $havingCondition->getValue();
             }
         }
 
