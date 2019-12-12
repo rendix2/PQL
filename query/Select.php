@@ -338,7 +338,11 @@ class Select extends BaseQuery
              * @var Condition $condition
              */
             foreach ($leftJoinedTable['onConditions'] as $condition) {
-                $this->result = NestedLoopJoin::leftJoin($this->result, $leftJoinedTable['table']->getRows(), $condition);
+                if ($condition->getOperator() === Operator::EQUAL) {
+                    $this->result = HashJoin::leftJoin($this->result, $leftJoinedTable['table']->getRows(), $condition);
+                } else {
+                    $this->result = NestedLoopJoin::leftJoin($this->result, $leftJoinedTable['table']->getRows(), $condition);
+                }
             }
         }
 
@@ -364,7 +368,11 @@ class Select extends BaseQuery
              * @var Condition $condition
              */
             foreach ($rightJoinedTable['onConditions'] as $condition) {
-                $this->result = NestedLoopJoin::rightJoin($this->result, $rightJoinedTable['table']->getRows(), $condition);
+                if ($condition->getOperator() === Operator::EQUAL) {
+                    $this->result = HashJoin::rightJoin($this->result, $rightJoinedTable['table']->getRows(), $condition);
+                } else {
+                    $this->result = NestedLoopJoin::rightJoin($this->result, $rightJoinedTable['table']->getRows(), $condition);
+                }
             }
         }
 
@@ -391,7 +399,11 @@ class Select extends BaseQuery
              * @var Condition $condition
              */
             foreach ($fullJoinedTable['onConditions'] as $condition) {
-                $this->result = NestedLoopJoin::fullJoin($this->result, $fullJoinedTable['table']->getRows(), $condition);
+                if ($condition->getOperator() === Operator::EQUAL) {
+                    $this->result = HashJoin::fullJoin($this->result, $fullJoinedTable['table']->getRows(), $condition);
+                } else {
+                    $this->result = NestedLoopJoin::fullJoin($this->result, $fullJoinedTable['table']->getRows(), $condition);
+                }
             }
         }
 
