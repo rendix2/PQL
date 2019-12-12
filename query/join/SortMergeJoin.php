@@ -24,13 +24,7 @@ class SortMergeJoin implements IJoin
      */
     public static function leftJoin(array $tableA, array $tableB, Condition $condition)
     {
-        throw new \Exception('Unsupprted');
-
-        $indexA = 0;
-        $indexB = 0;
-
-        $lastA = count($tableA);
-        $lastB = count($tableB);
+        $res = [];
 
         $columnAData = array_column($tableA, $condition->getColumn());
         $columnBData = array_column($tableB, $condition->getValue());
@@ -40,24 +34,60 @@ class SortMergeJoin implements IJoin
 
         $missingColumns = OuterJoinHelper::createNullColumns($tableB);
 
-        $res = $tableA;
+        $r = 0;
+        $q = 0;
 
-        do {
-            $pa = $tableA[$indexA];
-            $pb = $tableB[$indexB];
+        $lastR = count($tableA) - 1;
+        $lastQ = count($tableB) - 1;
 
-            if (ConditionHelper::condition($condition, $pa, $pb)) {
-                $res[$indexA] = array_merge($res[$indexA], $pb);
+        $temp = [];
+
+        while ($r <= $lastR && $q <= $lastQ) {
+            $rRow = $tableA[$r];
+            $qRow = $tableB[$q];
+
+            if ($rRow[$condition->getColumn()] > $qRow[$condition->getValue()]) {
+                $temp[$rRow[$condition->getColumn()]] = $rRow;
+                $q++;
+            } elseif ($rRow[$condition->getColumn()] < $qRow[$condition->getValue()]) {
+
+                $r++;
             } else {
-                $res[$indexA] = array_merge($res[$indexA], $missingColumns);
-            }
+                $res[] = array_merge($rRow, $qRow);
+                unset($temp[$rRow[$condition->getColumn()]]);;
 
-            if ($pa[$condition->getColumn()] <= $pb[$condition->getValue()]) {
-                $indexA++;
-            } else {
-                $indexB++;
+                $matched = false;
+
+                $q1 = $q+1;
+
+                while ($q1 <= $lastQ && $rRow[$condition->getColumn()] === $tableB[$q1][$condition->getValue()]) {
+                    $res[] = array_merge($rRow, $tableB[$q1]);
+                    $q1++;
+                    $matched = true;
+                }
+
+                $matched2 = false;
+
+                $r1 = $r+1;
+
+                while ($r1 <= $lastR && $tableA[$r1][$condition->getColumn()] === $qRow[$condition->getValue()]) {
+                    $res[] = array_merge($tableA[$r1], $qRow);
+                    $r1++;
+                    $matched2 = true;
+                }
+
+                if (!$matched && !$matched2) {
+                    $q--;
+                }
+
+                $r++;
+                $q++;
             }
-        } while($indexA !== $lastA && $indexB !== $lastB);
+        }
+
+        foreach ($temp as $tempROw) {
+            $res[] = array_merge($tempROw, $missingColumns);
+        }
 
         return $res;
     }

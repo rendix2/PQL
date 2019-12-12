@@ -180,6 +180,7 @@ $query = new Query($database);
 $query->update('test', ['a' => '888'])->where('id', '=', '96')->run();
 */
 
+/*
 
 
 Profiler::start('select');
@@ -228,6 +229,7 @@ $query->select(['article_id', 'article_text', 'user_id', 'user_name', 'comment_t
 echo $query;
 
 echo $query->run();
+*/
 
 //$subRes = $query->select(['pocet'])
     //->sum('pocet')
@@ -255,17 +257,17 @@ echo $res;
 echo $res;
 $res = null;
 */
-Profiler::finish('select');
+//Profiler::finish('select');
 
 
 $table = [
-    ['article_id' => 1, 'article_text' => 'test',  'article_date' => '15-15-15', 'article_user_id' => 1],
-    ['article_id' => 2, 'article_text' => 'test2','article_date' => '14-14-14', 'article_user_id' => 2],
-    ['article_id' => 3, 'article_text' => 'test3','article_date' => '13-13-13', 'article_user_id' => 2],
-    ['article_id' => 4, 'article_text' => '4','article_date' => '12-12-12', 'article_user_id' => 1],
-    ['article_id' => 4, 'article_text' => '5','article_date' => '11-11-11', 'article_user_id' => 12],
-    ['article_id' => 4, 'article_text' => '6','article_date' => '10-10-10', 'article_user_id' => 4],
-    ['article_id' => 4, 'article_text' => '7','article_date' => '9-9-9', 'article_user_id' => 4],
+    ['article_id' => 1, 'article_text' => 'test1',  'article_date' => '15-15-15', 'article_user_id' => 1],
+    ['article_id' => 2, 'article_text' => 'test2', 'article_date' => '14-14-14', 'article_user_id' => 2],
+    ['article_id' => 3, 'article_text' => 'test3', 'article_date' => '13-13-13', 'article_user_id' => 2],
+    ['article_id' => 4, 'article_text' => 'test4', 'article_date' => '12-12-12', 'article_user_id' => 1],
+    ['article_id' => 4, 'article_text' => 'test5','article_date' => '11-11-11', 'article_user_id' => 12],
+    ['article_id' => 4, 'article_text' => 'test6','article_date' => '10-10-10', 'article_user_id' => 4],
+    ['article_id' => 4, 'article_text' => 'test7','article_date' => '9-9-9', 'article_user_id' => 4],
 ];
 
 $tableA = [
@@ -278,10 +280,11 @@ $tableA = [
 
 $condition = new Condition('article_user_id', '=', 'user_id');
 
-bdump(\query\Join\NestedLoopJoin::fullJoin($table, $tableA, $condition), 'FULL NLJ');
+//bdump(\query\Join\NestedLoopJoin::fullJoin($table, $tableA, $condition), 'FULL NLJ');
 //bdump(\query\Join\HashJoin::fullJoin($table, $tableA, $condition), 'FULL HASH');
 
-//dump(\query\Join\NestedLoopJoin::leftJoin($table, $tableA, $condition), 'LEFT NLJ');
+bdump(\query\Join\NestedLoopJoin::leftJoin($table, $tableA, $condition), 'LEFT NLJ');
+bdump(\query\Join\SortMergeJoin::leftJoin($table, $tableA, $condition), 'LEFT SMJ');
 //dump(\query\Join\HashJoin::rightJoin($table, $tableA, $condition), 'RIGHT HASH');
 //dump(\query\Join\SortMergeJoin::leftJoin($table, $tableA, $condition), 'LEFT MERGE');
 //dump(\query\Join\SortMergeJoin::rightJoin($table, $tableA, $condition), 'RIGHT MERGE');
