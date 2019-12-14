@@ -216,7 +216,7 @@ class QueryPrinter
         $having = '';
 
         if (count($this->query->getHavingConditions())) {
-            $having = ' <br> HAVING';
+            $having = ' <br> HAVING ';
 
             /**
              * @var Condition $havingCondition

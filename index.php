@@ -180,7 +180,7 @@ $query = new Query($database);
 $query->update('test', ['a' => '888'])->where('id', '=', '96')->run();
 */
 
-/*
+
 
 
 Profiler::start('select');
@@ -195,7 +195,12 @@ $query->select(['article_id', 'article_text', 'user_id', 'user_name', 'comment_t
             //new Condition('article_text', '=', 'user_name'),
         ]
     )
-    ->leftJoin('comments', [new Condition('article_id', '=', 'comment_article_id')]);
+    ->leftJoin('comments', [new Condition('article_id', '=', 'comment_article_id')])
+    ->groupBy('user_name')
+    ->having('user_name', '=', 'reppy')
+    ->orderBy('user_id', false);
+    //->limit(1)
+    //->offset(1);
     //->where(new Condition('user_id', '!=', 2));
     //->where(new Condition('article_id', '!=', 2));
 
@@ -203,6 +208,7 @@ echo $query;
 
 echo $query->run();
 
+/*
 
 $query = new Query($database);
 $query->update('articles', ['article_text' => 'a'])
@@ -229,7 +235,7 @@ $query->select(['article_id', 'article_text', 'user_id', 'user_name', 'comment_t
 echo $query;
 
 echo $query->run();
-*/
+
 
 //$subRes = $query->select(['pocet'])
     //->sum('pocet')
@@ -257,37 +263,7 @@ echo $res;
 echo $res;
 $res = null;
 */
-//Profiler::finish('select');
-
-
-$table = [
-    ['article_id' => 1, 'article_text' => 'test1',  'article_date' => '15-15-15', 'article_user_id' => 1],
-    ['article_id' => 2, 'article_text' => 'test2', 'article_date' => '14-14-14', 'article_user_id' => 2],
-    ['article_id' => 3, 'article_text' => 'test3', 'article_date' => '13-13-13', 'article_user_id' => 2],
-    ['article_id' => 4, 'article_text' => 'test4', 'article_date' => '12-12-12', 'article_user_id' => 1],
-    ['article_id' => 4, 'article_text' => 'test5','article_date' => '11-11-11', 'article_user_id' => 12],
-    ['article_id' => 4, 'article_text' => 'test6','article_date' => '10-10-10', 'article_user_id' => 4],
-    ['article_id' => 4, 'article_text' => 'test7','article_date' => '9-9-9', 'article_user_id' => 4],
-];
-
-$tableA = [
-    ['user_id' => 1, 'user_name' => 'a', ],
-    ['user_id' => 2, 'user_name' => 'b', ],
-    ['user_id' => 3, 'user_name' => 'c', ],
-    ['user_id' => 4, 'user_name' => 'd', ],
-    ['user_id' => 4, 'user_name' => 'e', ],
-];
-
-$condition = new Condition('article_user_id', '=', 'user_id');
-
-//bdump(\query\Join\NestedLoopJoin::fullJoin($table, $tableA, $condition), 'FULL NLJ');
-//bdump(\query\Join\HashJoin::fullJoin($table, $tableA, $condition), 'FULL HASH');
-
-bdump(\query\Join\NestedLoopJoin::fullJoin($table, $tableA, $condition), 'RIGHT NLJ');
-bdump(\query\Join\SortMergeJoin::fullJoin($table, $tableA, $condition), 'RIGHT SMJ');
-//dump(\query\Join\HashJoin::rightJoin($table, $tableA, $condition), 'RIGHT HASH');
-//dump(\query\Join\SortMergeJoin::leftJoin($table, $tableA, $condition), 'LEFT MERGE');
-//dump(\query\Join\SortMergeJoin::rightJoin($table, $tableA, $condition), 'RIGHT MERGE');
+Profiler::finish('select');
 
 
 /*

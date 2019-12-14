@@ -131,11 +131,6 @@ class Query
     private $insertData;
 
     /**
-     * @var array $grouped
-     */
-    private $grouped;
-
-    /**
      * @var array $functions
      */
     private $functions;
@@ -361,19 +356,6 @@ class Query
     /**
      * @return array
      */
-    public function getGrouped()
-    {
-        return $this->grouped;
-    }
-
-    public function setGrouped(array $grouped)
-    {
-        $this->grouped = $grouped;
-    }
-
-    /**
-     * @return array
-     */
     public function getInsertData()
     {
         return $this->insertData;
@@ -559,9 +541,11 @@ class Query
      */
     public function orderBy($column, $asc = true)
     {
+        /*
         if (!$this->table->columnExists($column)) {
             throw new Exception(sprintf('Column "%s" does not exist.', $column));
         }
+        */
 
         $this->orderBy[] = new OrderBy($column, $asc);
 
@@ -577,9 +561,11 @@ class Query
      */
     public function groupBy($column)
     {
+        /*
         if (!$this->table->columnExists($column)) {
             throw new Exception(sprintf('Column "%s" does not exist.', $column));
         }
+        */
 
         $this->groupBy[] = $column;
 

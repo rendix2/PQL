@@ -20,6 +20,21 @@ use Table;
 class Select extends BaseQuery
 {
     /**
+     * @var array $groupedByData
+     */
+    private $groupedByData;
+
+    /**
+     * Select destructor.
+     */
+    public function __destruct()
+    {
+        $this->groupedByData = null;
+
+        parent::__destruct();
+    }
+
+    /**
      * @return array|Row[]
      */
     public function run()
@@ -138,15 +153,15 @@ class Select extends BaseQuery
             $function_column_name = sprintf('%s(%s)', mb_strtoupper($function_name), $column);
 
             if ($function_name === 'sum') {
-                if (count($this->query->getGrouped())) {
+                if (count($this->groupedByData)) {
                     $this->query->columns[] = $function_column_name;
 
-                    $keysToGroup = array_keys($this->query->getGrouped());
+                    $keysToGroup = array_keys($this->groupedByData);
                     $tmpFunc = [];
 
                     // iterate over grouped data!
                     foreach ($keysToGroup as $groupByColumn) {
-                        foreach ($this->query->getGrouped()[$groupByColumn] as $groupedValue => $groupedData) {
+                        foreach ($this->groupedByData[$groupByColumn] as $groupedValue => $groupedData) {
                             foreach ($groupedData['rows'] as $row) {
                                 if (isset($tmpFunc[$groupByColumn][$groupedValue][$column])) {
                                     $tmpFunc[$groupByColumn][$groupedValue][$column] += $row[$column];
@@ -184,7 +199,7 @@ class Select extends BaseQuery
             }
 
             if ($function_name === 'count') {
-                if (count($this->query->getGrouped())) {
+                if (count($this->groupedByData)) {
                     $this->query->columns[] = $function_name;
 
                     foreach ($this->result as &$row) {
@@ -476,7 +491,7 @@ class Select extends BaseQuery
             }
         }
 
-        $this->query->setGrouped($groups);
+        $this->groupedByData = $groups;
 
         foreach ($groups as $column => $groupData) {
             foreach ($groupData as $data) {
