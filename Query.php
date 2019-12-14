@@ -146,6 +146,11 @@ class Query
     private $timeLimit;
 
     /**
+     * @var Query[] $except
+     */
+    private $except;
+
+    /**
      * Query constructor.
      *
      * @param Database $database
@@ -588,10 +593,6 @@ class Query
         }
         */
 
-        if (!in_array($operator, Operator::ENABLED_OPERATORS, true)) {
-            throw  new Exception(sprintf('Unknown operator "%s".', $column));
-        }
-
         $this->havingConditions[] = new Condition($column, $operator, $value);
 
         return $this;
@@ -751,6 +752,18 @@ class Query
     public function crossJoin($table)
     {
         $this->crossJoin[] = new Table($this->database, $table);
+
+        return $this;
+    }
+
+    /**
+     * @param Query $query
+     *
+     * @return Query
+     */
+    public function except(Query $query)
+    {
+        $this->except[] = $query;
 
         return $this;
     }
