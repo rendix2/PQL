@@ -156,6 +156,11 @@ class Query
     private $intersect;
 
     /**
+     * @var Query[] $union
+     */
+    private $union;
+
+    /**
      * Query constructor.
      *
      * @param Database $database
@@ -234,6 +239,12 @@ class Query
         $this->functions = null;
 
         $this->res = null;
+
+        $this->union = null;
+
+        $this->intersect = null;
+
+        $this->except = null;
 
         set_time_limit($this->timeLimit);
         $this->timeLimit = null;
@@ -783,6 +794,18 @@ class Query
         $this->intersect[] = $query;
 
         return $query;
+    }
+
+    /**
+     * @param Query $query
+     *
+     * @return Query
+     */
+    public function union(Query $query)
+    {
+         $this->union[] = $query;
+
+        return $this;
     }
 
     /**
