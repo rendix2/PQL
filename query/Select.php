@@ -5,6 +5,7 @@ use Column;
 use Condition;
 use Exception;
 use Operator;
+use Optimizer;
 use OrderBy;
 use Query;
 use query\Join\NestedLoopJoin;
@@ -25,11 +26,29 @@ class Select extends BaseQuery
     private $groupedByData;
 
     /**
+     * @var Optimizer $optimizer
+     */
+    private $optimizer;
+
+    /**
+     * Select constructor.
+     *
+     * @param Query $query
+     */
+    public function __construct(Query $query)
+    {
+        parent::__construct($query);
+
+        $this->optimizer = new Optimizer($query);
+    }
+
+    /**
      * Select destructor.
      */
     public function __destruct()
     {
         $this->groupedByData = null;
+        $this->optimizer = null;
 
         parent::__destruct();
     }

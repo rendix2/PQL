@@ -1,6 +1,7 @@
 <?php
 
 use query\Delete;
+use query\Explain;
 use query\Insert;
 use query\Select;
 use query\Update;
@@ -43,6 +44,11 @@ class Query
      * @var string
      */
     const INSERT_SELECT = 'insert_select';
+
+    /**
+     * @var string
+     */
+    const EXPLAIN = 'explain';
 
     /**
      * @var Database $database
@@ -260,6 +266,16 @@ class Query
         $queryPrinter = new QueryPrinter($this);
 
         return $queryPrinter->printQuery();
+    }
+
+    /**
+     * @return Query
+     */
+    public function explain()
+    {
+        $this->type = self::EXPLAIN;
+
+        return $this;
     }
 
     /**
@@ -908,6 +924,14 @@ class Query
             case self::DELETE:
                 $delete       = new Delete($this);
                 $affectedRows = $delete->run();
+                $endTime      = microtime(true);
+                $executeTime  = $endTime - $startTime;
+
+                return $this->res = new Result([], [], $executeTime, $affectedRows);
+            case self::EXPLAIN:
+                $explain = new Explain($this);
+
+                $affectedRows = $explain->run();
                 $endTime      = microtime(true);
                 $executeTime  = $endTime - $startTime;
 

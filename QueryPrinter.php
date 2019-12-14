@@ -289,4 +289,12 @@ class QueryPrinter
 
         return $update . $set . $where . $limit . $offset . '<br><br>';
     }
+
+    /**
+     * @throws Exception
+     */
+    public function explain()
+    {
+        throw new Exception('Unsupported operation.');
+    }
 }
