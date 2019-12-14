@@ -151,6 +151,11 @@ class Query
     private $except;
 
     /**
+     * @var Query[] $intersect
+     */
+    private $intersect;
+
+    /**
      * Query constructor.
      *
      * @param Database $database
@@ -766,6 +771,18 @@ class Query
         $this->except[] = $query;
 
         return $this;
+    }
+
+    /**
+     * @param Query $query
+     *
+     * @return Query
+     */
+    public function intersect(Query $query)
+    {
+        $this->intersect[] = $query;
+
+        return $query;
     }
 
     /**
