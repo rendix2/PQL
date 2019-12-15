@@ -144,8 +144,23 @@ class QueryPrinter
      */
     private function select()
     {
-        $select = 'SELECT ' . implode(', ', $this->query->getColumns()) . '<br>';
-        $from = ' FROM ' . $this->query->getTable()->getName();
+        $select = 'SELECT ' . implode(', ', $this->query->getColumns());
+        $functions = '';
+
+        $columnsCount = count($this->query->getColumns());
+
+        /**
+         * @var FunctionPql $function
+         */
+        foreach ($this->query->getFunctions() as $i => $function) {
+            if (($i === 0 && $columnsCount) || $i > 0) {
+                $functions .= ', ' . mb_strtoupper($function->getName()) . '(' . implode(', ', $function->getParams()) . ')';
+            } elseif ($i === 0 && !$columnsCount) {
+                $functions .= mb_strtoupper($function->getName()) . '(' . implode(', ', $function->getParams()) . ')';
+            }
+        }
+
+        $from = '<br> FROM ' . $this->query->getTable()->getName();
 
         $innerJoin = '';
 
@@ -229,7 +244,7 @@ class QueryPrinter
         $limit  = $this->printLimit();
         $offset = $this->printOffset();
 
-        return $select . $from . $innerJoin . $crossJoin . $leftJoin . $rightJoin . $fullJoin . $where . $orderBy . $groupBy . $having . $limit . $offset . '<br><br>';
+        return $select . $functions . $from . $innerJoin . $crossJoin . $leftJoin . $rightJoin . $fullJoin . $where . $orderBy . $groupBy . $having . $limit . $offset . '<br><br>';
     }
 
     /**

@@ -429,7 +429,7 @@ class Query
      */
     public function count($column)
     {
-        $this->functions[] = ['column' => $column, 'function' => 'count'];
+        $this->functions[] = new FunctionPql(FunctionPql::COUNT, [$column]);
 
         $this->type = self::SELECT;
 
@@ -443,7 +443,7 @@ class Query
      */
     public function sum($column)
     {
-        $this->functions[] = ['column' => $column, 'function' => 'sum'];
+        $this->functions[] = new FunctionPql(FunctionPql::SUM, [$column]);
 
         $this->type = self::SELECT;
 
@@ -457,7 +457,7 @@ class Query
      */
     public function avg($column)
     {
-        $this->functions[] = ['column' => $column, 'function' => 'avg'];
+        $this->functions[] = new FunctionPql(FunctionPql::AVERAGE, [$column]);
 
         $this->type =self::SELECT;
 
@@ -471,7 +471,7 @@ class Query
      */
     public function min($column)
     {
-        $this->functions[] = ['column' => $column, 'function' => 'min'];
+        $this->functions[] = new FunctionPql(FunctionPql::MIN, [$column]);
 
         $this->type = self::SELECT;
 
@@ -485,7 +485,7 @@ class Query
      */
     public function max($column)
     {
-        $this->functions[] = ['column' => $column, 'function' => 'max'];
+        $this->functions[] = new FunctionPql(FunctionPql::MAX, [$column]);
 
         $this->type = self::SELECT;
 
@@ -499,7 +499,7 @@ class Query
      */
     public function median($column)
     {
-        $this->functions[] = ['column' => $column, 'function' => 'median'];
+        $this->functions[] = new FunctionPql(FunctionPql::MEDIAN, [$column]);
 
         $this->type = self::SELECT;
 

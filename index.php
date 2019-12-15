@@ -187,6 +187,13 @@ Profiler::start('select');
 $query = new Query($database);
 
 $query->select(['article_id', 'article_text', 'user_id', 'user_name', 'comment_text'])
+    ->avg('user_id')
+    ->sum('user_id')
+    ->max('user_id')
+    ->min('user_id')
+    ->median('user_id')
+    ->avg('user_id')
+    ->count('user_id')
     ->from('articles')
     ->innerJoin(
         'users',
@@ -197,7 +204,7 @@ $query->select(['article_id', 'article_text', 'user_id', 'user_name', 'comment_t
     )
     ->leftJoin('comments', [new Condition('article_id', '=', 'comment_article_id')])
     ->groupBy('user_name')
-    ->having('user_name', '=', 'reppy')
+    //->having('user_name', '=', 'reppy')
     ->orderBy('user_id', false);
     //->limit(1)
     //->offset(1);
@@ -205,6 +212,8 @@ $query->select(['article_id', 'article_text', 'user_id', 'user_name', 'comment_t
     //->where(new Condition('article_id', '!=', 2));
 
 echo $query;
+
+bdump($query);
 
 echo $query->run();
 

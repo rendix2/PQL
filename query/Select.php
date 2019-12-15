@@ -4,6 +4,7 @@ namespace query;
 use Column;
 use Condition;
 use Exception;
+use FunctionPql;
 use Operator;
 use Optimizer;
 use OrderBy;
@@ -159,19 +160,42 @@ class Select extends BaseQuery
     }
 
     /**
+     * @param string $function_column_name
+     * @param mixed  $functionResult
+     */
+    private function functionAddToRowHelper($function_column_name, $functionResult)
+    {
+        if ($this->query->getColumns()) {
+            $this->query->columns[] = $function_column_name;
+
+            foreach ($this->result as &$row) {
+                $row[$function_column_name] = $functionResult;
+            }
+
+            unset($row);
+        } else {
+            $this->query->columns[] = $function_column_name;
+            $this->result           = [0 => [$function_column_name => $functionResult]];
+        }
+    }
+
+    /**
      *
      */
     private function functions()
     {
         $functions = new Functions($this->result);
 
+        /**
+         * @var FunctionPql $function
+         */
         foreach ($this->query->getFunctions() as $function) {
-            $function_name = $function['function'];
-            $column        = $function['column'];
+            $function_name = $function->getName();
+            $column        = $function->getParams()[0];
 
             $function_column_name = sprintf('%s(%s)', mb_strtoupper($function_name), $column);
 
-            if ($function_name === 'sum') {
+            if ($function_name === FunctionPql::SUM) {
                 if (count($this->groupedByData)) {
                     $this->query->columns[] = $function_column_name;
 
@@ -202,112 +226,40 @@ class Select extends BaseQuery
                 } else {
                     $sum = $functions->sum($column);
 
-                    if ($this->query->getColumns()) {
-                        $this->query->columns[] = $function_column_name;
-
-                        foreach ($this->result as &$row) {
-                            $row[$function_column_name] = $sum;
-                        }
-
-                        unset($row);
-                    } else {
-                        $this->query->columns[] = $function_column_name;
-                        $this->result           = [0 => [$function_column_name => $sum]];
-                    }
+                    $this->functionAddToRowHelper($function_column_name, $sum);
                 }
             }
 
-            if ($function_name === 'count') {
+            if ($function_name === FunctionPql::COUNT) {
                 if (count($this->groupedByData)) {
-                    $this->query->columns[] = $function_name;
+                    $this->query->columns[] = $function_column_name;
 
                     foreach ($this->result as &$row) {
-                        $row[$function_name] = $row['__group_count'];
+                        $row[$function_column_name] = $row['__group_count'];
                     }
 
                     unset($row);
                 } else {
                     $count = $functions->count($column);
 
-                    if ($this->query->getColumns()) {
-                        $this->query->columns[] = $function_column_name;
-
-                        foreach ($this->result as &$row) {
-                            $row[$function_column_name] = $count;
-                        }
-
-                        unset($row);
-                    } else {
-                        $this->query->columns[] = $function_column_name;
-                        $this->result           = [0 => [$function_column_name => $count]];
-                    }
+                    $this->functionAddToRowHelper($function_column_name, $count);
                 }
             }
 
-            if ($function_name === 'avg') {
-                $avg= $functions->avg($column);
-
-                if ($this->query->getColumns()) {
-                    $this->query->columns[] = $function_column_name;
-
-                    foreach ($this->result as &$row) {
-                        $row[$function_column_name] = $avg;
-                    }
-
-                    unset($row);
-                } else {
-                    $this->query->columns[] = $function_column_name;
-                    $this->result = [0 => [$function_column_name => $avg]];
-                }
+            if ($function_name === FunctionPql::AVERAGE) {
+                $this->functionAddToRowHelper($function_column_name, $functions->avg($column));
             }
 
-            if ($function_name === 'min') {
-                $min = $functions->min($column);
-
-                if ($this->query->getColumns()) {
-                    $this->query->columns[] = $function_column_name;
-
-                    foreach ($this->result as &$row) {
-                        $row[$function_column_name] = $min;
-                    }
-
-                    unset($row);
-                } else {
-                    $this->query->columns[] = $function_column_name;
-                    $this->result = [0 => [$function_column_name => $min]];
-                }
+            if ($function_name === FunctionPql::MIN) {
+                $this->functionAddToRowHelper($function_column_name, $functions->min($column));
             }
 
-            if ($function_name === 'max') {
-                $max = $functions->max($column);
-
-                if ($this->query->getColumns()) {
-                    $this->query->columns[] = $function_column_name;
-
-                    foreach ($this->result as &$row) {
-                        $row[$function_column_name] = $max;
-                    }
-
-                    unset($row);
-                } else {
-                    $this->query->columns[] = $function_column_name;
-                    $this->result = [0 => [$function_column_name => $max]];
-                }
+            if ($function_name === FunctionPql::MAX) {
+                $this->functionAddToRowHelper($function_column_name, $functions->max($column));
             }
 
-            if ($function_name === 'median') {
-                $median = $functions->median($column);
-
-                if ($this->query->getColumns()) {
-                    $this->query->columns[] = $function_column_name;
-
-                    foreach ($this->result as &$row) {
-                        $row[$function_column_name] = $median;
-                    }
-                } else {
-                    $this->query->columns[] = $function_column_name;
-                    $this->result = [0 => [$function_column_name => $median]];
-                }
+            if ($function_name === FunctionPql::MEDIAN) {
+                $this->functionAddToRowHelper($function_column_name, $functions->median($column));
             }
         }
 
