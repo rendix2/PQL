@@ -80,4 +80,14 @@ class Condition
     {
         return $this->value;
     }
+
+    /**
+     * inversed Condition
+     *
+     * @return Condition
+     */
+    public function inverse()
+    {
+        return new Condition($this->value, $this->operator, $this->column);
+    }
 }
