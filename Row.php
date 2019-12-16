@@ -57,9 +57,9 @@ class Row
      */
     public function __destruct()
     {
-        $this->row = null;
-        $this->rawData = null;
-        $this->columns = null;
+        $this->row          = null;
+        $this->rawData      = null;
+        $this->columns      = null;
         $this->columnsCount = null;
     }
 

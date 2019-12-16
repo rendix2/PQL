@@ -60,6 +60,15 @@ class FunctionPql
     }
 
     /**
+     * FunctionPql destructor.
+     */
+    public function __destruct()
+    {
+        $this->name   = null;
+        $this->params = null;
+    }
+
+    /**
      * @return string
      */
     public function __toString()

@@ -229,6 +229,13 @@ class Table implements ITable
         $this->rows          = null;
         $this->rowsCount     = null;
         $this->database      = null;
+
+        foreach ($this->columns as &$column) {
+            $column = null;
+        }
+
+        unset($column);
+
         $this->columns       = null;
         $this->columnsCount  = null;
         $this->columnsString = null;

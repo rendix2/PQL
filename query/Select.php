@@ -5,6 +5,7 @@ use Column;
 use Condition;
 use Exception;
 use FunctionPql;
+use Netpromotion\Profiler\Profiler;
 use Operator;
 use Optimizer;
 use OrderBy;
@@ -61,55 +62,83 @@ class Select extends BaseQuery
     {
         $this->checkColumns();
 
+        Profiler::start('getRows');
         $this->result = $this->query->getTable()->getRows();
+        Profiler::finish('getRows');
 
         //bdump($this->result, '$this->result SET');
-        
+
+        Profiler::start('innerJoin');
         $this->innerJoin();
+        Profiler::finish('innerJoin');
 
         //bdump($this->result, '$this->result INNER');
 
+        Profiler::start('crossJoin');
         $this->crossJoin();
+        Profiler::finish('crossJoin');
 
         //bdump($this->result, '$this->result CROSS');
 
+        Profiler::start('leftJoin');
         $this->leftJoin();
+        Profiler::finish('leftJoin');
 
         //bdump($this->result, '$this->result LEFT');
 
+        Profiler::start('rightJoin');
         $this->rightJoin();
+        Profiler::finish('rightJoin');
 
         //bdump($this->result, '$this->result RIGHT');
 
+        Profiler::start('fullJoin');
         $this->fullJoin();
+        Profiler::finish('fullJoin');
 
         //bdump($this->result, '$this->result FULL');
 
+        Profiler::start('where');
         $this->where();
+        Profiler::finish('where');
 
         //bdump($this->result, '$this->result WHERE');
 
+        Profiler::start('groupBy');
         $this->groupBy();
+        Profiler::finish('groupBy');
 
         //bdump($this->result, '$this->result GROUP');
 
+        Profiler::start('functions');
         $this->functions();
+        Profiler::finish('functions');
 
         //bdump($this->result, '$this->result FUNCTIONS');
 
+        Profiler::start('having');
         $this->having();
+        Profiler::finish('having');
 
         //bdump($this->result, '$this->result HAVING');
 
+        Profiler::start('orderBy');
         $this->orderBy();
+        Profiler::finish('orderBy');
 
         //bdump($this->result, '$this->result ORDER');
 
+        Profiler::start('limit');
         $this->limit();
+        Profiler::finish('limit');
 
        // bdump($this->result, '$this->result LIMIT');
 
-        return $this->createRows();
+        Profiler::start('createRows');
+        $rows =  $this->createRows();
+        Profiler::finish('createRows');
+
+        return $rows;
     }
 
     /**

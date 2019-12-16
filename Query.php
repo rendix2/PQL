@@ -210,22 +210,66 @@ class Query
      */
     public function __destruct()
     {
+        \Netpromotion\Profiler\Profiler::start('destruct');
         $this->database = null;
 
         $this->columns = null;
 
         $this->table = null;
 
+        foreach ($this->innerJoin as &$innerJoinedTable) {
+            $innerJoinedTable = null;
+        }
+
+        unset($innerJoinedTable);
+
         $this->innerJoin = null;
+
+        foreach ($this->crossJoin as &$crossJoinedTable) {
+            $crossJoinedTable = null;
+        }
+
+        unset($crossJoinedTable);
 
         $this->crossJoin = null;
 
+        foreach ($this->leftJoin as &$leftJoinedTable) {
+            $leftJoinedTable = null;
+        }
+
+        unset($leftJoinedTable);
+
         $this->leftJoin  = null;
+
+        foreach ($this->rightJoin as &$rightJoinedTable) {
+            $rightJoinedTable = null;
+        }
+
+        unset($rightJoinedTable);
+
         $this->rightJoin = null;
+
+        foreach ($this->fullJoin as &$fullJoinedTable) {
+            $fullJoinedTable = null;
+        }
+
+        unset($fullJoinedTable);
 
         $this->fullJoin = null;
 
+        foreach ($this->whereCondition as &$whereCondition) {
+            $whereCondition = null;
+        }
+
+        unset($whereCondition);
+
         $this->whereCondition = null;
+
+        foreach ($this->groupBy as &$groupByColumn) {
+            $groupByColumn = null;
+        }
+
+        unset($groupByColumn);
 
         $this->groupBy = null;
 
@@ -254,6 +298,8 @@ class Query
 
         set_time_limit($this->timeLimit);
         $this->timeLimit = null;
+
+        \Netpromotion\Profiler\Profiler::finish('destruct');
     }
 
     /**

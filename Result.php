@@ -66,12 +66,12 @@ final class Result implements ITable
      */
     public function __destruct()
     {
-        $this->rows         = null;
-        $this->time         = null;
+        $this->rows          = null;
+        $this->time          = null;
         $this->timeFormatted = null;
-        $this->rowsCount    = null;
-        $this->affectedRows = null;
-        $this->columns      = null;
+        $this->rowsCount     = null;
+        $this->affectedRows  = null;
+        $this->columns       = null;
     }
 
     /**
