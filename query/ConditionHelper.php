@@ -29,6 +29,8 @@ class ConditionHelper
         $isValueArray = is_array($condition->getValue());
         $isColumnArray = is_array($condition->getColumn());
         $isBetweenOperator = $condition->getOperator() === Operator::BETWEEN || $condition->getOperator() === Operator::BETWEEN_INCLUSIVE;
+        $columnIsFunction = $condition->getColumn() instanceof \FunctionPql;
+        $valueIsFunction = $condition->getValue() instanceof \FunctionPql;
 
         // set flags
         if ($hasSubQueryColumn || $hasSubQueryValue) {
@@ -56,6 +58,11 @@ class ConditionHelper
                 $issetRowAValue = true;
             }
 
+            $issetRowAColumnRowBValue = false;
+            $issetRowAValueRowBColumn = false;
+        } elseif ($columnIsFunction || $valueIsFunction) {
+            $issetRowAColumn = false;
+            $issetRowAValue = false;
             $issetRowAColumnRowBValue = false;
             $issetRowAValueRowBColumn = false;
         } else {
@@ -113,6 +120,20 @@ class ConditionHelper
                     return true;
                 }
             }
+
+            // COUNT(column_id) = 1
+            if ($columnIsFunction) {
+                if ($rowA[(string)$condition->getColumn()] === $condition->getValue()) {
+                    return true;
+                }
+            }
+
+            // 1 = COUNT(column_id)
+            if ($valueIsFunction) {
+                if ($valueIsFunction && $rowA[(string)$condition->getValue()] === $condition->getColumn()) {
+                    return true;
+                }
+            }
         }
 
         if ($condition->getOperator() === Operator::GREATER_THAN) {
@@ -160,6 +181,20 @@ class ConditionHelper
                 $firstColumn = $subQueryResult->getColumns()[0];
 
                 if ($rowA[$condition->getColumn()] > $firstRow->get()->{$firstColumn}) {
+                    return true;
+                }
+            }
+
+            // COUNT(column_id) > 1
+            if ($columnIsFunction) {
+                if ($rowA[(string)$condition->getColumn()] > $condition->getValue()) {
+                    return true;
+                }
+            }
+
+            // 1 > COUNT(column_id)
+            if ($valueIsFunction) {
+                if ($valueIsFunction && $rowA[(string)$condition->getValue()] > $condition->getColumn()) {
                     return true;
                 }
             }
@@ -213,6 +248,20 @@ class ConditionHelper
                     return true;
                 }
             }
+
+            // COUNT(column_id) >= 1
+            if ($columnIsFunction) {
+                if ($rowA[(string)$condition->getColumn()] >= $condition->getValue()) {
+                    return true;
+                }
+            }
+
+            // 1 >= COUNT(column_id)
+            if ($valueIsFunction) {
+                if ($valueIsFunction && $rowA[(string)$condition->getValue()] >= $condition->getColumn()) {
+                    return true;
+                }
+            }
         }
 
         if ($condition->getOperator() === Operator::LESS_THAN) {
@@ -260,6 +309,20 @@ class ConditionHelper
                 $firstColumn = $subQueryResult->getColumns()[0];
 
                 if ($rowA[$condition->getColumn()] < $firstRow->get()->{$firstColumn}) {
+                    return true;
+                }
+            }
+
+            // COUNT(column_id) < 1
+            if ($columnIsFunction) {
+                if ($rowA[(string)$condition->getColumn()] < $condition->getValue()) {
+                    return true;
+                }
+            }
+
+            // 1 < COUNT(column_id)
+            if ($valueIsFunction) {
+                if ($valueIsFunction && $rowA[(string)$condition->getValue()] < $condition->getColumn()) {
                     return true;
                 }
             }
@@ -313,6 +376,20 @@ class ConditionHelper
                     return true;
                 }
             }
+
+            // COUNT(column_id) <= 1
+            if ($columnIsFunction) {
+                if ($rowA[(string)$condition->getColumn()] <= $condition->getValue()) {
+                    return true;
+                }
+            }
+
+            // 1 <= COUNT(column_id)
+            if ($valueIsFunction) {
+                if ($valueIsFunction && $rowA[(string)$condition->getValue()] <= $condition->getColumn()) {
+                    return true;
+                }
+            }
         }
 
         if ($condition->getOperator() === Operator::NON_EQUAL || $condition->getOperator() === Operator::LESS_AND_GREATER_THAN) {
@@ -360,6 +437,20 @@ class ConditionHelper
                 $firstColumn = $subQueryResult->getColumns()[0];
 
                 if ($rowA[$condition->getColumn()] !== $firstRow->get()->{$firstColumn}) {
+                    return true;
+                }
+            }
+
+            // COUNT(column_id) != 1
+            if ($columnIsFunction) {
+                if ($rowA[(string)$condition->getColumn()] !== $condition->getValue()) {
+                    return true;
+                }
+            }
+
+            // 1 != COUNT(column_id)
+            if ($valueIsFunction) {
+                if ($valueIsFunction && $rowA[(string)$condition->getValue()] !== $condition->getColumn()) {
                     return true;
                 }
             }

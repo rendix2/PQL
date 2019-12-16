@@ -204,7 +204,7 @@ $query->select(['article_id', 'article_text', 'user_id', 'user_name', 'comment_t
     )
     ->leftJoin('comments', [new Condition('article_id', '=', 'comment_article_id')])
     ->groupBy('user_name')
-    //->having('user_name', '=', 'reppy')
+    ->having(1, '=', 'COUNT(user_id)')
     ->orderBy('user_id', false);
     //->limit(1)
     //->offset(1);

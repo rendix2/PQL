@@ -49,6 +49,7 @@ class FunctionPql
 
     /**
      * FunctionPql constructor.
+     *
      * @param string $name
      * @param array $params
      */
@@ -56,6 +57,14 @@ class FunctionPql
     {
         $this->name   = $name;
         $this->params = $params;
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString()
+    {
+        return mb_strtoupper($this->getName()) . '(' . implode(', ', $this->getParams()) . ')';
     }
 
     /**

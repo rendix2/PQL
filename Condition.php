@@ -22,9 +22,9 @@ class Condition
 
     /**
      * Condition constructor.
-     * @param string|array|Query $column
-     * @param string             $operator
-     * @param string|array|Query $value
+     * @param string|array|Query|FunctionPql $column
+     * @param string                         $operator
+     * @param string|array|Query|FunctionPql $value
      *
      * @throws Exception
      */

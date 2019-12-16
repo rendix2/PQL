@@ -625,6 +625,18 @@ class Query
         }
         */
 
+        // COUNT(column_a, column_b)
+        $matchedColumn = preg_match('#^([a-zA-Z]*)\((([a-zA-Z0-9,_ ]*)\))$#', $column, $functionNameColumn);
+        $matchedValue = preg_match('#^([a-zA-Z]*)\((([a-zA-Z0-9,_ ]*)\))$#', $value, $functionNameValue);
+
+        if ($matchedColumn) {
+            $column = new FunctionPql($functionNameColumn[1], explode(', ', $functionNameColumn[3]));
+        }
+
+        if ($matchedValue) {
+            $value = new FunctionPql($functionNameValue[1], explode(', ', $functionNameValue[3]));
+        }
+
         $this->havingConditions[] = new Condition($column, $operator, $value);
 
         return $this;
