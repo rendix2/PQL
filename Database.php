@@ -133,10 +133,14 @@ class Database
      */
     public function getTables()
     {
-        if ($this->tables) {
-            return $this->tables;
-        }
+        return $this->tables;
+    }
 
+    /**
+     * @return Table[]
+     */
+    public function findTables()
+    {
         $tables = [];
 
         /**
@@ -145,13 +149,13 @@ class Database
         $files = Finder::findFiles('*.' . Table::EXT)->from($this->getDatabaseDir());
 
         foreach ($files as $file) {
-            $extension = $file->getExtension();            
+            $extension = $file->getExtension();
             $fileName = str_replace('.' . $extension, '', $file->getFilename());
-            
+
             $tables[$fileName] = new Table($this, $fileName);
         }
 
-        return $this->tables = $tables;
+        return $tables;
     }
 
     /**
