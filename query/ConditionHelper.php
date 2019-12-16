@@ -468,7 +468,7 @@ class ConditionHelper
             }
 
             /**
-             * (SELECT id from table ....) = column
+             * (SELECT id from table ....) IN column
              */
             if ($hasSubQueryColumn) {
                 $subQueryResult = SubQueryHelper::runAndCheckOneColumn($condition->getColumn());
@@ -482,7 +482,7 @@ class ConditionHelper
             }
 
             /**
-             * column = (SELECT id from table ....)
+             * column IN (SELECT id from table ....)
              */
             if ($hasSubQueryValue) {
                 $subQueryResult = SubQueryHelper::runAndCheckOneColumn($condition->getValue());
@@ -490,6 +490,46 @@ class ConditionHelper
 
                 foreach ($subQueryResult->getRows() as $subRows) {
                     if ($rowA[$condition->getColumn()]  === $subRows->get()->{$firstColumn}) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        if ($condition->getOperator() === Operator::NOT_IN) {
+            // column NOT IN (5)
+            if ($issetRowAColumn && !in_array($rowA[$condition->getColumn()], $condition->getValue(), true)) {
+                return true;
+            }
+
+            // (5) NOT IN column
+            if ($issetRowAValue && !in_array($rowA[$condition->getValue()], $condition->getColumn(), true)) {
+                return true;
+            }
+
+            /**
+             * (SELECT id from table ....) NOT IN column
+             */
+            if ($hasSubQueryColumn) {
+                $subQueryResult = SubQueryHelper::runAndCheckOneColumn($condition->getColumn());
+                $firstColumn = $subQueryResult->getColumns()[0];
+
+                foreach ($subQueryResult->getRows() as $subRows) {
+                    if ($rowA[$condition->getColumn()]  !== $subRows->get()->{$firstColumn}) {
+                        return true;
+                    }
+                }
+            }
+
+            /**
+             * column NOT IN (SELECT id from table ....)
+             */
+            if ($hasSubQueryValue) {
+                $subQueryResult = SubQueryHelper::runAndCheckOneColumn($condition->getValue());
+                $firstColumn = $subQueryResult->getColumns()[0];
+
+                foreach ($subQueryResult->getRows() as $subRows) {
+                    if ($rowA[$condition->getColumn()]  !== $subRows->get()->{$firstColumn}) {
                         return true;
                     }
                 }

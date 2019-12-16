@@ -66,6 +66,11 @@ class Operator
     /**
      * @var string
      */
+    const NOT_IN = 'not_in';
+
+    /**
+     * @var string
+     */
     const BETWEEN = 'between';
 
     /**
