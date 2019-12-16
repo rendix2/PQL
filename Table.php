@@ -579,18 +579,23 @@ class Table implements ITable
             $columnValuesArray = array_combine($columnNames, $exploded);
 
             foreach ($this->columns as $column) {
-                if ($column->getType() === Column::BOOL) {
-                    $columnValuesArray[$column->getName()] = (bool) $columnValuesArray[$column->getName()];
-                } elseif ($column->getType() === Column::FLOAT) {
-                    $columnValuesArray[$column->getName()] = (float) $columnValuesArray[$column->getName()];
-                } elseif ($column->getType() === Column::INTEGER) {
-                    $columnValuesArray[$column->getName()] = (int) $columnValuesArray[$column->getName()];
-                } elseif ($column->getType() === Column::STRING) {
-                    $columnValuesArray[$column->getName()] = (string)$columnValuesArray[$column->getName()];
-                } else {
-                    $message = sprintf('Unknown column type "%s".', $column->getType());
+                switch ($column->getType()) {
+                    case Column::BOOL:
+                        $columnValuesArray[$column->getName()] = (bool) $columnValuesArray[$column->getName()];
+                        break;
+                    case Column::FLOAT:
+                        $columnValuesArray[$column->getName()] = (float) $columnValuesArray[$column->getName()];
+                        break;
+                    case Column::INTEGER:
+                        $columnValuesArray[$column->getName()] = (int) $columnValuesArray[$column->getName()];
+                        break;
+                    case Column::STRING:
+                        $columnValuesArray[$column->getName()] = (string)$columnValuesArray[$column->getName()];
+                        break;
+                    default:
+                        $message = sprintf('Unknown column type "%s".', $column->getType());
 
-                    throw new Exception($message);
+                        throw new Exception($message);
                 }
             }
 
