@@ -583,6 +583,18 @@ class ConditionHelper
             }
         }
 
+        if ($condition->getOperator() === Operator::IS_NULL) {
+            // column IS NULL
+            if ($issetRowAColumn && $rowA[$condition->getColumn()] === 'null') {
+                return true;
+            }
+
+            // IS NULL column
+            if ($issetRowAValue && $rowA[$condition->getValue()] === 'null') {
+                return true;
+            }
+        }
+
         return false;
     }
 }
