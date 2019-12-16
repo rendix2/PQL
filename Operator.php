@@ -76,6 +76,11 @@ class Operator
     /**
      * @var string
      */
+    const IS_NOT_NULL = 'is_not_null';
+
+    /**
+     * @var string
+     */
     const BETWEEN = 'between';
 
     /**
