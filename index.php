@@ -186,14 +186,8 @@ $query->update('test', ['a' => '888'])->where('id', '=', '96')->run();
 Profiler::start('select');
 $query = new Query($database);
 
-$query->select(['article_id', 'article_text', 'user_id', 'user_name', 'comment_text'])
-    ->avg('user_id')
-    ->sum('user_id')
-    ->max('user_id')
-    ->min('user_id')
-    ->median('user_id')
-    ->avg('user_id')
-    ->count('user_id')
+$query->select(['article_id', 'article_text', 'user_id', 'user_name', 'comment_text', 'c'])
+    ->sum('c')
     ->from('articles')
     ->innerJoin(
         'users',
@@ -204,7 +198,7 @@ $query->select(['article_id', 'article_text', 'user_id', 'user_name', 'comment_t
     )
     ->leftJoin('comments', [new Condition('article_id', '=', 'comment_article_id')])
     ->groupBy('user_name')
-    ->having(1, '=', 'COUNT(user_id)')
+    //->having(1, '=', 'COUNT(user_id)')
     ->orderBy('user_id', false);
     //->limit(1)
     //->offset(1);
