@@ -12,6 +12,7 @@ use OrderBy;
 use Query;
 use query\Join\NestedLoopJoin;
 use query\Join\HashJoin;
+use query\Join\SortMergeJoin;
 use Row;
 use Table;
 
@@ -409,11 +410,18 @@ class Select extends BaseQuery
              * @var Condition $condition
              */
             foreach ($innerJoinedTable['onConditions'] as $condition) {
-                // equi join
-                if ($condition->getOperator() === Operator::EQUAL) {
-                    $this->result = HashJoin::innerJoin($this->result, $innerJoinedTable['table']->getRows(), $condition);
-                } else {
-                    $this->result = NestedLoopJoin::innerJoin($this->result, $innerJoinedTable['table']->getRows(), $condition);
+                switch ($this->optimizer->sayJoinAlgorithm($condition)) {
+                    case Optimizer::MERGE_JOIN:
+                        $this->result = SortMergeJoin::innerJoin($this->result, $innerJoinedTable['table']->getRows(), $condition);
+                        break;
+
+                    case Optimizer::HASH_JOIN:
+                        $this->result = HashJoin::innerJoin($this->result, $innerJoinedTable['table']->getRows(), $condition);
+                        break;
+
+                    case Optimizer::NESTED_LOOP:
+                        $this->result = NestedLoopJoin::innerJoin($this->result, $innerJoinedTable['table']->getRows(), $condition);
+                        break;
                 }
             }
         }
@@ -452,10 +460,18 @@ class Select extends BaseQuery
              * @var Condition $condition
              */
             foreach ($leftJoinedTable['onConditions'] as $condition) {
-                if ($condition->getOperator() === Operator::EQUAL) {
-                    $this->result = HashJoin::leftJoin($this->result, $leftJoinedTable['table']->getRows(), $condition);
-                } else {
-                    $this->result = NestedLoopJoin::leftJoin($this->result, $leftJoinedTable['table']->getRows(), $condition);
+                switch ($this->optimizer->sayJoinAlgorithm($condition)) {
+                    case Optimizer::MERGE_JOIN:
+                        $this->result = SortMergeJoin::leftJoin($this->result, $leftJoinedTable['table']->getRows(), $condition);
+                        break;
+
+                    case Optimizer::HASH_JOIN:
+                        $this->result = HashJoin::leftJoin($this->result, $leftJoinedTable['table']->getRows(), $condition);
+                        break;
+
+                    case Optimizer::NESTED_LOOP:
+                        $this->result = NestedLoopJoin::leftJoin($this->result, $leftJoinedTable['table']->getRows(), $condition);
+                        break;
                 }
             }
         }
@@ -482,10 +498,18 @@ class Select extends BaseQuery
              * @var Condition $condition
              */
             foreach ($rightJoinedTable['onConditions'] as $condition) {
-                if ($condition->getOperator() === Operator::EQUAL) {
-                    $this->result = HashJoin::rightJoin($this->result, $rightJoinedTable['table']->getRows(), $condition);
-                } else {
-                    $this->result = NestedLoopJoin::rightJoin($this->result, $rightJoinedTable['table']->getRows(), $condition);
+                switch ($this->optimizer->sayJoinAlgorithm($condition)) {
+                    case Optimizer::MERGE_JOIN:
+                        $this->result = SortMergeJoin::rightJoin($this->result, $rightJoinedTable['table']->getRows(), $condition);
+                        break;
+
+                    case Optimizer::HASH_JOIN:
+                        $this->result = HashJoin::rightJoin($this->result, $rightJoinedTable['table']->getRows(), $condition);
+                        break;
+
+                    case Optimizer::NESTED_LOOP:
+                        $this->result = NestedLoopJoin::rightJoin($this->result, $rightJoinedTable['table']->getRows(), $condition);
+                        break;
                 }
             }
         }
@@ -513,10 +537,18 @@ class Select extends BaseQuery
              * @var Condition $condition
              */
             foreach ($fullJoinedTable['onConditions'] as $condition) {
-                if ($condition->getOperator() === Operator::EQUAL) {
-                    $this->result = HashJoin::fullJoin($this->result, $fullJoinedTable['table']->getRows(), $condition);
-                } else {
-                    $this->result = NestedLoopJoin::fullJoin($this->result, $fullJoinedTable['table']->getRows(), $condition);
+                switch ($this->optimizer->sayJoinAlgorithm($condition)) {
+                    case Optimizer::MERGE_JOIN:
+                        $this->result = SortMergeJoin::fullJoin($this->result, $fullJoinedTable['table']->getRows(), $condition);
+                        break;
+
+                    case Optimizer::HASH_JOIN:
+                        $this->result = HashJoin::fullJoin($this->result, $fullJoinedTable['table']->getRows(), $condition);
+                        break;
+
+                    case Optimizer::NESTED_LOOP:
+                        $this->result = NestedLoopJoin::fullJoin($this->result, $fullJoinedTable['table']->getRows(), $condition);
+                        break;
                 }
             }
         }
