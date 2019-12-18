@@ -65,7 +65,12 @@ class Optimizer
         if (count($this->query->getOrderBy()) === 1) {
             $orderBy = $this->query->getOrderBy()[0];
 
-            if ($condition->getColumn() === $orderBy->getColumn() || $condition->getValue() === $orderBy->getColumn()) {
+            if ($equalOperator &&
+                (
+                    $condition->getColumn() === $orderBy->getColumn() ||
+                    $condition->getValue() === $orderBy->getColumn()
+                )
+            ) {
                 return self::MERGE_JOIN;
             } elseif ($equalOperator) {
                 return self::HASH_JOIN;
