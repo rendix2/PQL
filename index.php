@@ -198,8 +198,9 @@ $query->select(['article_id', 'article_text', 'user_id', 'user_name', 'comment_t
     )
     ->leftJoin('comments', [new Condition('article_id', '=', 'comment_article_id')])
     ->groupBy('user_name')
-    //->having(1, '=', 'COUNT(user_id)')
-    ->orderBy('user_id', false);
+    ->having(106, '<', 'SUM(c)')
+    ->orderBy('user_id', false)
+    ->explain();
     //->limit(1)
     //->offset(1);
     //->where(new Condition('user_id', '!=', 2));

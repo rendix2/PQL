@@ -43,8 +43,10 @@ class QueryPrinter
                 return $this->delete();
             case Query::UPDATE:
                 return $this->update();
+            case Query::EXPLAIN:
+                return $this->explain();
             default:
-                throw new Exception('Unknown query type.');
+                return 'Unknown query type.';
         }
     }
 
@@ -310,6 +312,6 @@ class QueryPrinter
      */
     public function explain()
     {
-        throw new Exception('Unsupported operation.');
+        return 'EXPLAIN ' . $this->select();
     }
 }

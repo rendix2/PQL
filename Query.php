@@ -989,11 +989,11 @@ class Query
             case self::EXPLAIN:
                 $explain = new Explain($this);
 
-                $affectedRows = $explain->run();
+                $explain = $explain->run();
                 $endTime      = microtime(true);
                 $executeTime  = $endTime - $startTime;
 
-                return $this->res = new Result([], [], $executeTime, $affectedRows);
+                return $this->res = new Result(['table', 'rows', 'type', 'condition', 'algorithm'],  $explain, $executeTime, 0);
             default:
                 throw new Exception('Unknown query type.');
         }
