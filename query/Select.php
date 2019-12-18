@@ -679,7 +679,7 @@ class Select extends BaseQuery
      */
     private function orderBy()
     {
-        if (!count($this->query->getOrderBy())) {
+        if (!$this->optimizer->sayIfOrderByIsNeed() || !count($this->query->getOrderBy())) {
             return $this->result;
         }
 

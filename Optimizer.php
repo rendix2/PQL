@@ -36,6 +36,11 @@ class Optimizer
     private $query;
 
     /**
+     * @var bool $useOrderBy
+     */
+    private $useOrderBy;
+
+    /**
      * Optimizer constructor.
      *
      * @param Query $query
@@ -43,6 +48,7 @@ class Optimizer
     public function __construct(Query $query)
     {
         $this->query = $query;
+        $this->useOrderBy = count($query->getOrderBy()) > 0;
     }
 
     /**
@@ -51,6 +57,7 @@ class Optimizer
     public function __destruct()
     {
         $this->query = null;
+        $this->useOrderBy = null;
     }
 
     /**
@@ -71,6 +78,8 @@ class Optimizer
                     $condition->getValue() === $orderBy->getColumn()
                 )
             ) {
+                $this->useOrderBy = false;
+
                 return self::MERGE_JOIN;
             } elseif ($equalOperator) {
                 return self::HASH_JOIN;
@@ -94,5 +103,13 @@ class Optimizer
         $countB = $innerJoinedTable->getRowsCount();
 
         return $countA > $countB ? self::TABLE_B_FIRST : self::TABLE_A_FIRST;
+    }
+
+    /**
+     * @return bool
+     */
+    public function sayIfOrderByIsNeed()
+    {
+        return $this->useOrderBy;
     }
 }
