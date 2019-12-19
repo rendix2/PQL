@@ -13,6 +13,11 @@
 class Alias
 {
     /**
+     * @var string
+     */
+    const DELIMITER = '.';
+
+    /**
      * @var Table $from
      */
     private $from;
@@ -57,5 +62,23 @@ class Alias
     public function getTo()
     {
         return $this->to;
+    }
+
+    /***
+     * @param Table $table
+     * @param Alias[] $aliases
+     *
+     * @return Alias|mixed
+     */
+    public static function findAliasForTable(Table $table, array $aliases)
+    {
+        /**
+         * @var Alias $alias
+         */
+        foreach ($aliases as $alias) {
+            if ($table === $alias->getFrom()) {
+                return $alias;
+            }
+        }
     }
 }

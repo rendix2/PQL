@@ -342,6 +342,14 @@ class Query
     /**
      * @return array
      */
+    public function getAliases()
+    {
+        return $this->aliases;
+    }
+
+    /**
+     * @return array
+     */
     public function getFunctions()
     {
         return $this->functions;
@@ -591,9 +599,8 @@ class Query
     }
 
     /**
-     * @param string $table
-     *
-     * @param null   $alias
+     * @param string      $table
+     * @param string|null $alias
      *
      * @return Query
      */
@@ -990,7 +997,7 @@ class Query
 
         return $this;
     }
-    
+
     private function proceed()
     {
         

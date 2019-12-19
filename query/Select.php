@@ -1,6 +1,7 @@
 <?php
 namespace query;
 
+use Alias;
 use Column;
 use Condition;
 use Exception;
@@ -64,7 +65,7 @@ class Select extends BaseQuery
         $this->checkColumns();
 
         Profiler::start('getRows');
-        $this->result = $this->query->getTable()->getRows();
+        $this->result = $this->aliases($this->query->getTable());
         Profiler::finish('getRows');
 
         //bdump($this->result, '$this->result SET');
@@ -180,6 +181,57 @@ class Select extends BaseQuery
         
         foreach ($this->query->getTable()->getColumns() as $column) {
             $columns[] = $column->getName();
+        }
+
+        /**
+         * @var Alias $alias
+         */
+        foreach ($this->query->getAliases() as $alias) {
+            if ($this->query->getTable() === $alias->getFrom()) {
+                foreach ($this->query->getTable()->getColumns() as $column) {
+                    $columns[] = $alias->getTo() . Alias::DELIMITER . $column->getName();
+                }
+            }
+
+            foreach ($this->query->getInnerJoin() as $innerJoinedTable) {
+                if ($innerJoinedTable['table'] === $alias->getFrom()) {
+                    foreach ($innerJoinedTable['table']->getColumns() as $column) {
+                        $columns[] = $alias->getTo() . Alias::DELIMITER . $column->getName();
+                    }
+                }
+            }
+
+            foreach ($this->query->getCrossJoin() as $crossJoinedTable) {
+                if ($crossJoinedTable['table'] === $alias->getFrom()) {
+                    foreach ($crossJoinedTable['table']->getColumns() as $column) {
+                        $columns[] = $alias->getTo() . Alias::DELIMITER . $column->getName();
+                    }
+                }
+            }
+
+            foreach ($this->query->getLeftJoin() as $leftJoinedTable) {
+                if ($leftJoinedTable['table'] === $alias->getFrom()) {
+                    foreach ($leftJoinedTable['table']->getColumns() as $column) {
+                        $columns[] = $alias->getTo() . Alias::DELIMITER . $column->getName();
+                    }
+                }
+            }
+
+            foreach ($this->query->getRightJoin() as $rightJoinedTable) {
+                if ($rightJoinedTable['table'] === $alias->getFrom()) {
+                    foreach ($rightJoinedTable['table']->getColumns() as $column) {
+                        $columns[] = $alias->getTo() . Alias::DELIMITER . $column->getName();
+                    }
+                }
+            }
+
+            foreach ($this->query->getFullJoin() as $fullJoinedTable) {
+                if ($fullJoinedTable['table'] === $alias->getFrom()) {
+                    foreach ($fullJoinedTable['table']->getColumns() as $column) {
+                        $columns[] = $alias->getTo() . Alias::DELIMITER . $column->getName();
+                    }
+                }
+            }
         }
 
         foreach ($this->query->getColumns() as $column) {
@@ -410,17 +462,19 @@ class Select extends BaseQuery
              * @var Condition $condition
              */
             foreach ($innerJoinedTable['onConditions'] as $condition) {
+                $innerJoinedTableRows = $this->aliases($innerJoinedTable['table']);
+
                 switch ($this->optimizer->sayJoinAlgorithm($condition)) {
                     case Optimizer::MERGE_JOIN:
-                        $this->result = SortMergeJoin::innerJoin($this->result, $innerJoinedTable['table']->getRows(), $condition);
+                        $this->result = SortMergeJoin::innerJoin($this->result, $innerJoinedTableRows, $condition);
                         break;
 
                     case Optimizer::HASH_JOIN:
-                        $this->result = HashJoin::innerJoin($this->result, $innerJoinedTable['table']->getRows(), $condition);
+                        $this->result = HashJoin::innerJoin($this->result, $innerJoinedTableRows, $condition);
                         break;
 
                     case Optimizer::NESTED_LOOP:
-                        $this->result = NestedLoopJoin::innerJoin($this->result, $innerJoinedTable['table']->getRows(), $condition);
+                        $this->result = NestedLoopJoin::innerJoin($this->result, $innerJoinedTableRows, $condition);
                         break;
                 }
             }
@@ -439,7 +493,9 @@ class Select extends BaseQuery
         }
 
         foreach ($this->query->getCrossJoin() as $crossJoinedTable) {
-            $this->result = NestedLoopJoin::crossJoin($this->result, $crossJoinedTable->getRows());
+            $crossJoinedTableRows = $this->aliases($crossJoinedTable['table']);
+
+            $this->result = NestedLoopJoin::crossJoin($this->result, $crossJoinedTableRows);
         }
 
         return $this->result;
@@ -460,17 +516,19 @@ class Select extends BaseQuery
              * @var Condition $condition
              */
             foreach ($leftJoinedTable['onConditions'] as $condition) {
+                $leftJoinedTableRows = $this->aliases($leftJoinedTable['table']);
+
                 switch ($this->optimizer->sayJoinAlgorithm($condition)) {
                     case Optimizer::MERGE_JOIN:
-                        $this->result = SortMergeJoin::leftJoin($this->result, $leftJoinedTable['table']->getRows(), $condition);
+                        $this->result = SortMergeJoin::leftJoin($this->result, $leftJoinedTableRows, $condition);
                         break;
 
                     case Optimizer::HASH_JOIN:
-                        $this->result = HashJoin::leftJoin($this->result, $leftJoinedTable['table']->getRows(), $condition);
+                        $this->result = HashJoin::leftJoin($this->result, $leftJoinedTableRows, $condition);
                         break;
 
                     case Optimizer::NESTED_LOOP:
-                        $this->result = NestedLoopJoin::leftJoin($this->result, $leftJoinedTable['table']->getRows(), $condition);
+                        $this->result = NestedLoopJoin::leftJoin($this->result, $leftJoinedTableRows, $condition);
                         break;
                 }
             }
@@ -498,17 +556,19 @@ class Select extends BaseQuery
              * @var Condition $condition
              */
             foreach ($rightJoinedTable['onConditions'] as $condition) {
+                $rightJoinedTableRows = $this->aliases($rightJoinedTable['table']);
+
                 switch ($this->optimizer->sayJoinAlgorithm($condition)) {
                     case Optimizer::MERGE_JOIN:
-                        $this->result = SortMergeJoin::rightJoin($this->result, $rightJoinedTable['table']->getRows(), $condition);
+                        $this->result = SortMergeJoin::rightJoin($this->result, $rightJoinedTableRows, $condition);
                         break;
 
                     case Optimizer::HASH_JOIN:
-                        $this->result = HashJoin::rightJoin($this->result, $rightJoinedTable['table']->getRows(), $condition);
+                        $this->result = HashJoin::rightJoin($this->result, $rightJoinedTableRows, $condition);
                         break;
 
                     case Optimizer::NESTED_LOOP:
-                        $this->result = NestedLoopJoin::rightJoin($this->result, $rightJoinedTable['table']->getRows(), $condition);
+                        $this->result = NestedLoopJoin::rightJoin($this->result, $rightJoinedTableRows, $condition);
                         break;
                 }
             }
@@ -537,17 +597,19 @@ class Select extends BaseQuery
              * @var Condition $condition
              */
             foreach ($fullJoinedTable['onConditions'] as $condition) {
+                $fullJoinedTableRows = $this->aliases($fullJoinedTable['table']);
+
                 switch ($this->optimizer->sayJoinAlgorithm($condition)) {
                     case Optimizer::MERGE_JOIN:
-                        $this->result = SortMergeJoin::fullJoin($this->result, $fullJoinedTable['table']->getRows(), $condition);
+                        $this->result = SortMergeJoin::fullJoin($this->result, $fullJoinedTableRows, $condition);
                         break;
 
                     case Optimizer::HASH_JOIN:
-                        $this->result = HashJoin::fullJoin($this->result, $fullJoinedTable['table']->getRows(), $condition);
+                        $this->result = HashJoin::fullJoin($this->result, $fullJoinedTableRows, $condition);
                         break;
 
                     case Optimizer::NESTED_LOOP:
-                        $this->result = NestedLoopJoin::fullJoin($this->result, $fullJoinedTable['table']->getRows(), $condition);
+                        $this->result = NestedLoopJoin::fullJoin($this->result, $fullJoinedTableRows, $condition);
                         break;
                 }
             }
@@ -726,6 +788,42 @@ class Select extends BaseQuery
         }
         
         return $columnObj;
+    }
+
+    /**
+     * @param Table $table
+     *
+     * @return array
+     */
+    private function aliases(Table $table)
+    {
+        $tableAlias = null;
+
+        /**
+         * @var Alias $alias
+         */
+        foreach ($this->query->getAliases() as $alias) {
+            if ($table === $alias->getFrom()) {
+                $tableAlias = $alias;
+                break;
+            }
+        }
+
+        if ($tableAlias === null) {
+            return $this->result;
+        }
+
+        $result = [];
+        $rows = $table->getRows();
+
+        foreach ($rows as $rowNumber => $row) {
+            foreach ($row as $columnName => $columnValue) {
+                $result[$rowNumber][$alias->getTo() . Alias::DELIMITER . $columnName] = $columnValue;
+                $result[$rowNumber][$columnName] = $columnValue;
+            }
+        }
+
+        return $result;
     }
 }
 

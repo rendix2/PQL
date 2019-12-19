@@ -186,21 +186,21 @@ $query->update('test', ['a' => '888'])->where('id', '=', '96')->run();
 Profiler::start('select');
 $query = new Query($database);
 
-$query->select(['article_id', 'article_text', 'user_id', 'user_name', 'comment_text', 'c'])
+$query->select(['a.article_id', 'a.article_text','user_name'  /*'u.user_id', 'u.user_name', 'c.comment_text', 'a.c'*/])
     ->sum('c')
-    ->from('articles')
+    ->from('articles', 'a')
     ->innerJoin(
         'users',
         [
-            new Condition('article_user_id', '=', 'user_id'),
+            new Condition('a.article_user_id', '=', 'u.user_id'),
             //new Condition('article_text', '=', 'user_name'),
-        ]
+        ],
+        'u'
     )
-    ->leftJoin('comments', [new Condition('article_id', '=', 'comment_article_id')])
+    ->leftJoin('comments', [new Condition('a.article_id', '=', 'c.comment_article_id')], 'c')
     ->groupBy('user_name')
-    ->having(106, '<', 'SUM(c)')
-    ->orderBy('user_id', false)
-    ->explain();
+    ->orderBy('user_id', false);
+    //->explain();
     //->limit(1)
     //->offset(1);
     //->where(new Condition('user_id', '!=', 2));

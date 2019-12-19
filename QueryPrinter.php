@@ -142,6 +142,22 @@ class QueryPrinter
     }
 
     /**
+     * @param Table $table
+     *
+     * @return string
+     */
+    private function printTableAlias(Table $table)
+    {
+        $tableAlias = Alias::findAliasForTable($table, $this->query->getAliases());
+
+        if ($tableAlias) {
+            $tableAlias = ' AS ' . $tableAlias->getTo();
+        }
+
+        return $tableAlias;
+    }
+
+    /**
      * @return string
      */
     private function select()
@@ -162,13 +178,13 @@ class QueryPrinter
             }
         }
 
-        $from = '<br> FROM ' . $this->query->getTable()->getName();
+        $from = '<br> FROM ' . $this->query->getTable()->getName() . $this->printTableAlias($this->query->getTable());
 
         $innerJoin = '';
 
         if (count($this->query->getInnerJoin())) {
             foreach ($this->query->getInnerJoin() as $table) {
-                $innerJoin .= ' <br>INNER JOIN ' . $table['table']->getName();
+                $innerJoin .= ' <br>INNER JOIN ' . $table['table']->getName() . $this->printTableAlias($table['table']);
                 $innerJoin .= $this->printOnConditions($table['onConditions']);
             }
         }
@@ -177,7 +193,7 @@ class QueryPrinter
 
         if (count($this->query->getCrossJoin())) {
             foreach ($this->query->getCrossJoin() as $table) {
-                $crossJoin .= ' <br>CROSS JOIN ' . $table['table']->getName();
+                $crossJoin .= ' <br>CROSS JOIN ' . $table['table']->getName() . $this->printTableAlias($table['table']);
             }
         }
 
@@ -185,7 +201,7 @@ class QueryPrinter
 
         if (count($this->query->getLeftJoin())) {
             foreach ($this->query->getLeftJoin() as $table) {
-                $leftJoin .= ' <br>LEFT JOIN ' . $table['table']->getName();
+                $leftJoin .= ' <br>LEFT JOIN ' . $table['table']->getName() . $this->printTableAlias($table['table']);
                 $leftJoin .= $this->printOnConditions($table['onConditions']);
             }
         }
@@ -194,7 +210,7 @@ class QueryPrinter
 
         if (count($this->query->getRightJoin())) {
             foreach ($this->query->getRightJoin() as $table) {
-                $rightJoin .= ' <br>RIGHT JOIN ' . $table['table']->getName();
+                $rightJoin .= ' <br>RIGHT JOIN ' . $table['table']->getName() . $this->printTableAlias($table['table']);
                 $rightJoin .= $this->printOnConditions($table['onConditions']);
             }
         }
@@ -203,7 +219,7 @@ class QueryPrinter
 
         if (count($this->query->getFullJoin())) {
             foreach ($this->query->getFullJoin() as $table) {
-                $fullJoin .= ' <br>FULL JOIN ' . $table['table']->getName();
+                $fullJoin .= ' <br>FULL JOIN ' . $table['table']->getName() . $this->printTableAlias($table['table']);
                 $fullJoin .= $this->printOnConditions($table['onConditions']);
             }
         }
