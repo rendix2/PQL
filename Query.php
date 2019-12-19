@@ -167,6 +167,11 @@ class Query
     private $union;
 
     /**
+     * @var array $aliases
+     */
+    private $aliases;
+
+    /**
      * Query constructor.
      *
      * @param Database $database
@@ -200,6 +205,8 @@ class Query
         $this->insertData = [];
 
         $this->functions = [];
+
+        $this->aliases = [];
 
         $this->timeLimit = ini_get('max_execution_time');
         set_time_limit(0);
@@ -287,6 +294,14 @@ class Query
         $this->updateData = null;
 
         $this->functions = null;
+
+        foreach ($this->aliases as &$alias) {
+            $alias = null;
+        }
+
+        unset($alias);
+
+        $this->aliases = null;
 
         $this->res = null;
 
@@ -578,11 +593,17 @@ class Query
     /**
      * @param string $table
      *
+     * @param null   $alias
+     *
      * @return Query
      */
-    public function from($table)
+    public function from($table, $alias = null)
     {
         $this->table = new Table($this->database, $table);
+
+        if ($alias) {
+            $this->aliases[] = new Alias($this->table, $alias);
+        }
 
         return $this;
     }
@@ -739,13 +760,14 @@ class Query
     }
 
     /**
-     * @param string $table
-     * @param array $onConditions
+     * @param string      $table
+     * @param array       $onConditions
+     * @param string|null $alias
      *
      * @return Query
      * @throws Exception
      */
-    public function leftJoin($table, array $onConditions)
+    public function leftJoin($table, array $onConditions, $alias = null)
     {
         if (!count($onConditions)) {
             throw new Exception('No ON condition.');
@@ -757,19 +779,26 @@ class Query
             }
         }
 
-        $this->leftJoin[] = ['table' => new Table($this->database, $table), 'onConditions' => $onConditions];
+        $leftJoinedTable = new Table($this->database, $table);
+
+        $this->leftJoin[] = ['table' => $leftJoinedTable, 'onConditions' => $onConditions];
+
+        if ($alias) {
+            $this->aliases[] = new Alias($leftJoinedTable, $alias);
+        }
         
         return $this;
     }
 
     /**
-     * @param string $table
-     * @param array  $onConditions
+     * @param string      $table
+     * @param array       $onConditions
+     * @param string|null $alias
      *
      * @return $this
      * @throws Exception
      */
-    public function fullJoin($table, array $onConditions)
+    public function fullJoin($table, array $onConditions, $alias = null)
     {
         if (!count($onConditions)) {
             throw new Exception('No ON condition.');
@@ -781,19 +810,26 @@ class Query
             }
         }
 
-        $this->fullJoin[] = ['table' => new Table($this->database, $table), 'onConditions' => $onConditions];
+        $fullJoinedTable = new Table($this->database, $table);
+
+        $this->fullJoin[] = ['table' => $fullJoinedTable, 'onConditions' => $onConditions];
+
+        if ($alias) {
+            $this->aliases[] = new Alias($fullJoinedTable, $alias);
+        }
 
         return $this;
     }
 
     /**
-     * @param string $table
-     * @param array $onConditions
+     * @param string      $table
+     * @param array       $onConditions
+     * @param string|null $alias
      *
      * @return Query
      * @throws Exception
      */
-    public function rightJoin($table, array $onConditions)
+    public function rightJoin($table, array $onConditions, $alias = null)
     {
         if (!count($onConditions)) {
             throw new Exception('No ON condition.');
@@ -805,19 +841,26 @@ class Query
             }
         }
 
-        $this->rightJoin[] = ['table' => new Table($this->database, $table), 'onConditions' => $onConditions];
+        $rightJoinedTable = new Table($this->database, $table);
+
+        $this->rightJoin[] = ['table' => $rightJoinedTable, 'onConditions' => $onConditions];
+
+        if ($alias) {
+            $this->aliases[] = new Alias($rightJoinedTable, $alias);
+        }
 
         return $this;
     }
 
     /**
-     * @param string $table
+     * @param string      $table
      * @param Condition[] $onConditions
+     * @param string|null $alias
      *
      * @return Query
      * @throws Exception
      */
-    public function innerJoin($table, array $onConditions)
+    public function innerJoin($table, array $onConditions, $alias = null)
     {
         if (!count($onConditions)) {
             throw new Exception('No ON condition.');
@@ -829,19 +872,32 @@ class Query
             }
         }
 
-        $this->innerJoin[] = ['table' => new Table($this->database, $table), 'onConditions' => $onConditions];
+        $innerJoinedTable = new Table($this->database, $table);
+
+        $this->innerJoin[] = ['table' => $innerJoinedTable, 'onConditions' => $onConditions];
+
+        if ($alias) {
+            $this->aliases[] = new Alias($innerJoinedTable, $alias);
+        }
         
         return $this;
     }
 
     /**
-     * @param string $table
+     * @param string      $table
+     * @param string|null $alias
      *
      * @return Query
      */
-    public function crossJoin($table)
+    public function crossJoin($table, $alias = null)
     {
-        $this->crossJoin[] = new Table($this->database, $table);
+        $crossJoinedTable = new Table($this->database, $table);
+
+        $this->crossJoin[] = $crossJoinedTable;
+
+        if ($alias) {
+            $this->aliases[] = new Alias($crossJoinedTable, $alias);
+        }
 
         return $this;
     }

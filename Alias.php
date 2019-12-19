@@ -13,20 +13,20 @@
 class Alias
 {
     /**
-     * @var mixed $from
+     * @var Table $from
      */
     private $from;
 
     /**
-     * @var mixed $to
+     * @var string $to
      */
     private $to;
 
     /**
      * Alias constructor.
      *
-     * @param mixed $from
-     * @param mixed $to
+     * @param Table $from
+     * @param string $to
      */
     public function __construct($from, $to)
     {
@@ -44,7 +44,7 @@ class Alias
     }
 
     /**
-     * @return mixed
+     * @return Table
      */
     public function getFrom()
     {
@@ -52,7 +52,7 @@ class Alias
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getTo()
     {
