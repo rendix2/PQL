@@ -211,7 +211,6 @@ class Query
         $this->union = [];
 
         $this->timeLimit = ini_get('max_execution_time');
-        set_time_limit(0);
     }
 
     /**
@@ -1021,6 +1020,8 @@ class Query
         if ($this->res instanceof Result) {
             return $this->res;
         }
+
+        set_time_limit(0);
 
          $startTime = microtime(true);
 
