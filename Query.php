@@ -867,24 +867,18 @@ class Query
      * @return Query
      * @throws Exception
      */
-    public function innerJoin($table, array $onConditions, $alias = null)
+    public function innerJoin($table, array $onConditions = [], $alias = null)
     {
-        if (!count($onConditions)) {
-            throw new Exception('No ON condition.');
+        $joinedTable = new Table($this->database, $table);
+
+        if (count($onConditions)) {
+            $this->innerJoin[] = ['table' => $joinedTable, 'onConditions' => $onConditions];
+        } else {
+            $this->crossJoin[] = $joinedTable;
         }
-
-        foreach ($onConditions as $onCondition) {
-            if (!($onCondition instanceof Condition)) {
-                throw new Exception('Given param is not Condition');
-            }
-        }
-
-        $innerJoinedTable = new Table($this->database, $table);
-
-        $this->innerJoin[] = ['table' => $innerJoinedTable, 'onConditions' => $onConditions];
 
         if ($alias) {
-            $this->aliases[] = new Alias($innerJoinedTable, $alias);
+            $this->aliases[] = new Alias($joinedTable, $alias);
         }
         
         return $this;
