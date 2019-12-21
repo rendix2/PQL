@@ -208,6 +208,8 @@ class Query
 
         $this->aliases = [];
 
+        $this->union = [];
+
         $this->timeLimit = ini_get('max_execution_time');
         set_time_limit(0);
     }
@@ -992,6 +994,14 @@ class Query
         return $this;
     }
 
+    /**
+     * @return Query[]
+     */
+    public function getUnion()
+    {
+        return $this->union;
+    }
+
     private function proceed()
     {
         
@@ -1017,40 +1027,43 @@ class Query
         switch ($this->type) {
             case self::SELECT:
                 $select      = new Select($this);
-                $columnObj   = $select->run();
+                $rows        = $select->run();
                 $endTime     = microtime(true);
                 $executeTime = $endTime - $startTime;
 
-                return $this->res = new Result($this->columns, $columnObj, $executeTime);
+                return $this->res = new Result($this->columns, $rows, $executeTime, $select);
             case self::INSERT:
                 $insert       = new Insert($this);
                 $affectedRows = $insert->run();
                 $endTime      = microtime(true);
                 $executeTime  = $endTime - $startTime;
 
-                return $this->res = new Result([], [], $executeTime, $affectedRows);
+                return $this->res = new Result([], [], $executeTime, $insert, $affectedRows);
             case self::UPDATE:
                 $update       = new Update($this);
                 $affectedRows = $update->run();
                 $endTime      = microtime(true);
                 $executeTime  = $endTime - $startTime;
 
-                return $this->res = new Result([], [], $executeTime, $affectedRows);
+                return $this->res = new Result([], [], $executeTime, $update, $affectedRows);
             case self::DELETE:
                 $delete       = new Delete($this);
                 $affectedRows = $delete->run();
                 $endTime      = microtime(true);
                 $executeTime  = $endTime - $startTime;
 
-                return $this->res = new Result([], [], $executeTime, $affectedRows);
+                return $this->res = new Result([], [], $executeTime, $delete, $affectedRows);
             case self::EXPLAIN:
                 $explain = new Explain($this);
 
-                $explain = $explain->run();
-                $endTime      = microtime(true);
+                $columns = ['table', 'rows', 'type', 'condition', 'algorithm'];
+
+                $rows = $explain->run();
+
+                $endTime = microtime(true);
                 $executeTime  = $endTime - $startTime;
 
-                return $this->res = new Result(['table', 'rows', 'type', 'condition', 'algorithm'],  $explain, $executeTime, 0);
+                return $this->res = new Result($columns, $rows, $executeTime, $explain, 0);
             default:
                 throw new Exception('Unknown query type.');
         }

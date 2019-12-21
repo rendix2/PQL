@@ -49,16 +49,17 @@ class Explain extends BaseQuery
     }
 
     /**
-     * @inheritDoc
+     * @param Query $query
+     *
+     * @return array
      */
-    public function run()
+    private function explainHelper(Query $query)
     {
-
         $tables = [];
 
         $row = [
-            'table' => $this->query->getTable()->getName(),
-            'rows' => $this->query->getTable()->getRowsCount(),
+            'table' => $query->getTable()->getName(),
+            'rows' => $query->getTable()->getRowsCount(),
             'type' => 'FROM CLAUSE',
             'condition' => null,
             'algorithm' => null,
@@ -68,7 +69,7 @@ class Explain extends BaseQuery
 
         $tables[] = $row;
 
-        foreach ($this->query->getInnerJoin() as $innerJoinedTable) {
+        foreach ($query->getInnerJoin() as $innerJoinedTable) {
             $tables[] = new Row(
                 [
                     'table' => $innerJoinedTable['table']->getName(),
@@ -98,7 +99,7 @@ class Explain extends BaseQuery
         /**
          * @var Table $crossJoinedTable
          */
-        foreach ($this->query->getCrossJoin() as $crossJoinedTable) {
+        foreach ($query->getCrossJoin() as $crossJoinedTable) {
             $tables[] = new Row(
                 [
                     'table' => $crossJoinedTable['table']->getName(),
@@ -113,7 +114,7 @@ class Explain extends BaseQuery
         /**
          * @var Table $leftJoinedTable
          */
-        foreach ($this->query->getLeftJoin() as $leftJoinedTable) {
+        foreach ($query->getLeftJoin() as $leftJoinedTable) {
             $tables[] = new Row(
                 [
                     'table' => $leftJoinedTable['table']->getName(),
@@ -140,7 +141,7 @@ class Explain extends BaseQuery
             }
         }
 
-        foreach ($this->query->getRightJoin() as $rightJoinedTable) {
+        foreach ($query->getRightJoin() as $rightJoinedTable) {
             $tables[] = new Row(
                 [
                     'table' => $rightJoinedTable['table']->getName(),
@@ -167,7 +168,7 @@ class Explain extends BaseQuery
             }
         }
 
-        foreach ($this->query->getFullJoin() as $fullJoinedTable) {
+        foreach ($query->getFullJoin() as $fullJoinedTable) {
             $tables[] = new Row(
                 [
                     'table' => $fullJoinedTable['table']->getName(),
@@ -179,8 +180,32 @@ class Explain extends BaseQuery
             );
         }
 
-        $this->result = $tables;
+        return $tables;
+    }
 
-        return $this->result;
+
+    /**
+     * @inheritDoc
+     */
+    public function run()
+    {
+        $tables = $this->explainHelper($this->query);
+
+        foreach ($this->query->getUnion() as $i => $unionQuery) {
+            $result = $this->explainHelper($unionQuery);
+            $tables[] = new Row(
+                [
+                    'table' => '',
+                    'rows' => '',
+                    'type' => 'UNION #' . $i,
+                    'condition' => '',
+                    'algorithm' => '',
+                ]
+            );
+
+            $tables = array_merge($tables, $result);
+        }
+
+        return $this->result = $tables;
     }
 }

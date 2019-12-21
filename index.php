@@ -184,6 +184,24 @@ $query->update('test', ['a' => '888'])->where('id', '=', '96')->run();
 
 
 Profiler::start('select');
+$query2 = new Query($database);
+
+$query2->select(['a.article_id', 'a.article_text','user_name'  /*'u.user_id', 'u.user_name', 'c.comment_text', 'a.c'*/])
+    ->sum('c')
+    ->from('articles', 'a')
+    ->innerJoin(
+        'users',
+        [
+            new Condition('a.article_user_id', '=', 'u.user_id'),
+            //new Condition('article_text', '=', 'user_name'),
+        ],
+        'u'
+    )
+    ->leftJoin('comments', [new Condition('a.article_id', '=', 'c.comment_article_id')], 'c')
+    ->groupBy('user_name')
+    ->orderBy('user_id', false);
+
+
 $query = new Query($database);
 
 $query->select(['a.article_id', 'a.article_text','user_name'  /*'u.user_id', 'u.user_name', 'c.comment_text', 'a.c'*/])
@@ -199,7 +217,10 @@ $query->select(['a.article_id', 'a.article_text','user_name'  /*'u.user_id', 'u.
     )
     ->leftJoin('comments', [new Condition('a.article_id', '=', 'c.comment_article_id')], 'c')
     ->groupBy('user_name')
-    ->orderBy('user_id', false);
+    ->orderBy('user_id', false)
+    ->union($query2)
+    ->union($query2);
+
     //->explain();
     //->limit(1)
     //->offset(1);
@@ -207,10 +228,15 @@ $query->select(['a.article_id', 'a.article_text','user_name'  /*'u.user_id', 'u.
     //->where(new Condition('article_id', '!=', 2));
 
 echo $query;
-
-bdump($query);
-
 echo $query->run();
+
+
+
+//echo $query2;
+//echo $query2->run();
+
+//bdump($query);
+//bdump($query2);
 
 /*
 

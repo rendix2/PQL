@@ -6,6 +6,8 @@
  * Time: 15:15
  */
 
+use query\BaseQuery;
+
 /**
  * Class Result
  *
@@ -42,23 +44,29 @@ final class Result implements ITable
      * @var array $columns
      */
     private $columns;
+    /**
+     * @var BaseQuery $query
+     */
+    private $query;
 
     /**
      * Result constructor.
      *
-     * @param array $columns
-     * @param array $rows
-     * @param float $time
-     * @param int   $affectedRows
+     * @param array     $columns
+     * @param array     $rows
+     * @param float     $time
+     * @param BaseQuery $query
+     * @param int       $affectedRows
      */
-    public function __construct(array $columns, array $rows, $time, $affectedRows = 0)
+    public function __construct(array $columns, array $rows, $time, BaseQuery $query, $affectedRows = 0)
     {
-        $this->rows         = $rows;
-        $this->rowsCount    = count($rows);
-        $this->columns      = $columns;
-        $this->time         = $time;
+        $this->rows          = $rows;
+        $this->rowsCount     = count($rows);
+        $this->columns       = $columns;
+        $this->time          = $time;
         $this->timeFormatted = (float)number_format($time, 5);
-        $this->affectedRows = $affectedRows;
+        $this->query         = $query;
+        $this->affectedRows  = $affectedRows;
     }
 
     /**
@@ -72,6 +80,7 @@ final class Result implements ITable
         $this->rowsCount     = null;
         $this->affectedRows  = null;
         $this->columns       = null;
+        $this->query         = null;
     }
 
     /**
@@ -129,5 +138,13 @@ final class Result implements ITable
     public function getRows($object = false)
     {
         return $this->rows;
+    }
+
+    /**
+     * @return BaseQuery
+     */
+    public function getQuery()
+    {
+        return $this->query;
     }
 }

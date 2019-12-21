@@ -262,7 +262,20 @@ class QueryPrinter
         $limit  = $this->printLimit();
         $offset = $this->printOffset();
 
-        return $select . $functions . $from . $innerJoin . $crossJoin . $leftJoin . $rightJoin . $fullJoin . $where . $orderBy . $groupBy . $having . $limit . $offset . '<br><br>';
+        $union = '';
+
+        foreach ($this->query->getUnion() as $i => $unionQuery) {
+            if ($i === 0) {
+                $union .= '<br><br> UNION <br><br>' . (string) $unionQuery;
+            } else {
+                $union .= ' UNION <br><br>' . (string) $unionQuery;
+            }
+        }
+
+        $selectClause = $select . $functions;
+        $joins = $innerJoin . $crossJoin . $leftJoin . $rightJoin . $fullJoin;
+
+        return $selectClause . $from . $joins . $where . $orderBy . $groupBy . $having . $limit . $offset . $union . '<br><br>';
     }
 
     /**

@@ -100,4 +100,12 @@ abstract class BaseQuery
 
         return $this->result = array_slice($this->result, $this->query->getOffset(), $limit,true);
     }
+
+    /**
+     * @return array
+     */
+    public function getResult()
+    {
+        return $this->result;
+    }
 }
