@@ -1035,7 +1035,18 @@ class Query
     {
          $this->union[] = $query;
 
-        return $this;
+         /*
+        $query = new Query($this->database);
+        $query->union = $this->union;
+        $query->type = self::SELECT;
+        $query->columns = $this->columns;
+        $query->table = $this->table;
+        $query->tableAlias = $this->tableAlias;
+
+        return $query;
+        */
+
+         return $this;
     }
 
     /**
