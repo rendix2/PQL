@@ -2,6 +2,7 @@
 namespace query;
 
 use Column;
+use SplFileObject;
 use Table;
 use BTree\BtreeJ;
 
@@ -56,13 +57,13 @@ class Insert extends BaseQuery
             }
         }
 
-        $file = new \SplFileObject($this->query->getTable()->getFilePath(), 'a');
+        $file = new SplFileObject($this->query->getTable()->getFilePath(), 'a');
 
         $line = implode(Table::COLUMN_DELIMITER, $row) ;
 
         $written = $file->fwrite(
             $line . $this->query->getTable()->getFileEnds(),
-            strlen($line) + $this->query->getTable()->getFileEndsLength()
+            mb_strlen($line) + $this->query->getTable()->getFileEndsLength()
         );
         $file = null;
 

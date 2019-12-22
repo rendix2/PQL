@@ -1,5 +1,6 @@
 <?php
 
+use Netpromotion\Profiler\Profiler;
 use query\Delete;
 use query\Explain;
 use query\Insert;
@@ -61,14 +62,84 @@ class Query
     public $columns;
 
     /**
+     * @var FunctionPql[] $functions
+     */
+    private $functions;
+
+    /**
      * @var Table $table
      */
     private $table;
 
     /**
+     * @var Alias|null $tableAlias
+     */
+    private $tableAlias;
+
+    /**
+     * @var bool $hasTableAlias
+     */
+    private $hasTableAlias;
+
+    /**
+     * @var JoinedTable[] $innerJoinedTables
+     */
+    private $innerJoinedTables;
+
+    /**
+     * @var bool $hasInnerJoinedTable
+     */
+    private $hasInnerJoinedTable;
+
+    /**
+     * @var JoinedTable[] $leftJoinedTables
+     */
+    private $leftJoinedTables;
+
+    /**
+     * @var bool $hasLeftJoinedTable
+     */
+    private $hasLeftJoinedTable;
+
+    /**
+     * @var JoinedTable[] $rightJoinedTables
+     */
+    private $rightJoinedTables;
+
+    /**
+     * @var bool $hasRightJoinedTable
+     */
+    private $hasRightJoinedTable;
+
+    /**
+     * @var JoinedTable[] $fullJoinedTables
+     */
+    private $fullJoinedTables;
+
+    /**
+     * @var bool $hasFullJoinedTable
+     */
+    private $hasFullJoinedTable;
+
+    /**
+     * @var JoinedTable[] $crossJoinedTables
+     */
+    private $crossJoinedTables;
+
+    /**
+     * @var bool $hasCrossJoinedTable
+     */
+    private $hasCrossJoinedTable;
+
+    /**
      * @var Condition[] $condition
      */
-    private $whereCondition;
+    private $whereConditions;
+
+    /**
+     * @var bool $hasWhereCondition
+     */
+    private $hasWhereCondition;
 
     /**
      * @var array $orderBy
@@ -76,9 +147,19 @@ class Query
     private $orderBy;
 
     /**
+     * @var bool $hasOrderBy
+     */
+    private $hasOrderBy;
+
+    /**
      * @var Condition[] $havingConditions
      */
     private $havingConditions;
+
+    /**
+     * @var bool $hasHavingCondition
+     */
+    private $hasHavingCondition;
 
     /**
      * @var array $groupBy
@@ -86,40 +167,19 @@ class Query
     private $groupBy;
 
     /**
-     *
-     * @var array $leftJoin
+     * @var bool $hasGroupBy
      */
-    private $leftJoin;
-
-    /**
-     * @var array $rightJoin
-     */
-    private $rightJoin;
-
-    /**
-     * @var array $fullJoin
-     */
-    private $fullJoin;
-
-    /**
-     * @var array $innerJoin
-     */
-    private $innerJoin;
-
-    /**
-     * @var Table[] $crossJoin
-     */
-    private $crossJoin;
-
-    /**
-     * @var int $offset
-     */
-    private $offset;
+    private $hasGroupBy;
 
     /**
      * @var int $limit
      */
     private $limit;
+
+    /**
+     * @var int $offset
+     */
+    private $offset;
 
     /**
      * @var string $type
@@ -137,14 +197,9 @@ class Query
     private $insertData;
 
     /**
-     * @var array $functions
+     * @var Result $result
      */
-    private $functions;
-
-    /**
-     * @var Result $res
-     */
-    private $res;
+    private $result;
 
     /**
      * @var string $timeLimit
@@ -167,11 +222,6 @@ class Query
     private $union;
 
     /**
-     * @var array $aliases
-     */
-    private $aliases;
-
-    /**
      * Query constructor.
      *
      * @param Database $database
@@ -181,32 +231,41 @@ class Query
         $this->database = $database;
 
         $this->columns = [];
+        $this->functions = [];
 
-        $this->innerJoin = [];
+        $this->hasTableAlias = false;
 
-        $this->crossJoin = [];
+        $this->innerJoinedTables   = [];
+        $this->hasInnerJoinedTable = false;
 
-        $this->leftJoin  = [];
-        $this->rightJoin = [];
+        $this->crossJoinedTables   = [];
+        $this->hasCrossJoinedTable = false;
 
-        $this->fullJoin  = [];
+        $this->leftJoinedTables   = [];
+        $this->hasLeftJoinedTable = false;
 
-        $this->whereCondition = [];
+        $this->rightJoinedTables   = [];
+        $this->hasRightJoinedTable = false;
 
-        $this->orderBy = [];
+        $this->fullJoinedTables   = [];
+        $this->hasFullJoinedTable = false;
 
-        $this->groupBy = [];
+        $this->whereConditions   = [];
+        $this->hasWhereCondition = false;
 
-        $this->havingConditions = [];
+        $this->orderBy    = [];
+        $this->hasOrderBy = false;
+
+        $this->groupBy    = [];
+        $this->hasGroupBy = false;
+
+        $this->havingConditions   = [];
+        $this->hasHavingCondition = false;
 
         $this->offset = 0;
 
         $this->updateData = [];
         $this->insertData = [];
-
-        $this->functions = [];
-
-        $this->aliases = [];
 
         $this->union = [];
 
@@ -218,60 +277,67 @@ class Query
      */
     public function __destruct()
     {
-        \Netpromotion\Profiler\Profiler::start('destruct');
+        Profiler::start('destruct');
         $this->database = null;
 
         $this->columns = null;
+        $this->functions = null;
 
         $this->table = null;
 
-        foreach ($this->innerJoin as &$innerJoinedTable) {
+        foreach ($this->innerJoinedTables as &$innerJoinedTable) {
             $innerJoinedTable = null;
         }
 
         unset($innerJoinedTable);
 
-        $this->innerJoin = null;
+        $this->innerJoinedTables   = null;
+        $this->hasInnerJoinedTable = null;
 
-        foreach ($this->crossJoin as &$crossJoinedTable) {
+        foreach ($this->crossJoinedTables as &$crossJoinedTable) {
             $crossJoinedTable = null;
         }
 
         unset($crossJoinedTable);
 
-        $this->crossJoin = null;
+        $this->crossJoinedTables   = null;
+        $this->hasCrossJoinedTable = null;
 
-        foreach ($this->leftJoin as &$leftJoinedTable) {
+        foreach ($this->leftJoinedTables as &$leftJoinedTable) {
             $leftJoinedTable = null;
         }
 
         unset($leftJoinedTable);
 
-        $this->leftJoin  = null;
+        $this->leftJoinedTables   = null;
+        $this->hasLeftJoinedTable = null;
 
-        foreach ($this->rightJoin as &$rightJoinedTable) {
+        foreach ($this->rightJoinedTables as &$rightJoinedTable) {
             $rightJoinedTable = null;
         }
 
         unset($rightJoinedTable);
 
-        $this->rightJoin = null;
+        $this->rightJoinedTables   = null;
+        $this->hasRightJoinedTable = null;
 
-        foreach ($this->fullJoin as &$fullJoinedTable) {
+        foreach ($this->fullJoinedTables as &$fullJoinedTable) {
             $fullJoinedTable = null;
         }
 
         unset($fullJoinedTable);
 
-        $this->fullJoin = null;
+        $this->fullJoinedTables   = null;
+        $this->hasFullJoinedTable = null;
 
-        foreach ($this->whereCondition as &$whereCondition) {
+        foreach ($this->whereConditions as &$whereCondition) {
             $whereCondition = null;
         }
 
         unset($whereCondition);
 
-        $this->whereCondition = null;
+        $this->whereConditions   = null;
+        $this->hasWhereCondition = null;
 
         foreach ($this->groupBy as &$groupByColumn) {
             $groupByColumn = null;
@@ -281,9 +347,11 @@ class Query
 
         $this->groupBy = null;
 
-        $this->havingConditions = null;
+        $this->havingConditions   = null;
+        $this->hasHavingCondition = null;
 
-        $this->orderBy = null;
+        $this->orderBy    = null;
+        $this->hasOrderBy = null;
 
         $this->limit = null;
 
@@ -294,17 +362,7 @@ class Query
         $this->insertData = null;
         $this->updateData = null;
 
-        $this->functions = null;
-
-        foreach ($this->aliases as &$alias) {
-            $alias = null;
-        }
-
-        unset($alias);
-
-        $this->aliases = null;
-
-        $this->res = null;
+        $this->result = null;
 
         $this->union = null;
 
@@ -312,10 +370,16 @@ class Query
 
         $this->except = null;
 
+        $this->tableAlias = null;
+
         set_time_limit($this->timeLimit);
         $this->timeLimit = null;
 
-        \Netpromotion\Profiler\Profiler::finish('destruct');
+        $this->hasGroupBy = null;
+
+        $this->hasTableAlias = null;
+
+        Profiler::finish('destruct');
     }
 
     /**
@@ -341,11 +405,11 @@ class Query
     }
 
     /**
-     * @return array
+     * @return Alias|null
      */
-    public function getAliases()
+    public function getTableAlias()
     {
-        return $this->aliases;
+        return $this->tableAlias;
     }
 
     /**
@@ -359,9 +423,9 @@ class Query
     /**
      * @return Condition[]
      */
-    public function getWhereCondition()
+    public function getWhereConditions()
     {
-        return $this->whereCondition;
+        return $this->whereConditions;
     }
 
     /**
@@ -397,43 +461,43 @@ class Query
     }
 
     /**
-     * @return array
+     * @return JoinedTable[]
      */
-    public function getInnerJoin()
+    public function getInnerJoinedTables()
     {
-        return $this->innerJoin;
+        return $this->innerJoinedTables;
     }
 
     /**
-     * @return array
+     * @return JoinedTable[]
      */
-    public function getLeftJoin()
+    public function getLeftJoinedTables()
     {
-        return $this->leftJoin;
+        return $this->leftJoinedTables;
     }
 
     /**
-     * @return array
+     * @return JoinedTable[]
      */
-    public function getRightJoin()
+    public function getRightJoinedTables()
     {
-        return $this->rightJoin;
+        return $this->rightJoinedTables;
     }
 
     /**
-     * @return array
+     * @return JoinedTable[]
      */
-    public function getFullJoin()
+    public function getFullJoinedTables()
     {
-        return $this->fullJoin;
+        return $this->fullJoinedTables;
     }
 
     /**
-     * @return array
+     * @return JoinedTable[]
      */
-    public function getCrossJoin()
+    public function getCrossJoinedTables()
     {
-        return $this->crossJoin;
+        return $this->crossJoinedTables;
     }
 
     /**
@@ -493,6 +557,86 @@ class Query
     }
 
     /**
+     * @return bool
+     */
+    public function hasTableAlias()
+    {
+        return $this->hasTableAlias;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasInnerJoinedTable()
+    {
+        return $this->hasInnerJoinedTable;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasLeftJoinedTable()
+    {
+        return $this->hasLeftJoinedTable;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasRightJoinedTable()
+    {
+        return $this->hasRightJoinedTable;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasFullJoinedTable()
+    {
+        return $this->hasFullJoinedTable;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasCrossJoinedTable()
+    {
+        return $this->hasCrossJoinedTable;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasWhereCondition()
+    {
+        return $this->hasWhereCondition;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasOrderBy()
+    {
+        return $this->hasOrderBy;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasGroupBy()
+    {
+        return $this->hasGroupBy;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasHavingCondition()
+    {
+        return $this->hasHavingCondition;
+    }
+
+    /**
      * @param string $column
      *
      * @return Query
@@ -529,7 +673,7 @@ class Query
     {
         $this->functions[] = new FunctionPql(FunctionPql::AVERAGE, [$column]);
 
-        $this->type =self::SELECT;
+        $this->type = self::SELECT;
 
         return $this;
     }
@@ -585,16 +729,8 @@ class Query
      */
     public function select(array $columns = [])
     {
-        /*
-        foreach ($columns as $column) {
-            if (!$this->table->columnExists($column)) {
-                throw new Exception(sprintf('Column "%s" does not exist.', $column));
-            }
-        }
-        */
-
-        $this->type = self::SELECT;
-        $this->columns  = $columns;
+        $this->columns = $columns;
+        $this->type    = self::SELECT;
 
         return $this;
     }
@@ -610,7 +746,8 @@ class Query
         $this->table = new Table($this->database, $table);
 
         if ($alias) {
-            $this->aliases[] = new Alias($this->table, $alias);
+            $this->tableAlias = new Alias($this->table, $alias);
+            $this->hasTableAlias = true;
         }
 
         return $this;
@@ -624,11 +761,6 @@ class Query
      */
     public function where(Condition $condition)
     {
-        /*
-        if (!$this->table->columnExists($column)) {
-            throw new Exception(sprintf('Column "%s" does not exist.', $column));
-        }*/
-
         if ($condition->getOperator() === Operator::BETWEEN || $condition->getOperator() === Operator::BETWEEN_INCLUSIVE) {
             if (!is_array($condition->getValue()) && !is_array($condition->getColumn())) {
                 throw new Exception('Parameter for between must be array.');
@@ -639,7 +771,8 @@ class Query
             }
         }
 
-        $this->whereCondition[] = $condition;
+        $this->whereConditions[] = $condition;
+        $this->hasWhereCondition = true;
 
         return $this;
     }
@@ -653,13 +786,8 @@ class Query
      */
     public function orderBy($column, $asc = true)
     {
-        /*
-        if (!$this->table->columnExists($column)) {
-            throw new Exception(sprintf('Column "%s" does not exist.', $column));
-        }
-        */
-
         $this->orderBy[] = new OrderBy($column, $asc);
+        $this->hasOrderBy = true;
 
         return $this;
     }
@@ -673,13 +801,8 @@ class Query
      */
     public function groupBy($column)
     {
-        /*
-        if (!$this->table->columnExists($column)) {
-            throw new Exception(sprintf('Column "%s" does not exist.', $column));
-        }
-        */
-
         $this->groupBy[] = $column;
+        $this->hasGroupBy = true;
 
         return $this;
     }
@@ -694,12 +817,6 @@ class Query
      */
     public function having($column, $operator, $value)
     {
-        /*
-        if (!$this->table->columnExists($column)) {
-            throw new Exception(sprintf('Column "%s" does not exist.', $column));
-        }
-        */
-
         // COUNT(column_a, column_b)
         $matchedColumn = preg_match('#^([a-zA-Z]*)\((([a-zA-Z0-9,_ ]*)\))$#', $column, $functionNameColumn);
         $matchedValue = preg_match('#^([a-zA-Z]*)\((([a-zA-Z0-9,_ ]*)\))$#', $value, $functionNameValue);
@@ -713,6 +830,7 @@ class Query
         }
 
         $this->havingConditions[] = new Condition($column, $operator, $value);
+        $this->hasHavingCondition = true;
 
         return $this;
     }
@@ -768,14 +886,11 @@ class Query
     }
 
     /**
-     * @param string      $table
-     * @param array       $onConditions
-     * @param string|null $alias
+     * @param Condition[] $onConditions
      *
-     * @return Query
      * @throws Exception
      */
-    public function leftJoin($table, array $onConditions, $alias = null)
+    private function checkOnConditions(array $onConditions)
     {
         if (!count($onConditions)) {
             throw new Exception('No ON condition.');
@@ -786,15 +901,25 @@ class Query
                 throw new Exception('Given param is not Condition');
             }
         }
+    }
+
+    /**
+     * @param string      $table
+     * @param array       $onConditions
+     * @param string|null $alias
+     *
+     * @return Query
+     * @throws Exception
+     */
+    public function leftJoin($table, array $onConditions, $alias = null)
+    {
+        $this->checkOnConditions($onConditions);
 
         $leftJoinedTable = new Table($this->database, $table);
 
-        $this->leftJoin[] = ['table' => $leftJoinedTable, 'onConditions' => $onConditions];
+        $this->leftJoinedTables[] = new JoinedTable($leftJoinedTable, $onConditions, $alias);
+        $this->hasLeftJoinedTable = true;
 
-        if ($alias) {
-            $this->aliases[] = new Alias($leftJoinedTable, $alias);
-        }
-        
         return $this;
     }
 
@@ -808,23 +933,12 @@ class Query
      */
     public function fullJoin($table, array $onConditions, $alias = null)
     {
-        if (!count($onConditions)) {
-            throw new Exception('No ON condition.');
-        }
-
-        foreach ($onConditions as $onCondition) {
-            if (!($onCondition instanceof Condition)) {
-                throw new Exception('Given param is not Condition');
-            }
-        }
+        $this->checkOnConditions($onConditions);
 
         $fullJoinedTable = new Table($this->database, $table);
 
-        $this->fullJoin[] = ['table' => $fullJoinedTable, 'onConditions' => $onConditions];
-
-        if ($alias) {
-            $this->aliases[] = new Alias($fullJoinedTable, $alias);
-        }
+        $this->fullJoinedTables[] = new JoinedTable($fullJoinedTable, $onConditions, $alias);
+        $this->hasFullJoinedTable = true;
 
         return $this;
     }
@@ -839,23 +953,12 @@ class Query
      */
     public function rightJoin($table, array $onConditions, $alias = null)
     {
-        if (!count($onConditions)) {
-            throw new Exception('No ON condition.');
-        }
-
-        foreach ($onConditions as $onCondition) {
-            if (!($onCondition instanceof Condition)) {
-                throw new Exception('Given param is not Condition');
-            }
-        }
+        $this->checkOnConditions($onConditions);
 
         $rightJoinedTable = new Table($this->database, $table);
 
-        $this->rightJoin[] = ['table' => $rightJoinedTable, 'onConditions' => $onConditions];
-
-        if ($alias) {
-            $this->aliases[] = new Alias($rightJoinedTable, $alias);
-        }
+        $this->rightJoinedTables[] = new JoinedTable($rightJoinedTable, $onConditions, $alias);
+        $this->hasRightJoinedTable = true;
 
         return $this;
     }
@@ -873,13 +976,11 @@ class Query
         $joinedTable = new Table($this->database, $table);
 
         if (count($onConditions)) {
-            $this->innerJoin[] = ['table' => $joinedTable, 'onConditions' => $onConditions];
+            $this->innerJoinedTables[] = new JoinedTable($joinedTable, $onConditions, $alias);
+            $this->hasInnerJoinedTable = true;
         } else {
-            $this->crossJoin[] = $joinedTable;
-        }
-
-        if ($alias) {
-            $this->aliases[] = new Alias($joinedTable, $alias);
+            $this->crossJoinedTables[] = new JoinedTable($joinedTable, [], $alias);
+            $this->hasCrossJoinedTable = true;
         }
         
         return $this;
@@ -895,11 +996,8 @@ class Query
     {
         $crossJoinedTable = new Table($this->database, $table);
 
-        $this->crossJoin[] = $crossJoinedTable;
-
-        if ($alias) {
-            $this->aliases[] = new Alias($crossJoinedTable, $alias);
-        }
+        $this->crossJoinedTables[] = new JoinedTable($crossJoinedTable, [], $alias);
+        $this->hasCrossJoinedTable = true;
 
         return $this;
     }
@@ -1001,24 +1099,14 @@ class Query
         return $this->union;
     }
 
-    private function proceed()
-    {
-        
-    }
-    
-    public function execute()
-    {
-        return new FakeTable([], []);
-    }
-
     /**
      * @return Result
      * @throws Exception
      */
     public function run()
     {
-        if ($this->res instanceof Result) {
-            return $this->res;
+        if ($this->result instanceof Result) {
+            return $this->result;
         }
 
         set_time_limit(0);
@@ -1032,28 +1120,28 @@ class Query
                 $endTime     = microtime(true);
                 $executeTime = $endTime - $startTime;
 
-                return $this->res = new Result($this->columns, $rows, $executeTime, $select);
+                return $this->result = new Result($this->columns, $rows, $executeTime, $select);
             case self::INSERT:
                 $insert       = new Insert($this);
                 $affectedRows = $insert->run();
                 $endTime      = microtime(true);
                 $executeTime  = $endTime - $startTime;
 
-                return $this->res = new Result([], [], $executeTime, $insert, $affectedRows);
+                return $this->result = new Result([], [], $executeTime, $insert, $affectedRows);
             case self::UPDATE:
                 $update       = new Update($this);
                 $affectedRows = $update->run();
                 $endTime      = microtime(true);
                 $executeTime  = $endTime - $startTime;
 
-                return $this->res = new Result([], [], $executeTime, $update, $affectedRows);
+                return $this->result = new Result([], [], $executeTime, $update, $affectedRows);
             case self::DELETE:
                 $delete       = new Delete($this);
                 $affectedRows = $delete->run();
                 $endTime      = microtime(true);
                 $executeTime  = $endTime - $startTime;
 
-                return $this->res = new Result([], [], $executeTime, $delete, $affectedRows);
+                return $this->result = new Result([], [], $executeTime, $delete, $affectedRows);
             case self::EXPLAIN:
                 $explain = new Explain($this);
 
@@ -1064,7 +1152,7 @@ class Query
                 $endTime = microtime(true);
                 $executeTime  = $endTime - $startTime;
 
-                return $this->res = new Result($columns, $rows, $executeTime, $explain, 0);
+                return $this->result = new Result($columns, $rows, $executeTime, $explain, 0);
             default:
                 throw new Exception('Unknown query type.');
         }

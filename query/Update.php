@@ -44,15 +44,15 @@ class Update extends BaseQuery
     /**
      * @param array      $rows
      * @param Condition $condition
-     * @param array      $up
+     * @param array      $updateData
      *
      * @return array
      */
-    private function doWhere(array $rows, Condition $condition, array $up)
+    private function doWhere(array $rows, Condition $condition, array $updateData)
     {
         foreach ($rows as $rowNumber => $row) {
             if (ConditionHelper::condition($condition, $row, [])) {
-                foreach ($up as $upKey => $upValue) {
+                foreach ($updateData as $upKey => $upValue) {
                     $rows[$rowNumber][$upKey] = $upValue;
                 }
             }
@@ -66,15 +66,13 @@ class Update extends BaseQuery
      */
     private function where()
     {
-        $up     = $this->query->getUpdateData();
-        $whereConditions = $this->query->getWhereCondition();
-        $rows   = $this->query->getTable()->getRows();
+        $updateData = $this->query->getUpdateData();
+        $rows = $this->query->getTable()->getRows();
 
-        foreach ($whereConditions as $whereCondition) {
-            $rows = $this->doWhere($rows, $whereCondition, $up);
+        foreach ($this->query->getWhereConditions() as $whereCondition) {
+            $rows = $this->doWhere($rows, $whereCondition, $updateData);
         }
 
         $this->result = $rows;
     }
 }
-

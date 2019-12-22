@@ -7,8 +7,6 @@ use Condition;
 /**
  * Interface IJoin
  *
- * http://code.activestate.com/recipes/492216/
- *
  * @package query\Join
  */
 interface IJoin

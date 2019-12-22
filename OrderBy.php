@@ -13,20 +13,20 @@
 class OrderBy
 {
     /**
-     * @var $column
+     * @var string $column
      */
     private $column;
 
     /***
-     * @var $asc
+     * @var bool $asc
      */
     private $asc;
 
     /**
      * OrderBy constructor.
      *
-     * @param $column
-     * @param $asc
+     * @param string $column
+     * @param bool   $asc
      */
     public function __construct($column, $asc = true)
     {
@@ -59,6 +59,9 @@ class OrderBy
         return $this->column;
     }
 
+    /**
+     * @return bool
+     */
     public function getAsc()
     {
         return $this->asc;

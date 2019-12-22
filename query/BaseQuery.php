@@ -8,9 +8,7 @@
 
 namespace query;
 
-use Exception;
 use Query;
-use Result;
 use Row;
 
 /**
@@ -56,37 +54,6 @@ abstract class BaseQuery
     abstract public function run();
 
     /**
-     * @param array $condition
-     *
-     * @throws Exception
-     * @return mixed
-     */
-    protected function runSubQuery(array $condition)
-    {
-        $subQueryRes = $condition['value']->run();
-
-        if (!($subQueryRes instanceof Result)) {
-            throw new Exception('SubQuery has no result.');
-        }
-
-        if (count($subQueryRes->getRows()) > 1){
-            throw new Exception('Subquery fetch more than one row');
-        }
-
-        if (!count($subQueryRes->getColumns())) {
-            throw new Exception('Subquery has no column.');
-        }
-
-        if (count($subQueryRes->getColumns()) > 1) {
-            throw new Exception('Subquery has more than one column');
-        }
-
-        $columnName = $subQueryRes->getColumns()[0];
-
-        return $subQueryRes->getRows()[0]->{$columnName};
-    }
-
-    /**
      * @return array|Row[]
      */
     protected function limit()
@@ -96,7 +63,8 @@ abstract class BaseQuery
         }
 
         $rowsCount = count($this->result);
-        $limit     = $this->query->getLimit() > $rowsCount ? $rowsCount : $this->query->getLimit();
+
+        $limit = $this->query->getLimit() > $rowsCount ? $rowsCount : $this->query->getLimit();
 
         return $this->result = array_slice($this->result, $this->query->getOffset(), $limit,true);
     }

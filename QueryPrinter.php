@@ -55,7 +55,7 @@ class QueryPrinter
      */
     private function printWhere()
     {
-        $whereCount = count($this->query->getWhereCondition());
+        $whereCount = count($this->query->getWhereConditions());
         $where = '';
 
         if ($whereCount) {
@@ -63,7 +63,7 @@ class QueryPrinter
 
             --$whereCount;
 
-            foreach ($this->query->getWhereCondition() as $i => $whereCondition) {
+            foreach ($this->query->getWhereConditions() as $i => $whereCondition) {
                 if ($whereCondition->getValue() instanceof Query) {
                     $value = '(' . (string)$whereCondition->getValue() . ')';
                 } elseif (is_array($whereCondition->getValue())) {
@@ -142,16 +142,16 @@ class QueryPrinter
     }
 
     /**
-     * @param Table $table
+     * @param JoinedTable $table
      *
      * @return string
      */
-    private function printTableAlias(Table $table)
+    private function printTableAlias(JoinedTable $table)
     {
-        $tableAlias = Alias::findAliasForTable($table, $this->query->getAliases());
+        $tableAlias = '';
 
-        if ($tableAlias) {
-            $tableAlias = ' AS ' . $tableAlias->getTo();
+        if ($table->hasAlias()) {
+            $tableAlias = ' AS ' . $table->getAlias()->getTo();
         }
 
         return $tableAlias;
@@ -178,49 +178,53 @@ class QueryPrinter
             }
         }
 
-        $from = '<br> FROM ' . $this->query->getTable()->getName() . $this->printTableAlias($this->query->getTable());
+        $from = '<br> FROM ' . $this->query->getTable()->getName();
+
+        if ($this->query->hasTableAlias()) {
+            $from .= ' AS ' . $this->query->getTableAlias()->getTo();
+        }
 
         $innerJoin = '';
 
-        if (count($this->query->getInnerJoin())) {
-            foreach ($this->query->getInnerJoin() as $table) {
-                $innerJoin .= ' <br>INNER JOIN ' . $table['table']->getName() . $this->printTableAlias($table['table']);
-                $innerJoin .= $this->printOnConditions($table['onConditions']);
+        if (count($this->query->getInnerJoinedTables())) {
+            foreach ($this->query->getInnerJoinedTables() as $innerJoinedTable) {
+                $innerJoin .= ' <br>INNER JOIN ' . $innerJoinedTable->getTable()->getName() . $this->printTableAlias($innerJoinedTable);
+                $innerJoin .= $this->printOnConditions($innerJoinedTable->getOnConditions());
             }
         }
 
         $crossJoin = '';
 
-        if (count($this->query->getCrossJoin())) {
-            foreach ($this->query->getCrossJoin() as $table) {
-                $crossJoin .= ' <br>CROSS JOIN ' . $table['table']->getName() . $this->printTableAlias($table['table']);
+        if (count($this->query->getCrossJoinedTables())) {
+            foreach ($this->query->getCrossJoinedTables() as $crossJoinedTable) {
+                $crossJoin .= ' <br>CROSS JOIN ' . $crossJoinedTable->getTable()->getName() . $this->printTableAlias($crossJoinedTable);
             }
         }
 
         $leftJoin = '';
 
-        if (count($this->query->getLeftJoin())) {
-            foreach ($this->query->getLeftJoin() as $table) {
-                $leftJoin .= ' <br>LEFT JOIN ' . $table['table']->getName() . $this->printTableAlias($table['table']);
-                $leftJoin .= $this->printOnConditions($table['onConditions']);
+        if (count($this->query->getLeftJoinedTables())) {
+            foreach ($this->query->getLeftJoinedTables() as $leftJoinedTable) {
+                $leftJoin .= ' <br>LEFT JOIN ' . $leftJoinedTable->getTable()->getName() . $this->printTableAlias($leftJoinedTable);
+                $leftJoin .= $this->printOnConditions($leftJoinedTable->getOnConditions());
             }
         }
 
         $rightJoin = '';
 
-        if (count($this->query->getRightJoin())) {
-            foreach ($this->query->getRightJoin() as $table) {
-                $rightJoin .= ' <br>RIGHT JOIN ' . $table['table']->getName() . $this->printTableAlias($table['table']);
-                $rightJoin .= $this->printOnConditions($table['onConditions']);
+        if (count($this->query->getRightJoinedTables())) {
+            foreach ($this->query->getRightJoinedTables() as $rightJoinedTable) {
+                $rightJoin .= ' <br>RIGHT JOIN ' . $rightJoinedTable->getTable()->getName() . $this->printTableAlias($rightJoinedTable);
+                $rightJoin .= $this->printOnConditions($rightJoinedTable->getOnConditions());
             }
         }
 
         $fullJoin = '';
 
-        if (count($this->query->getFullJoin())) {
-            foreach ($this->query->getFullJoin() as $table) {
-                $fullJoin .= ' <br>FULL JOIN ' . $table['table']->getName() . $this->printTableAlias($table['table']);
-                $fullJoin .= $this->printOnConditions($table['onConditions']);
+        if (count($this->query->getFullJoinedTables())) {
+            foreach ($this->query->getFullJoinedTables() as $fullJoinedTable) {
+                $fullJoin .= ' <br>FULL JOIN ' . $fullJoinedTable->getTable()->getName() . $this->printTableAlias($fullJoinedTable);
+                $fullJoin .= $this->printOnConditions($fullJoinedTable->getOnConditions());
             }
         }
 
@@ -228,7 +232,7 @@ class QueryPrinter
 
         $orderBy = '';
 
-        if (count($this->query->getOrderBy())) {
+        if ($this->query->hasOrderBy()) {
             $orderBy = '<br> ORDER BY ';
 
             foreach ($this->query->getOrderBy() as $orderedBy) {
@@ -238,7 +242,7 @@ class QueryPrinter
 
         $groupBy = '';
 
-        if (count($this->query->getGroupBy())) {
+        if ($this->query->hasGroupBy()) {
             $groupBy = '<br> GROUP BY ';
 
             foreach ($this->query->getGroupBy() as $groupedBy) {
@@ -312,7 +316,7 @@ class QueryPrinter
      */
     public function update()
     {
-        $update = 'UPDATE ' . $this->query->getTable();
+        $update = 'UPDATE ' . $this->query->getTable()->getName();
 
         $set = ' SET ';
 

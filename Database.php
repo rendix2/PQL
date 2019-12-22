@@ -19,11 +19,6 @@ class Database
     /**
      * @var string
      */
-    const DATABASE_DIR = '%s' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR. '%s';
-
-    /**
-     * @var string
-     */
     const DATA_DIR = 'data';
 
     /**
@@ -42,9 +37,9 @@ class Database
     private $tablesCount;
 
     /**
-     * @var string $databaseDir
+     * @var string $dir
      */
-    private $databaseDir;
+    private $dir;
 
     /**
      * @var Table[] $tables
@@ -66,11 +61,11 @@ class Database
             throw new Exception(sprintf('Database "%s" does not exist.', $name));
         }
 
-        $this->databaseDir = $database_dir;
+        $this->dir = $database_dir;
 
         $size = 0;
 
-        $files = Finder::findFiles('*')->from($this->databaseDir);
+        $files = Finder::findFiles('*')->from($this->dir);
 
         /**
          * @var $file SplFileInfo
@@ -96,7 +91,7 @@ class Database
         $this->name        = null;
         $this->size        = null;
         $this->tablesCount = null;
-        $this->databaseDir = null;
+        $this->dir         = null;
     }
 
     /**
@@ -123,9 +118,9 @@ class Database
     /**
      * @return string
      */
-    public function getDatabaseDir()
+    public function getDir()
     {
-        return $this->databaseDir;
+        return $this->dir;
     }
 
     /**
@@ -146,7 +141,7 @@ class Database
         /**
          * @var SplFileInfo $file
          */
-        $files = Finder::findFiles('*.' . Table::EXT)->from($this->getDatabaseDir());
+        $files = Finder::findFiles('*.' . Table::EXT)->from($this->getDir());
 
         foreach ($files as $file) {
             $extension = $file->getExtension();
@@ -175,7 +170,7 @@ class Database
     {
         $size = 0;
 
-        $files = Finder::findFiles('*')->from($this->databaseDir);
+        $files = Finder::findFiles('*')->from($this->dir);
 
         /**
          * @var $file SplFileInfo

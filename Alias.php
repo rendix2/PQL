@@ -36,7 +36,7 @@ class Alias
     public function __construct($from, $to)
     {
         $this->from = $from;
-        $this->to = $to;
+        $this->to   = $to;
     }
 
     /**
@@ -62,23 +62,5 @@ class Alias
     public function getTo()
     {
         return $this->to;
-    }
-
-    /***
-     * @param Table $table
-     * @param Alias[] $aliases
-     *
-     * @return Alias|mixed
-     */
-    public static function findAliasForTable(Table $table, array $aliases)
-    {
-        /**
-         * @var Alias $alias
-         */
-        foreach ($aliases as $alias) {
-            if ($table === $alias->getFrom()) {
-                return $alias;
-            }
-        }
     }
 }

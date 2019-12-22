@@ -47,8 +47,8 @@ class Optimizer
      */
     public function __construct(Query $query)
     {
-        $this->query = $query;
-        $this->useOrderBy = count($query->getOrderBy()) > 0;
+        $this->query      = $query;
+        $this->useOrderBy = $query->hasOrderBy();
     }
 
     /**
@@ -56,7 +56,7 @@ class Optimizer
      */
     public function __destruct()
     {
-        $this->query = null;
+        $this->query      = null;
         $this->useOrderBy = null;
     }
 
@@ -89,7 +89,7 @@ class Optimizer
         } elseif ($equalOperator) {
             return self::HASH_JOIN;
         } else {
-            self::NESTED_LOOP;
+            return self::NESTED_LOOP;
         }
     }
 

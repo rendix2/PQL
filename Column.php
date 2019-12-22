@@ -72,6 +72,9 @@ class Column
         $this->table = $table;
     }
 
+    /**
+     * Column destructor.
+     */
     public function __destruct()
     {
         $this->name = null;

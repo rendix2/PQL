@@ -3,7 +3,6 @@
 namespace query\Join;
 
 use Condition;
-use Exception;
 
 /**
  * Class HashJoin
@@ -20,24 +19,24 @@ class HashJoin implements IJoin
     public static function leftJoin(array $tableA, array $tableB, Condition $condition)
     {
         // hash phase
-        $h = [];
+        $hashTable = [];
 
-        $columnToLeftJoin = OuterJoinHelper::createNullColumns($tableB);
+        $missingColumns = OuterJoinHelper::createNullColumns($tableB);
 
-        foreach ($tableB as $s) {
-            $h[$s[$condition->getValue()]][] = $s;
+        foreach ($tableB as $rowB) {
+            $hashTable[$rowB[$condition->getValue()]][] = $rowB;
         }
 
         // join phase
         $leftJoinResult = [];
 
-        foreach ($tableA as $r) {
-            if (isset($h[$r[$condition->getColumn()]])) {
-                foreach ($h[$r[$condition->getColumn()]] as $s) {
-                    $leftJoinResult[] = array_merge($s, $r);
+        foreach ($tableA as $rowA) {
+            if (isset($hashTable[$rowA[$condition->getColumn()]])) {
+                foreach ($hashTable[$rowA[$condition->getColumn()]] as $hashRow) {
+                    $leftJoinResult[] = array_merge($hashRow, $rowA);
                 }
             } else {
-                $leftJoinResult[] = array_merge($r, $columnToLeftJoin);
+                $leftJoinResult[] = array_merge($rowA, $missingColumns);
             }
         }
 
@@ -50,28 +49,28 @@ class HashJoin implements IJoin
     public static function rightJoin(array $tableA, array $tableB, Condition $condition)
     {
         // hash phase
-        $h = [];
+        $hashTable = [];
 
-        $columnToLeftJoin = OuterJoinHelper::createNullColumns($tableA);
+        $missingColumns = OuterJoinHelper::createNullColumns($tableA);
 
-        foreach ($tableA as $s) {
-            $h[$s[$condition->getColumn()]][] = $s;
+        foreach ($tableA as $rowA) {
+            $hashTable[$rowA[$condition->getColumn()]][] = $rowA;
         }
 
         // join phase
-        $leftJoinResult = [];
+        $rightJoinResult = [];
 
-        foreach ($tableB as $r) {
-            if (isset($h[$r[$condition->getValue()]])) {
-                foreach ($h[$r[$condition->getValue()]] as $s) {
-                    $leftJoinResult[] = array_merge($s, $r);
+        foreach ($tableB as $rowB) {
+            if (isset($hashTable[$rowB[$condition->getValue()]])) {
+                foreach ($hashTable[$rowB[$condition->getValue()]] as $hashRow) {
+                    $rightJoinResult[] = array_merge($hashRow, $rowB);
                 }
             } else {
-                $leftJoinResult[] = array_merge($r, $columnToLeftJoin);
+                $rightJoinResult[] = array_merge($rowB, $missingColumns);
             }
         }
 
-        return $leftJoinResult;
+        return $rightJoinResult;
     }
 
     /**
@@ -95,19 +94,19 @@ class HashJoin implements IJoin
     public static function innerJoin(array $tableA, array $tableB, Condition $condition)
     {
         // hash phase
-        $h = [];
+        $hashTable = [];
 
-        foreach ($tableB as $s) {
-            $h[$s[$condition->getValue()]][] = $s;
+        foreach ($tableB as $rowB) {
+            $hashTable[$rowB[$condition->getValue()]][] = $rowB;
         }
 
         // join phase
         $innerJoinResult = [];
 
-        foreach ($tableA as $r) {
-            if (isset($h[$r[$condition->getColumn()]])) {
-                foreach ($h[$r[$condition->getColumn()]] as $s) {
-                    $innerJoinResult[] = array_merge($s, $r);
+        foreach ($tableA as $rowA) {
+            if (isset($hashTable[$rowA[$condition->getColumn()]])) {
+                foreach ($hashTable[$rowA[$condition->getColumn()]] as $hashRow) {
+                    $innerJoinResult[] = array_merge($hashRow, $rowA);
                 }
             }
         }

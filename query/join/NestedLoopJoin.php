@@ -3,7 +3,6 @@
 namespace query\Join;
 
 use Condition;
-use Exception;
 use query\ConditionHelper;
 
 /**
@@ -22,21 +21,21 @@ class NestedLoopJoin implements IJoin
     {
         $leftJoinResult = [];
 
-        $rightNullJoinedColumns = OuterJoinHelper::createNullColumns($tableB);
+        $missingColumns = OuterJoinHelper::createNullColumns($tableB);
 
-        foreach ($tableA as $temporaryRow) {
+        foreach ($tableA as $rowA) {
             $joined = false;
 
-            foreach ($tableB as $joinedRow) {
-                if (ConditionHelper::condition($condition, $temporaryRow, $joinedRow)) {
-                    $leftJoinResult[] = array_merge($temporaryRow, $joinedRow);
+            foreach ($tableB as $rowB) {
+                if (ConditionHelper::condition($condition, $rowA, $rowB)) {
+                    $leftJoinResult[] = array_merge($rowA, $rowB);
 
                     $joined = true;
                 }
             }
 
             if (!$joined) {
-                $leftJoinResult[] = array_merge($temporaryRow, $rightNullJoinedColumns);
+                $leftJoinResult[] = array_merge($rowA, $missingColumns);
             }
         }
 
@@ -58,10 +57,10 @@ class NestedLoopJoin implements IJoin
     {
         $innerJoinResult = [];
 
-        foreach ($tableA as $temporaryRow) {
-            foreach ($tableB as $joinedRow) {
-                if (ConditionHelper::condition($condition, $temporaryRow, $joinedRow)) {
-                    $innerJoinResult[] = array_merge($temporaryRow, $joinedRow);
+        foreach ($tableA as $rowA) {
+            foreach ($tableB as $rowB) {
+                if (ConditionHelper::condition($condition, $rowA, $rowB)) {
+                    $innerJoinResult[] = array_merge($rowA, $rowB);
                 }
             }
         }
@@ -79,9 +78,9 @@ class NestedLoopJoin implements IJoin
     {
         $crossJoinResult = [];
 
-        foreach ($tableA as $temporaryRow) {
-            foreach ($tableB as $joinedRow) {
-                $crossJoinResult[] = array_merge($temporaryRow, $joinedRow);
+        foreach ($tableA as $rowA) {
+            foreach ($tableB as $rowB) {
+                $crossJoinResult[] = array_merge($rowA, $rowB);
             }
         }
 

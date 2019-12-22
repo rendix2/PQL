@@ -2,20 +2,17 @@
 namespace query;
 
 use Alias;
-use Column;
 use Condition;
 use Exception;
 use FunctionPql;
+use JoinedTable;
 use Netpromotion\Profiler\Profiler;
-use Operator;
 use Optimizer;
-use OrderBy;
 use Query;
 use query\Join\NestedLoopJoin;
 use query\Join\HashJoin;
 use query\Join\SortMergeJoin;
 use Row;
-use Table;
 
 /**
  * Class Select
@@ -28,6 +25,11 @@ class Select extends BaseQuery
      * @var array $groupedByData
      */
     private $groupedByData;
+
+    /**
+     * @var int $countGroupedByData
+     */
+    private $countGroupedByData;
 
     /**
      * @var Optimizer $optimizer
@@ -53,6 +55,7 @@ class Select extends BaseQuery
     {
         $this->groupedByData = null;
         $this->optimizer = null;
+        $this->countGroupedByData = null;
 
         parent::__destruct();
     }
@@ -65,7 +68,7 @@ class Select extends BaseQuery
         $this->checkColumns();
 
         Profiler::start('getRows');
-        $this->result = $this->aliases($this->query->getTable());
+        $this->result = $this->fromTableAliases();
         Profiler::finish('getRows');
 
         //bdump($this->result, '$this->result SET');
@@ -157,86 +160,51 @@ class Select extends BaseQuery
     {
         $columns = [];
         
-        /**
-         * @var Table $table
-         * @var Column $column
-         */
-        foreach ($this->query->getInnerJoin() as $table) {
-            foreach ($table['table']->getColumns() as $column) {
+        foreach ($this->query->getInnerJoinedTables() as $innerJoinedTable) {
+            foreach ($innerJoinedTable->getTable()->getColumns() as $column) {
                 $columns[] = $column->getName();
-            }
-        }
-        
-        foreach ($this->query->getLeftJoin() as $table) {
-            foreach ($table['table']->getColumns() as $column) {
-                $columns[] = $column->getName();
+
+                if ($innerJoinedTable->hasAlias()) {
+                    $columns[] = $innerJoinedTable->getAlias()->getTo() . Alias::DELIMITER . $column->getName();
+                }
             }
         }
 
-        foreach ($this->query->getRightJoin() as $table) {
-            foreach ($table['table']->getColumns() as $column) {
+        foreach ($this->query->getLeftJoinedTables() as $leftJoinedTable) {
+            foreach ($leftJoinedTable->getTable()->getColumns() as $column) {
                 $columns[] = $column->getName();
+
+                if ($leftJoinedTable->hasAlias()) {
+                    $columns[] = $leftJoinedTable->getAlias()->getTo() . Alias::DELIMITER . $column->getName();
+                }
             }
         }
 
-        foreach ($this->query->getCrossJoin() as $table) {
-            foreach ($table->getColumns() as $column) {
+        foreach ($this->query->getRightJoinedTables() as $rightJoinedTable) {
+            foreach ($rightJoinedTable->getTable()->getColumns() as $column) {
                 $columns[] = $column->getName();
+
+                if ($rightJoinedTable->hasAlias()) {
+                    $columns[] = $rightJoinedTable->getAlias()->getTo() . Alias::DELIMITER . $column->getName();
+                }
+            }
+        }
+
+        foreach ($this->query->getCrossJoinedTables() as $crossJoinedTable) {
+            foreach ($crossJoinedTable->getTable()->getColumns() as $column) {
+                $columns[] = $column->getName();
+
+                if ($crossJoinedTable->hasAlias()) {
+                    $columns[] = $crossJoinedTable->getAlias()->getTo() . Alias::DELIMITER . $column->getName();
+                }
             }
         }
         
         foreach ($this->query->getTable()->getColumns() as $column) {
             $columns[] = $column->getName();
-        }
 
-        /**
-         * @var Alias $alias
-         */
-        foreach ($this->query->getAliases() as $alias) {
-            if ($this->query->getTable() === $alias->getFrom()) {
-                foreach ($this->query->getTable()->getColumns() as $column) {
-                    $columns[] = $alias->getTo() . Alias::DELIMITER . $column->getName();
-                }
-            }
-
-            foreach ($this->query->getInnerJoin() as $innerJoinedTable) {
-                if ($innerJoinedTable['table'] === $alias->getFrom()) {
-                    foreach ($innerJoinedTable['table']->getColumns() as $column) {
-                        $columns[] = $alias->getTo() . Alias::DELIMITER . $column->getName();
-                    }
-                }
-            }
-
-            foreach ($this->query->getCrossJoin() as $crossJoinedTable) {
-                if ($crossJoinedTable['table'] === $alias->getFrom()) {
-                    foreach ($crossJoinedTable['table']->getColumns() as $column) {
-                        $columns[] = $alias->getTo() . Alias::DELIMITER . $column->getName();
-                    }
-                }
-            }
-
-            foreach ($this->query->getLeftJoin() as $leftJoinedTable) {
-                if ($leftJoinedTable['table'] === $alias->getFrom()) {
-                    foreach ($leftJoinedTable['table']->getColumns() as $column) {
-                        $columns[] = $alias->getTo() . Alias::DELIMITER . $column->getName();
-                    }
-                }
-            }
-
-            foreach ($this->query->getRightJoin() as $rightJoinedTable) {
-                if ($rightJoinedTable['table'] === $alias->getFrom()) {
-                    foreach ($rightJoinedTable['table']->getColumns() as $column) {
-                        $columns[] = $alias->getTo() . Alias::DELIMITER . $column->getName();
-                    }
-                }
-            }
-
-            foreach ($this->query->getFullJoin() as $fullJoinedTable) {
-                if ($fullJoinedTable['table'] === $alias->getFrom()) {
-                    foreach ($fullJoinedTable['table']->getColumns() as $column) {
-                        $columns[] = $alias->getTo() . Alias::DELIMITER . $column->getName();
-                    }
-                }
+            if ($this->query->getTableAlias()) {
+                $columns[] = $this->query->getTableAlias()->getTo() . Alias::DELIMITER . $column->getName();
             }
         }
 
@@ -248,22 +216,22 @@ class Select extends BaseQuery
     }
 
     /**
-     * @param string $function_column_name
+     * @param string $functionColumnName
      * @param mixed  $functionResult
      */
-    private function addFunctionIntoResult($function_column_name, $functionResult)
+    private function addFunctionIntoResult($functionColumnName, $functionResult)
     {
         if ($this->query->getColumns()) {
-            $this->query->columns[] = $function_column_name;
+            $this->query->columns[] = $functionColumnName;
 
             foreach ($this->result as &$row) {
-                $row[$function_column_name] = $functionResult;
+                $row[$functionColumnName] = $functionResult;
             }
 
             unset($row);
         } else {
-            $this->query->columns[] = $function_column_name;
-            $this->result           = [0 => [$function_column_name => $functionResult]];
+            $this->query->columns[] = $functionColumnName;
+            $this->result           = [0 => [$functionColumnName => $functionResult]];
         }
     }
 
@@ -302,7 +270,7 @@ class Select extends BaseQuery
             $function_column_name = sprintf('%s(%s)', mb_strtoupper($function_name), $column);
 
             if ($function_name === FunctionPql::SUM) {
-                if (count($this->groupedByData)) {
+                if ($this->countGroupedByData) {
                     $this->query->columns[] = $function_column_name;
                     $functionGroupByResult  = [];
 
@@ -326,7 +294,7 @@ class Select extends BaseQuery
             }
 
             if ($function_name === FunctionPql::COUNT) {
-                if (count($this->groupedByData)) {
+                if ($this->countGroupedByData) {
                     $this->query->columns[] = $function_column_name;
 
                     foreach ($this->result as &$row) {
@@ -340,7 +308,7 @@ class Select extends BaseQuery
             }
 
             if ($function_name === FunctionPql::AVERAGE) {
-                if (count($this->groupedByData)) {
+                if ($this->countGroupedByData) {
                     $this->query->columns[] = $function_column_name;
                     $functionGroupByResult  = [];
 
@@ -365,7 +333,7 @@ class Select extends BaseQuery
             }
 
             if ($function_name === FunctionPql::MIN) {
-                if (count($this->groupedByData)) {
+                if ($this->countGroupedByData) {
                     $this->query->columns[] = $function_column_name;
                     $functionGroupByResult  = [];
 
@@ -390,7 +358,7 @@ class Select extends BaseQuery
             }
 
             if ($function_name === FunctionPql::MAX) {
-                if (count($this->groupedByData)) {
+                if ($this->countGroupedByData) {
                     $this->query->columns[] = $function_column_name;
                     $functionGroupByResult  = [];
 
@@ -415,7 +383,7 @@ class Select extends BaseQuery
             }
 
             if ($function_name === FunctionPql::MEDIAN) {
-                if (count($this->groupedByData)) {
+                if ($this->countGroupedByData) {
                     $this->query->columns[] = $function_column_name;
                     $functionGroupByResult  = [];
 
@@ -459,16 +427,13 @@ class Select extends BaseQuery
      */
     private function innerJoin()
     {
-        if (!count($this->query->getInnerJoin())) {
+        if (!$this->query->hasInnerJoinedTable()) {
             return $this->result;
         }
 
-        foreach ($this->query->getInnerJoin() as $innerJoinedTable) {
-            /**
-             * @var Condition $condition
-             */
-            foreach ($innerJoinedTable['onConditions'] as $condition) {
-                $innerJoinedTableRows = $this->aliases($innerJoinedTable['table']);
+        foreach ($this->query->getInnerJoinedTables() as $innerJoinedTable) {
+            foreach ($innerJoinedTable->getOnConditions() as $condition) {
+                $innerJoinedTableRows = $this->joinedTableAliases($innerJoinedTable);
 
                 switch ($this->optimizer->sayJoinAlgorithm($condition)) {
                     case Optimizer::MERGE_JOIN:
@@ -494,12 +459,12 @@ class Select extends BaseQuery
      */
     private function crossJoin()
     {
-        if (!count($this->query->getCrossJoin())) {
+        if (!$this->query->hasCrossJoinedTable()) {
             return $this->result;
         }
 
-        foreach ($this->query->getCrossJoin() as $crossJoinedTable) {
-            $crossJoinedTableRows = $this->aliases($crossJoinedTable['table']);
+        foreach ($this->query->getCrossJoinedTables() as $crossJoinedTable) {
+            $crossJoinedTableRows = $this->joinedTableAliases($crossJoinedTable);
 
             $this->result = NestedLoopJoin::crossJoin($this->result, $crossJoinedTableRows);
         }
@@ -513,16 +478,16 @@ class Select extends BaseQuery
      */
     private function leftJoin()
     {
-        if (!count($this->query->getLeftJoin())) {
+        if (!$this->query->hasLeftJoinedTable()) {
             return $this->result;
         }
 
-        foreach ($this->query->getleftJoin() as $leftJoinedTable) {
+        foreach ($this->query->getLeftJoinedTables() as $leftJoinedTable) {
             /**
              * @var Condition $condition
              */
-            foreach ($leftJoinedTable['onConditions'] as $condition) {
-                $leftJoinedTableRows = $this->aliases($leftJoinedTable['table']);
+            foreach ($leftJoinedTable->getOnConditions() as $condition) {
+                $leftJoinedTableRows = $this->joinedTableAliases($leftJoinedTable);
 
                 switch ($this->optimizer->sayJoinAlgorithm($condition)) {
                     case Optimizer::MERGE_JOIN:
@@ -549,20 +514,13 @@ class Select extends BaseQuery
      */
     private function rightJoin()
     {
-        if (!count($this->query->getRightJoin())) {
+        if (!$this->query->hasRightJoinedTable()) {
             return $this->result;
         }
 
-        foreach ($this->query->getRightJoin() as $rightJoinedTable) {
-            if (!count($rightJoinedTable['onConditions'])) {
-                throw new Exception('No ON condition.');
-            }
-
-            /**
-             * @var Condition $condition
-             */
-            foreach ($rightJoinedTable['onConditions'] as $condition) {
-                $rightJoinedTableRows = $this->aliases($rightJoinedTable['table']);
+        foreach ($this->query->getRightJoinedTables() as $rightJoinedTable) {
+            foreach ($rightJoinedTable->getOnConditions() as $condition) {
+                $rightJoinedTableRows = $this->joinedTableAliases($rightJoinedTable);
 
                 switch ($this->optimizer->sayJoinAlgorithm($condition)) {
                     case Optimizer::MERGE_JOIN:
@@ -590,20 +548,13 @@ class Select extends BaseQuery
      */
     private function fullJoin()
     {
-        if (!count($this->query->getFullJoin())) {
+        if (!$this->query->hasFullJoinedTable()) {
             return $this->result;
         }
 
-        foreach ($this->query->getFullJoin() as $fullJoinedTable) {
-            if (!count($fullJoinedTable['onConditions'])) {
-                throw new Exception('No ON condition.');
-            }
-
-            /**
-             * @var Condition $condition
-             */
-            foreach ($fullJoinedTable['onConditions'] as $condition) {
-                $fullJoinedTableRows = $this->aliases($fullJoinedTable['table']);
+        foreach ($this->query->getFullJoinedTables() as $fullJoinedTable) {
+            foreach ($fullJoinedTable->getOnConditions() as $condition) {
+                $fullJoinedTableRows = $this->joinedTableAliases($fullJoinedTable);
 
                 switch ($this->optimizer->sayJoinAlgorithm($condition)) {
                     case Optimizer::MERGE_JOIN:
@@ -650,12 +601,12 @@ class Select extends BaseQuery
      */
     private function where()
     {
-        if (!count($this->query->getWhereCondition())) {
+        if (!$this->query->hasWhereCondition()) {
             return $this->result;
         }
 
-        foreach ($this->query->getWhereCondition() as $condition) {
-            $this->result = $this->doWhere($this->result, $condition);
+        foreach ($this->query->getWhereConditions() as $whereCondition) {
+            $this->result = $this->doWhere($this->result, $whereCondition);
         }
 
         return $this->result;
@@ -666,7 +617,7 @@ class Select extends BaseQuery
      */
     private function groupBy()
     {        
-        if (!count($this->query->getGroupBy())) {
+        if (!$this->query->hasGroupBy()) {
             return  $this->result;
         }
         
@@ -690,7 +641,8 @@ class Select extends BaseQuery
             }
         }
 
-        $this->groupedByData = $groups;
+        $this->groupedByData      = $groups;
+        $this->countGroupedByData = count($groups);
 
         foreach ($groups as $column => $groupData) {
             foreach ($groupData as $data) {
@@ -728,13 +680,10 @@ class Select extends BaseQuery
      */
     private function having()
     {
-        if (!count($this->query->getHavingConditions())) {
+        if (!$this->query->hasHavingCondition()) {
             return $this->result;
         }
 
-        /**
-         * @var Condition $havingCondition
-         */
         foreach ($this->query->getHavingConditions() as $havingCondition) {
             $this->result = $this->doHaving($this->result, $havingCondition);
         }
@@ -747,7 +696,7 @@ class Select extends BaseQuery
      */
     private function orderBy()
     {
-        if (!$this->optimizer->sayIfOrderByIsNeed() || !count($this->query->getOrderBy())) {
+        if (!$this->optimizer->sayIfOrderByIsNeed() || !$this->query->hasOrderBy()) {
             return $this->result;
         }
 
@@ -760,9 +709,6 @@ class Select extends BaseQuery
             }
         }
 
-        /**
-         * @var OrderBy $orderBy
-         */
         foreach ($this->query->getOrderBy() as $orderBy) {
             $tmpSort[] = array_column($tmp, $orderBy->getColumn());
             $tmpSort[] = $orderBy->getSortingConst();
@@ -770,8 +716,8 @@ class Select extends BaseQuery
         }
             
         $tmpSort[] = &$tmp;
-        $sortRes   = call_user_func_array('array_multisort', $tmpSort);
-            
+        $sortRes   = array_multisort(...$tmpSort);
+
         return $this->result = $tmp;
     }
 
@@ -797,34 +743,22 @@ class Select extends BaseQuery
     }
 
     /**
-     * @param Table $table
+     * @param JoinedTable $table
      *
      * @return array
      */
-    private function aliases(Table $table)
+    private function joinedTableAliases(JoinedTable $table)
     {
-        $tableAlias = null;
-
-        /**
-         * @var Alias $alias
-         */
-        foreach ($this->query->getAliases() as $alias) {
-            if ($table === $alias->getFrom()) {
-                $tableAlias = $alias;
-                break;
-            }
-        }
-
-        if ($tableAlias === null) {
+        if (!$table->hasAlias()) {
             return $this->result;
         }
 
         $result = [];
-        $rows = $table->getRows();
+        $rows = $table->getTable()->getRows();
 
         foreach ($rows as $rowNumber => $row) {
             foreach ($row as $columnName => $columnValue) {
-                $result[$rowNumber][$alias->getTo() . Alias::DELIMITER . $columnName] = $columnValue;
+                $result[$rowNumber][$table->getAlias()->getTo() . Alias::DELIMITER . $columnName] = $columnValue;
                 $result[$rowNumber][$columnName] = $columnValue;
             }
         }
@@ -832,6 +766,32 @@ class Select extends BaseQuery
         return $result;
     }
 
+    /**
+     * @return array|Row[]
+     */
+    private function fromTableAliases()
+    {
+        if ($this->query->hasTableAlias()) {
+            $rows = $this->query->getTable()->getRows();
+            $result = [];
+
+            foreach ($rows as $rowNumber => $row) {
+                foreach ($row as $columnName => $columnValue) {
+                    $result[$rowNumber][$this->query->getTableAlias()->getTo() . Alias::DELIMITER . $columnName] = $columnValue;
+                    $result[$rowNumber][$columnName] = $columnValue;
+                }
+            }
+
+            return $result;
+        } else {
+            return $this->query->getTable()->getRows();
+        }
+    }
+
+    /**
+     * @return array
+     * @throws Exception
+     */
     private function union()
     {
         foreach ($this->query->getUnion() as $unionQuery) {

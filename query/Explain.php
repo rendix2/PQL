@@ -2,11 +2,9 @@
 
 namespace query;
 
-use Condition;
 use Optimizer;
 use Query;
 use Row;
-use Table;
 
 /**
  * Class Explain
@@ -16,8 +14,8 @@ use Table;
 class Explain extends BaseQuery
 {
     const JOIN_ALGORITHMS = [
-        Optimizer::MERGE_JOIN => 'MERGE JOIN',
-        Optimizer::HASH_JOIN =>'HASH JOIN',
+        Optimizer::MERGE_JOIN  => 'MERGE JOIN',
+        Optimizer::HASH_JOIN   => 'HASH JOIN',
         Optimizer::NESTED_LOOP => 'NESTED LOOP',
     ];
 
@@ -69,21 +67,18 @@ class Explain extends BaseQuery
 
         $tables[] = $row;
 
-        foreach ($query->getInnerJoin() as $innerJoinedTable) {
+        foreach ($query->getInnerJoinedTables() as $innerJoinedTable) {
             $tables[] = new Row(
                 [
-                    'table' => $innerJoinedTable['table']->getName(),
-                    'rows' => $innerJoinedTable['table']->getRowsCount(),
+                    'table' => $innerJoinedTable->getTable()->getName(),
+                    'rows' => $innerJoinedTable->getTable()->getRowsCount(),
                     'type' => 'INNER JOIN',
                     'condition' => null,
                     'algorithm' => null,
                 ]
             );
 
-            /**
-             * @var Condition $condition
-             */
-            foreach ($innerJoinedTable['onConditions'] as $condition) {
+            foreach ($innerJoinedTable->getOnConditions() as $condition) {
                 $tables[] = new Row(
                     [
                         'table' => '---',
@@ -96,14 +91,11 @@ class Explain extends BaseQuery
             }
         }
 
-        /**
-         * @var Table $crossJoinedTable
-         */
-        foreach ($query->getCrossJoin() as $crossJoinedTable) {
+        foreach ($query->getCrossJoinedTables() as $crossJoinedTable) {
             $tables[] = new Row(
                 [
-                    'table' => $crossJoinedTable['table']->getName(),
-                    'rows' => $crossJoinedTable['table']->getRowsCount(),
+                    'table' => $crossJoinedTable->getTable()->getName(),
+                    'rows' => $crossJoinedTable->getTable()->getRowsCount(),
                     'type' => 'CROSS JOIN',
                     'condition' => null,
                     'algorithm' => self::JOIN_ALGORITHMS[Optimizer::NESTED_LOOP],
@@ -111,24 +103,18 @@ class Explain extends BaseQuery
             );
         }
 
-        /**
-         * @var Table $leftJoinedTable
-         */
-        foreach ($query->getLeftJoin() as $leftJoinedTable) {
+        foreach ($query->getLeftJoinedTables() as $leftJoinedTable) {
             $tables[] = new Row(
                 [
-                    'table' => $leftJoinedTable['table']->getName(),
-                    'rows' => $leftJoinedTable['table']->getRowsCount(),
+                    'table' => $leftJoinedTable->getTable()->getName(),
+                    'rows' => $leftJoinedTable->getTable()->getRowsCount(),
                     'type' => 'LEFT JOIN',
                     'condition' => null,
                     'algorithm' => null,
                 ]
             );
 
-            /**
-             * @var Condition $condition
-             */
-            foreach ($leftJoinedTable['onConditions'] as $condition) {
+            foreach ($leftJoinedTable->getOnConditions() as $condition) {
                 $tables[] = new Row(
                     [
                         'table' => '---',
@@ -141,21 +127,18 @@ class Explain extends BaseQuery
             }
         }
 
-        foreach ($query->getRightJoin() as $rightJoinedTable) {
+        foreach ($query->getRightJoinedTables() as $rightJoinedTable) {
             $tables[] = new Row(
                 [
-                    'table' => $rightJoinedTable['table']->getName(),
-                    'rows' => $rightJoinedTable['table']->getRowsCount(),
+                    'table' => $rightJoinedTable->getTable()->getName(),
+                    'rows' => $rightJoinedTable->getTable()->getRowsCount(),
                     'type' => 'RIGHT JOIN',
                     'condition' => null,
                     'algorithm' => null,
                 ]
             );
 
-            /**
-             * @var Condition $condition
-             */
-            foreach ($rightJoinedTable['onConditions'] as $condition) {
+            foreach ($rightJoinedTable->getOnConditions() as $condition) {
                 $tables[] = new Row(
                     [
                         'table' => '---',
@@ -168,11 +151,11 @@ class Explain extends BaseQuery
             }
         }
 
-        foreach ($query->getFullJoin() as $fullJoinedTable) {
+        foreach ($query->getFullJoinedTables() as $fullJoinedTable) {
             $tables[] = new Row(
                 [
-                    'table' => $fullJoinedTable['table']->getName(),
-                    'rows' => $fullJoinedTable['table']->getRowsCount(),
+                    'table' => $fullJoinedTable->getTable()->getName(),
+                    'rows' => $fullJoinedTable->getTable()->getRowsCount(),
                     'type' => 'FULL JOIN',
                     'condition' => null,
                     'algorithm' => null,

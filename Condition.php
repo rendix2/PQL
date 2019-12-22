@@ -6,17 +6,17 @@
 class Condition
 {
     /**
-     * @var
+     * @var string|array|Query|FunctionPql $column
      */
     private $column;
 
     /**
-     * @var
+     * @var string $operator
      */
     private $operator;
 
     /**
-     * @var
+     * @var string|array|Query|FunctionPql $value
      */
     private $value;
 
@@ -40,7 +40,7 @@ class Condition
     }
 
     /**
-     *
+     * Condition destructor.
      */
     public function __destruct()
     {
@@ -58,7 +58,7 @@ class Condition
     }
 
     /**
-     * @return mixed
+     * @return string|array|Query|FunctionPql
      */
     public function getColumn()
     {
@@ -66,7 +66,7 @@ class Condition
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getOperator()
     {
@@ -74,7 +74,7 @@ class Condition
     }
 
     /**
-     * @return mixed
+     * @return string|array|Query|FunctionPql
      */
     public function getValue()
     {

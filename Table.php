@@ -153,7 +153,8 @@ class Table implements ITable
         }
 
         $this->filePath = $filePath;
-        $this->name     = $name;
+
+        $this->name = $name;
 
         $fileSize = filesize($filePath);
 
@@ -337,7 +338,7 @@ class Table implements ITable
     {
         $sep = DIRECTORY_SEPARATOR;
 
-        return $database->getDatabaseDir() . $name . $sep;
+        return $database->getDir() . $name . $sep;
     }
 
     /**
@@ -355,7 +356,7 @@ class Table implements ITable
     {
         $sep = DIRECTORY_SEPARATOR;
 
-        return $this->database->getDatabaseDir() . $sep . $this->name . $sep;
+        return $this->database->getDir() . $sep . $this->name . $sep;
     }
 
     /**
@@ -366,7 +367,7 @@ class Table implements ITable
     public function columnExists($column)
     {
         foreach ($this->getColumns() as $columnObject) {
-            if ($columnObject->getName() == $column) {
+            if ($columnObject->getName() === $column) {
                 return true;
             }
         }
@@ -504,7 +505,6 @@ class Table implements ITable
 
         $file = file($this->filePath);
         $newRowsString = '';
-        $addNL = false;
 
         foreach ($file as $keyRow => $row) {
             $row = str_replace(["\r", "\n", "\r\n", PHP_EOL], '', $row);

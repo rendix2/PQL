@@ -5,7 +5,6 @@
  */
 class Operator
 {
-
     /**
      * @var array
      */

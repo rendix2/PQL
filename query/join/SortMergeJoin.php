@@ -9,7 +9,6 @@
 namespace query\Join;
 
 use Condition;
-use query\ConditionHelper;
 
 /**
  * Class SortMergeJoin
