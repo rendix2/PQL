@@ -249,8 +249,12 @@ class QueryPrinter
         if ($this->query->hasGroupBy()) {
             $groupBy = '<br> GROUP BY ';
 
-            foreach ($this->query->getGroupBy() as $groupedBy) {
-                $groupBy .= $groupedBy . ' ';
+            foreach ($this->query->getGroupBy() as $i => $groupedBy) {
+                if ($i === 0) {
+                    $groupBy .= $groupedBy;
+                } else {
+                    $groupBy .= ', ' . $groupedBy;
+                }
             }
         }
 
