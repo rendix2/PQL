@@ -235,8 +235,12 @@ class QueryPrinter
         if ($this->query->hasOrderBy()) {
             $orderBy = '<br> ORDER BY ';
 
-            foreach ($this->query->getOrderBy() as $orderedBy) {
-                $orderBy .= (string) $orderedBy;
+            foreach ($this->query->getOrderBy() as $i => $orderedBy) {
+                if ($i === 0) {
+                    $orderBy .= (string) $orderedBy;
+                } else {
+                    $orderBy .= ', ' . (string) $orderedBy;
+                }
             }
         }
 
