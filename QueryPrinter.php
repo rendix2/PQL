@@ -191,7 +191,15 @@ class QueryPrinter
 
         if (count($this->query->getInnerJoinedTables())) {
             foreach ($this->query->getInnerJoinedTables() as $innerJoinedTable) {
-                $innerJoin .= ' <br>INNER JOIN ' . $innerJoinedTable->getTable()->getName() . $this->printTableAlias($innerJoinedTable);
+                $innerJoin .= ' <br>INNER JOIN ';
+
+                if ($innerJoinedTable->getTable() instanceof Table) {
+                    $innerJoin .= $innerJoinedTable->getTable()->getName();
+                } elseif ($innerJoinedTable->getTable() instanceof Query) {
+                    $innerJoin .= '(<br><br>' . (string)$this->query->getTable() . '<br<br><br>)';
+                }
+
+                $innerJoin .= $this->printTableAlias($innerJoinedTable);
                 $innerJoin .= $this->printOnConditions($innerJoinedTable->getOnConditions());
             }
         }
@@ -200,7 +208,15 @@ class QueryPrinter
 
         if (count($this->query->getCrossJoinedTables())) {
             foreach ($this->query->getCrossJoinedTables() as $crossJoinedTable) {
-                $crossJoin .= ' <br>CROSS JOIN ' . $crossJoinedTable->getTable()->getName() . $this->printTableAlias($crossJoinedTable);
+                $crossJoin .= ' <br>CROSS JOIN ';
+
+                if ($crossJoinedTable->getTable() instanceof Table) {
+                    $crossJoin .= $crossJoinedTable->getTable()->getName();
+                } elseif($crossJoinedTable->getTable() instanceof Query) {
+                    $crossJoin .= '(<br><br>' . (string)$this->query->getTable() . '<br<br><br>)';
+                }
+
+                $crossJoin .= $this->printTableAlias($crossJoinedTable);
             }
         }
 
@@ -208,7 +224,15 @@ class QueryPrinter
 
         if (count($this->query->getLeftJoinedTables())) {
             foreach ($this->query->getLeftJoinedTables() as $leftJoinedTable) {
-                $leftJoin .= ' <br>LEFT JOIN ' . $leftJoinedTable->getTable()->getName() . $this->printTableAlias($leftJoinedTable);
+                $leftJoin .= ' <br>LEFT JOIN ';
+
+                if ($leftJoinedTable->getTable() instanceof Table) {
+                    $leftJoin .= $leftJoinedTable->getTable()->getName();
+                } elseif ($leftJoinedTable->getTable() instanceof Query) {
+                    $leftJoinedTable .= '(<br><br>' . (string)$this->query->getTable() . '<br<br><br>)';
+                }
+
+                $leftJoin .= $this->printTableAlias($leftJoinedTable);
                 $leftJoin .= $this->printOnConditions($leftJoinedTable->getOnConditions());
             }
         }
@@ -217,7 +241,15 @@ class QueryPrinter
 
         if (count($this->query->getRightJoinedTables())) {
             foreach ($this->query->getRightJoinedTables() as $rightJoinedTable) {
-                $rightJoin .= ' <br>RIGHT JOIN ' . $rightJoinedTable->getTable()->getName() . $this->printTableAlias($rightJoinedTable);
+                $rightJoin .= ' <br>RIGHT JOIN ';
+
+                if ($rightJoinedTable->getTable() instanceof Table) {
+                    $rightJoin .= $rightJoinedTable->getTable()->getName();
+                } elseif ($rightJoinedTable->getTable() instanceof Query) {
+                    $rightJoin .= '(<br><br>' . (string)$this->query->getTable() . '<br<br><br>)';
+                }
+
+                $rightJoin .= $this->printTableAlias($rightJoinedTable);
                 $rightJoin .= $this->printOnConditions($rightJoinedTable->getOnConditions());
             }
         }
@@ -226,7 +258,15 @@ class QueryPrinter
 
         if (count($this->query->getFullJoinedTables())) {
             foreach ($this->query->getFullJoinedTables() as $fullJoinedTable) {
-                $fullJoin .= ' <br>FULL JOIN ' . $fullJoinedTable->getTable()->getName() . $this->printTableAlias($fullJoinedTable);
+                $fullJoin .= ' <br>FULL JOIN ';
+
+                if ($fullJoinedTable->getTable() instanceof Table) {
+                    $fullJoin .= $fullJoinedTable->getTable()->getName();
+                } elseif ($fullJoinedTable->getTable() instanceof Query) {
+                    $fullJoin .= '(<br><br>' . (string)$this->query->getTable() . '<br<br><br>)';
+                }
+
+                $fullJoin .= $this->printTableAlias($fullJoinedTable);
                 $fullJoin .= $this->printOnConditions($fullJoinedTable->getOnConditions());
             }
         }

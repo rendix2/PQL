@@ -756,17 +756,7 @@ class Query
      */
     public function from($table, $alias = null)
     {
-        if (is_string($table)) {
-            $this->table = new Table($this->database, $table);
-        } elseif ($table instanceof self) {
-            if ( $table->type !== self::SELECT) {
-                throw new Exception('Not select query.');
-            }
-
-            $this->table = $table;
-        } else {
-            throw new Exception('Unknown input Table.');
-        }
+        $this->table = $this->checkTable($table);
 
         if ($alias) {
             $this->tableAlias = new Alias($this->table, $alias);
@@ -927,18 +917,41 @@ class Query
     }
 
     /**
-     * @param string      $table
-     * @param array       $onConditions
-     * @param string|null $alias
+     * @param string|Query $table
+     *
+     * @return Query|Table
+     * @throws Exception
+     */
+    private function checkTable($table)
+    {
+        if (is_string($table)) {
+            $joinedTable = new Table($this->database, $table);
+        } elseif ($table instanceof self) {
+            if ($table->type !== self::SELECT) {
+                throw new Exception('Not a select query.');
+            }
+
+            $joinedTable = $table;
+        } else {
+            throw new Exception('Unsupported input.');
+        }
+
+        return $joinedTable;
+    }
+
+    /**
+     * @param string|Query $table
+     * @param array        $onConditions
+     * @param string|null  $alias
      *
      * @return Query
      * @throws Exception
      */
     public function leftJoin($table, array $onConditions, $alias = null)
     {
-        $this->checkOnConditions($onConditions);
+        $leftJoinedTable = $this->checkTable($table);
 
-        $leftJoinedTable = new Table($this->database, $table);
+        $this->checkOnConditions($onConditions);
 
         $this->leftJoinedTables[] = new JoinedTable($leftJoinedTable, $onConditions, $alias);
         $this->hasLeftJoinedTable = true;
@@ -947,18 +960,18 @@ class Query
     }
 
     /**
-     * @param string      $table
-     * @param array       $onConditions
-     * @param string|null $alias
+     * @param string|Query $table
+     * @param array        $onConditions
+     * @param string|null  $alias
      *
      * @return $this
      * @throws Exception
      */
     public function fullJoin($table, array $onConditions, $alias = null)
     {
-        $this->checkOnConditions($onConditions);
+        $fullJoinedTable = $this->checkTable($table);
 
-        $fullJoinedTable = new Table($this->database, $table);
+        $this->checkOnConditions($onConditions);
 
         $this->fullJoinedTables[] = new JoinedTable($fullJoinedTable, $onConditions, $alias);
         $this->hasFullJoinedTable = true;
@@ -967,18 +980,18 @@ class Query
     }
 
     /**
-     * @param string      $table
-     * @param array       $onConditions
-     * @param string|null $alias
+     * @param string|Query $table
+     * @param array        $onConditions
+     * @param string|null  $alias
      *
      * @return Query
      * @throws Exception
      */
     public function rightJoin($table, array $onConditions, $alias = null)
     {
-        $this->checkOnConditions($onConditions);
+        $rightJoinedTable = $this->checkTable($table);
 
-        $rightJoinedTable = new Table($this->database, $table);
+        $this->checkOnConditions($onConditions);
 
         $this->rightJoinedTables[] = new JoinedTable($rightJoinedTable, $onConditions, $alias);
         $this->hasRightJoinedTable = true;
@@ -987,16 +1000,16 @@ class Query
     }
 
     /**
-     * @param string      $table
-     * @param Condition[] $onConditions
-     * @param string|null $alias
+     * @param string|Query $table
+     * @param Condition[]  $onConditions
+     * @param string|null  $alias
      *
      * @return Query
      * @throws Exception
      */
     public function innerJoin($table, array $onConditions = [], $alias = null)
     {
-        $joinedTable = new Table($this->database, $table);
+        $joinedTable = $this->checkTable($table);
 
         if (count($onConditions)) {
             $this->innerJoinedTables[] = new JoinedTable($joinedTable, $onConditions, $alias);
@@ -1010,14 +1023,15 @@ class Query
     }
 
     /**
-     * @param string      $table
-     * @param string|null $alias
+     * @param string|Query $table
+     * @param string|null  $alias
      *
      * @return Query
+     * @throws Exception
      */
     public function crossJoin($table, $alias = null)
     {
-        $crossJoinedTable = new Table($this->database, $table);
+        $crossJoinedTable = $this->checkTable($table);
 
         $this->crossJoinedTables[] = new JoinedTable($crossJoinedTable, [], $alias);
         $this->hasCrossJoinedTable = true;
