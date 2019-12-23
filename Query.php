@@ -59,7 +59,7 @@ class Query
     /**
      * @var array $selectedColumns
      */
-    public $selectedColumns;
+    private $selectedColumns;
 
     /**
      * @var FunctionPql[] $functions
