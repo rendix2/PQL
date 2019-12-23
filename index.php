@@ -204,7 +204,7 @@ $query2->select(['a.article_id', 'a.article_text','user_name'  /*'u.user_id', 'u
 
 $query = new Query($database);
 
-$query->select(['a.article_id', 'a.article_text','user_name'  /*'u.user_id', 'u.user_name', 'c.comment_text',*/, 'a.c'])
+$query->select(['a.article_id', 'a.article_text','user_name','u.user_id', 'u.user_name', 'c.comment_text','a.c'])
     ->sum('c')
     ->from('articles', 'a')
     ->innerJoin(
@@ -265,16 +265,16 @@ echo $query->run();
 //echo $query2;
 //echo $query2->run();
 
+
 $query3 = new Query($database);
-$query3->select(['a.article_id', 'a.article_text','user_name'  /*'u.user_id', 'u.user_name', 'c.comment_text', 'a.c'*/])
-    ->sum('SUM(c)')
+$query3->select(['a.article_id', 'a.article_text','user_name', 'a.c', 'SUM(c)'  /*'u.user_id', 'u.user_name', 'c.comment_text', */])
     ->from($query)
     ->orderBy('article_id');
 
 echo $query3;
 echo  $query3->run();
 
-bdump($query3, '$query3');
+//bdump($query3, '$query3');
 
 
 /*

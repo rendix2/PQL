@@ -1135,7 +1135,12 @@ class Query
                 $endTime     = microtime(true);
                 $executeTime = $endTime - $startTime;
 
-                return $this->result = new Result($this->selectedColumns, $rows, $executeTime, $select);
+                return $this->result = new Result(
+                    array_merge($this->selectedColumns, $select->getColumns()),
+                    $rows,
+                    $executeTime,
+                    $select
+                );
             case self::INSERT:
                 $insert       = new Insert($this);
                 $affectedRows = $insert->run();

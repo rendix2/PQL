@@ -38,6 +38,11 @@ class Select extends BaseQuery
     private $optimizer;
 
     /**
+     * @var array $columns
+     */
+    private $columns;
+
+    /**
      * Select constructor.
      *
      * @param Query $query
@@ -47,6 +52,7 @@ class Select extends BaseQuery
         parent::__construct($query);
 
         $this->optimizer = new Optimizer($query);
+        $this->columns = [];
     }
 
     /**
@@ -59,6 +65,14 @@ class Select extends BaseQuery
         $this->countGroupedByData = null;
 
         parent::__destruct();
+    }
+
+    /**
+     * @return array
+     */
+    public function getColumns()
+    {
+        return $this->columns;
     }
 
     /**
@@ -114,13 +128,13 @@ class Select extends BaseQuery
         $this->groupBy();
         Profiler::finish('groupBy');
 
-        bdump($this->result, '$this->result GROUP');
+        //bdump($this->result, '$this->result GROUP');
 
         Profiler::start('functions');
         $this->functions();
         Profiler::finish('functions');
 
-        bdump($this->result, '$this->result FUNCTIONS');
+        //bdump($this->result, '$this->result FUNCTIONS');
 
         Profiler::start('having');
         $this->having();
@@ -210,7 +224,11 @@ class Select extends BaseQuery
                 }
             }
         } elseif ($this->query->getTable() instanceof Query) {
-            $columns = array_merge($columns, $this->query->getTable()->getSelectedColumns());
+            $columns = array_merge(
+                $columns,
+                $this->query->getTable()->getSelectedColumns(),
+                $this->query->getTable()->getResult()->getQuery()->getColumns()
+            );
         }
 
         foreach ($this->query->getSelectedColumns() as $column) {
@@ -226,17 +244,16 @@ class Select extends BaseQuery
      */
     private function addFunctionIntoResult($functionColumnName, $functionResult)
     {
-        if ($this->query->getSelectedColumns()) {
-            $this->query->selectedColumns[] = $functionColumnName;
+        $this->columns[] = $functionColumnName;
 
+        if ($this->query->getSelectedColumns()) {
             foreach ($this->result as &$row) {
                 $row[$functionColumnName] = $functionResult;
             }
 
             unset($row);
         } else {
-            $this->query->selectedColumns[] = $functionColumnName;
-            $this->result           = [0 => [$functionColumnName => $functionResult]];
+            $this->result = [0 => [$functionColumnName => $functionResult]];
         }
     }
 
@@ -250,9 +267,7 @@ class Select extends BaseQuery
     private function addGroupedFunctionDataIntoResult($column, array $groupedByResult, $function_column_name)
     {
         foreach ($this->result as &$row) {
-            foreach ($groupedByResult as $groupedByColumn => $groupedByValues) {
-                $row[$function_column_name] = $groupedByValues[$row[$groupedByColumn]][$column];
-            }
+            $row[$function_column_name] = $groupedByResult[$column][$row[$column]];
         }
 
         unset($row);
@@ -276,38 +291,31 @@ class Select extends BaseQuery
 
             if ($function_name === FunctionPql::SUM) {
                 if ($this->countGroupedByData) {
-                    bdump('has grouped');
-                    $this->query->selectedColumns[] = $function_column_name;
                     $functionGroupByResult  = [];
 
                     // iterate over grouped data!
-                    foreach ($this->groupedByData as $groupedByColumn => $groupedValues) {
-                        foreach ($groupedValues as $groupedValue => $groupedRows) {
-                            bdump($groupedRows['rows'], '$groupedRows[\'rows\']');
-
-                            foreach ($groupedRows['rows'] as $row) {
-
-
-                                if (isset($functionGroupByResult[$groupedByColumn][$groupedValue][$column])) {
-                                    $functionGroupByResult[$groupedByColumn][$groupedValue][$column] += $row[$column];
+                    foreach ($this->groupedByData as $groupByColumn => $groupByRows) {
+                        foreach ($groupByRows as $groupByValue => $groupedRows) {
+                            foreach ($groupedRows as $groupedRow) {
+                                if (isset($functionGroupByResult[$groupByColumn][$groupByValue])) {
+                                    $functionGroupByResult[$groupByColumn][$groupByValue] += $groupedRow[$column];
                                 } else {
-                                    $functionGroupByResult[$groupedByColumn][$groupedValue][$column] = $row[$column];
+                                    $functionGroupByResult[$groupByColumn][$groupByValue] = $groupedRow[$column];
                                 }
                             }
                         }
+
+                        $this->columns[] = $function_column_name;
+                        $this->addGroupedFunctionDataIntoResult($groupByColumn, $functionGroupByResult, $function_column_name);
                     }
-
-                    $this->addGroupedFunctionDataIntoResult($column, $functionGroupByResult, $function_column_name);
                 } else {
-                    bdump('has  not grouped');
-
                     $this->addFunctionIntoResult($function_column_name, $functions->sum($column));
                 }
             }
 
             if ($function_name === FunctionPql::COUNT) {
                 if ($this->countGroupedByData) {
-                    $this->query->selectedColumns[] = $function_column_name;
+                    $this->columns[] = $function_column_name;
 
                     foreach ($this->result as &$row) {
                         $row[$function_column_name] = $row['__group_count'];
@@ -321,20 +329,20 @@ class Select extends BaseQuery
 
             if ($function_name === FunctionPql::AVERAGE) {
                 if ($this->countGroupedByData) {
-                    $this->query->selectedColumns[] = $function_column_name;
+                    $this->columns[] = $function_column_name;
                     $functionGroupByResult  = [];
 
-                    foreach ($this->groupedByData as $groupedByColumn => $groupedByValues) {
+                    foreach ($this->groupedByData as $groupByColumn => $groupedByValues) {
                         foreach ($groupedByValues as $groupedByValue => $groupedRows) {
                             foreach ($groupedRows['rows'] as $groupedRow) {
-                                if (isset($functionGroupByResult[$groupedByColumn][$groupedByValue][$column])) {
-                                    $functionGroupByResult[$groupedByColumn][$groupedByValue][$column] += $groupedRow[$column];
+                                if (isset($functionGroupByResult[$groupByColumn][$groupedByValue][$column])) {
+                                    $functionGroupByResult[$groupByColumn][$groupedByValue][$column] += $groupedRow[$column];
                                 } else {
-                                    $functionGroupByResult[$groupedByColumn][$groupedByValue][$column] = $groupedRow[$column];
+                                    $functionGroupByResult[$groupByColumn][$groupedByValue][$column] = $groupedRow[$column];
                                 }
                             }
 
-                            $functionGroupByResult[$groupedByColumn][$groupedByValue][$column] /= $groupedRows['__group_count'];
+                            $functionGroupByResult[$groupByColumn][$groupedByValue][$column] /= $groupedRows['__group_count'];
                         }
                     }
 
@@ -346,18 +354,18 @@ class Select extends BaseQuery
 
             if ($function_name === FunctionPql::MIN) {
                 if ($this->countGroupedByData) {
-                    $this->query->selectedColumns[] = $function_column_name;
+                    $this->columns[] = $function_column_name;
                     $functionGroupByResult  = [];
 
-                    foreach ($this->groupedByData as $groupedByColumn => $groupedByValues) {
+                    foreach ($this->groupedByData as $groupByColumn => $groupedByValues) {
                         foreach ($groupedByValues as $groupedByValue => $groupedRows) {
                             foreach ($groupedRows['rows'] as $groupedRow) {
-                                if (!isset($functionGroupByResult[$groupedByColumn][$groupedByValue][$column])) {
-                                    $functionGroupByResult[$groupedByColumn][$groupedByValue][$column] = INF;
+                                if (!isset($functionGroupByResult[$groupByColumn][$groupedByValue][$column])) {
+                                    $functionGroupByResult[$groupByColumn][$groupedByValue][$column] = INF;
                                 }
 
-                                if ($groupedRow[$column] < $functionGroupByResult[$groupedByColumn][$groupedByValue][$column] ) {
-                                    $functionGroupByResult[$groupedByColumn][$groupedByValue][$column] = $groupedRow[$column];
+                                if ($groupedRow[$column] < $functionGroupByResult[$groupByColumn][$groupedByValue][$column] ) {
+                                    $functionGroupByResult[$groupByColumn][$groupedByValue][$column] = $groupedRow[$column];
                                 }
                             }
                         }
@@ -371,18 +379,18 @@ class Select extends BaseQuery
 
             if ($function_name === FunctionPql::MAX) {
                 if ($this->countGroupedByData) {
-                    $this->query->selectedColumns[] = $function_column_name;
+                    $this->columns[] = $function_column_name;
                     $functionGroupByResult  = [];
 
-                    foreach ($this->groupedByData as $groupedByColumn => $groupedByValues) {
+                    foreach ($this->groupedByData as $groupByColumn => $groupedByValues) {
                         foreach ($groupedByValues as $groupedByValue => $groupedRows) {
                             foreach ($groupedRows['rows'] as $groupedRow) {
-                                if (!isset($functionGroupByResult[$groupedByColumn][$groupedByValue][$column])) {
-                                    $functionGroupByResult[$groupedByColumn][$groupedByValue][$column] = -INF;
+                                if (!isset($functionGroupByResult[$groupByColumn][$groupedByValue][$column])) {
+                                    $functionGroupByResult[$groupByColumn][$groupedByValue][$column] = -INF;
                                 }
 
-                                if ($groupedRow[$column] > $functionGroupByResult[$groupedByColumn][$groupedByValue][$column] ) {
-                                    $functionGroupByResult[$groupedByColumn][$groupedByValue][$column] = $groupedRow[$column];
+                                if ($groupedRow[$column] > $functionGroupByResult[$groupByColumn][$groupedByValue][$column] ) {
+                                    $functionGroupByResult[$groupByColumn][$groupedByValue][$column] = $groupedRow[$column];
                                 }
                             }
                         }
@@ -396,28 +404,28 @@ class Select extends BaseQuery
 
             if ($function_name === FunctionPql::MEDIAN) {
                 if ($this->countGroupedByData) {
-                    $this->query->selectedColumns[] = $function_column_name;
+                    $this->columns[] = $function_column_name;
                     $functionGroupByResult  = [];
 
                     $tmp = [];
 
-                    foreach ($this->groupedByData as $groupedByColumn => $groupedByValues) {
+                    foreach ($this->groupedByData as $groupByColumn => $groupedByValues) {
                         foreach ($groupedByValues as $groupedByValue => $groupedRows) {
                             foreach ($groupedRows['rows'] as $groupedRow) {
-                                $tmp[$groupedByColumn][$groupedByValue][$column][] = $groupedRow[$column];
+                                $tmp[$groupByColumn][$groupedByValue][$column][] = $groupedRow[$column];
                             }
 
-                            sort($tmp[$groupedByColumn][$groupedByValue][$column]);
+                            sort($tmp[$groupByColumn][$groupedByValue][$column]);
 
-                            $count = count($tmp[$groupedByColumn][$groupedByValue][$column]);
+                            $count = count($tmp[$groupByColumn][$groupedByValue][$column]);
 
                             if ($count % 2) {
-                                $functionGroupByResult[$groupedByColumn][$groupedByValue][$column] = $tmp[$groupedByColumn][$groupedByValue][$column][$count / 2];
+                                $functionGroupByResult[$groupByColumn][$groupedByValue][$column] = $tmp[$groupByColumn][$groupedByValue][$column][$count / 2];
                             } else {
-                                $functionGroupByResult[$groupedByColumn][$groupedByValue][$column] =
+                                $functionGroupByResult[$groupByColumn][$groupedByValue][$column] =
                                     (
-                                        $tmp[$groupedByColumn][$groupedByValue][$column][$count / 2 ] +
-                                        $tmp[$groupedByColumn][$groupedByValue][$column][$count / 2 - 1]
+                                        $tmp[$groupByColumn][$groupedByValue][$column][$count / 2 ] +
+                                        $tmp[$groupByColumn][$groupedByValue][$column][$count / 2 - 1]
                                     ) / 2;
                             }
                         }
@@ -624,6 +632,26 @@ class Select extends BaseQuery
         return $this->result;
     }
 
+    private function doGroupBy(array $rows, $column)
+    {
+        $tmp = [];
+
+        foreach ($rows as $row) {
+            $tmp[$column][$row[$column]][] = $row;
+        }
+
+        $this->groupedByData = $tmp;
+        $this->countGroupedByData = count($this->groupedByData);
+
+        $result = [];
+
+        foreach ($tmp[$column] as $groupRows) {
+            $result[] = $groupRows[0];
+        }
+
+        return $result;
+    }
+
     /**
      * @return array|Row[]
      */
@@ -636,6 +664,12 @@ class Select extends BaseQuery
         $groups   = [];
         $tmpGroup = [];
 
+
+        foreach ($this->query->getGroupBy() as $groupByColumn) {
+            $this->result = $this->doGroupBy($this->result, $groupByColumn);
+        }
+
+        /*
         foreach ($this->result as $row) {
             foreach ($row as $column => $value) {
                 foreach ($this->query->getGroupBy() as $groupColumn) {
@@ -652,7 +686,9 @@ class Select extends BaseQuery
                 }
             }
         }
+        */
 
+        /*
         $this->groupedByData      = $groups;
 
         bdump($this->groupedByData, '$this->groupedByData');
@@ -667,8 +703,9 @@ class Select extends BaseQuery
                 $tmpGroup[] = $data['row'];
             }
         }
+        */
 
-        return $this->result = $tmpGroup;
+        return $this->result;
     }
 
     /**
@@ -742,12 +779,13 @@ class Select extends BaseQuery
     private function createRows()
     {
         $columnObj = [];
+        $columns = array_merge($this->query->getSelectedColumns(), $this->columns);
         
         foreach ($this->result as $row) {
             $newRow = new Row([]);
             
             foreach ($row as $column => $value) {
-                if (in_array($column, $this->query->getSelectedColumns(), true)) {
+                if (in_array($column, $columns, true)) {
                     $newRow->get()->{$column} = $value;
                 }
             }
