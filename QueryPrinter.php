@@ -167,9 +167,6 @@ class QueryPrinter
 
         $columnsCount = count($this->query->getSelectedColumns());
 
-        /**
-         * @var FunctionPql $function
-         */
         foreach ($this->query->getFunctions() as $i => $function) {
             if (($i === 0 && $columnsCount) || $i > 0) {
                 $functions .= ', ' . mb_strtoupper($function->getName()) . '(' . implode(', ', $function->getParams()) . ')';

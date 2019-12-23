@@ -187,7 +187,7 @@ Profiler::start('select');
 $query2 = new Query($database);
 
 $query2->select(['a.article_id', 'a.article_text','user_name'  /*'u.user_id', 'u.user_name', 'c.comment_text', 'a.c'*/])
-    ->sum('c')
+    ->count('c')
     ->from('articles', 'a')
     ->innerJoin(
         'users',
@@ -205,7 +205,7 @@ $query2->select(['a.article_id', 'a.article_text','user_name'  /*'u.user_id', 'u
 $query = new Query($database);
 
 $query->select(['a.article_id', 'a.article_text','user_name','u.user_id', 'u.user_name', 'c.comment_text','a.c'])
-    ->sum('c')
+    ->count('c')
     ->from('articles', 'a')
     ->innerJoin(
         'users',
@@ -234,7 +234,7 @@ echo $query->run();
 $query = new Query($database);
 
 $query->select(['a.article_id', 'a.article_text','user_name'  /*'u.user_id', 'u.user_name', 'c.comment_text',*/, 'a.c'])
-    ->sum('c')
+    ->count('c')
     ->from('articles', 'a')
     ->innerJoin(
         'users',
@@ -267,7 +267,7 @@ echo $query->run();
 
 
 $query3 = new Query($database);
-$query3->select(['a.article_id', 'a.article_text','user_name', 'a.c', 'SUM(c)'  /*'u.user_id', 'u.user_name', 'c.comment_text', */])
+$query3->select(['a.article_id', 'a.article_text','user_name', 'a.c', 'COUNT(c)'  /*'u.user_id', 'u.user_name', 'c.comment_text', */])
     ->from($query)
     ->orderBy('article_id');
 

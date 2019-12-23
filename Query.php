@@ -417,7 +417,7 @@ class Query
     }
 
     /**
-     * @return array
+     * @return FunctionPql[]
      */
     public function getFunctions()
     {
@@ -558,6 +558,14 @@ class Query
     public function getDatabase()
     {
         return $this->database;
+    }
+
+    /**
+     * @return Result
+     */
+    public function getResult()
+    {
+        return $this->result;
     }
 
     /**
