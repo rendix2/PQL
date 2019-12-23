@@ -116,4 +116,9 @@ class TemporaryTable implements ITable
     {
         return $this->rows;
     }
+
+    public function getName()
+    {
+        return 'Temporary';
+    }
 }

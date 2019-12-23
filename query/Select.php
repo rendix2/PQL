@@ -13,6 +13,7 @@ use query\Join\NestedLoopJoin;
 use query\Join\HashJoin;
 use query\Join\SortMergeJoin;
 use Row;
+use Table;
 
 /**
  * Class Select
@@ -113,13 +114,13 @@ class Select extends BaseQuery
         $this->groupBy();
         Profiler::finish('groupBy');
 
-        //bdump($this->result, '$this->result GROUP');
+        bdump($this->result, '$this->result GROUP');
 
         Profiler::start('functions');
         $this->functions();
         Profiler::finish('functions');
 
-        //bdump($this->result, '$this->result FUNCTIONS');
+        bdump($this->result, '$this->result FUNCTIONS');
 
         Profiler::start('having');
         $this->having();
@@ -199,16 +200,20 @@ class Select extends BaseQuery
                 }
             }
         }
-        
-        foreach ($this->query->getTable()->getColumns() as $column) {
-            $columns[] = $column->getName();
 
-            if ($this->query->getTableAlias()) {
-                $columns[] = $this->query->getTableAlias()->getTo() . Alias::DELIMITER . $column->getName();
+        if ($this->query->getTable() instanceof Table) {
+            foreach ($this->query->getTable()->getColumns() as $column) {
+                $columns[] = $column->getName();
+
+                if ($this->query->getTableAlias()) {
+                    $columns[] = $this->query->getTableAlias()->getTo() . Alias::DELIMITER . $column->getName();
+                }
             }
+        } elseif ($this->query->getTable() instanceof Query) {
+            $columns = array_merge($columns, $this->query->getTable()->getSelectedColumns());
         }
 
-        foreach ($this->query->getColumns() as $column) {
+        foreach ($this->query->getSelectedColumns() as $column) {
             if (!in_array($column, $columns, true)) {
                 throw new Exception(sprintf('Selected column "%s" does not exists.', $column));
             }
@@ -221,8 +226,8 @@ class Select extends BaseQuery
      */
     private function addFunctionIntoResult($functionColumnName, $functionResult)
     {
-        if ($this->query->getColumns()) {
-            $this->query->columns[] = $functionColumnName;
+        if ($this->query->getSelectedColumns()) {
+            $this->query->selectedColumns[] = $functionColumnName;
 
             foreach ($this->result as &$row) {
                 $row[$functionColumnName] = $functionResult;
@@ -230,7 +235,7 @@ class Select extends BaseQuery
 
             unset($row);
         } else {
-            $this->query->columns[] = $functionColumnName;
+            $this->query->selectedColumns[] = $functionColumnName;
             $this->result           = [0 => [$functionColumnName => $functionResult]];
         }
     }
@@ -271,13 +276,18 @@ class Select extends BaseQuery
 
             if ($function_name === FunctionPql::SUM) {
                 if ($this->countGroupedByData) {
-                    $this->query->columns[] = $function_column_name;
+                    bdump('has grouped');
+                    $this->query->selectedColumns[] = $function_column_name;
                     $functionGroupByResult  = [];
 
                     // iterate over grouped data!
                     foreach ($this->groupedByData as $groupedByColumn => $groupedValues) {
                         foreach ($groupedValues as $groupedValue => $groupedRows) {
+                            bdump($groupedRows['rows'], '$groupedRows[\'rows\']');
+
                             foreach ($groupedRows['rows'] as $row) {
+
+
                                 if (isset($functionGroupByResult[$groupedByColumn][$groupedValue][$column])) {
                                     $functionGroupByResult[$groupedByColumn][$groupedValue][$column] += $row[$column];
                                 } else {
@@ -289,13 +299,15 @@ class Select extends BaseQuery
 
                     $this->addGroupedFunctionDataIntoResult($column, $functionGroupByResult, $function_column_name);
                 } else {
+                    bdump('has  not grouped');
+
                     $this->addFunctionIntoResult($function_column_name, $functions->sum($column));
                 }
             }
 
             if ($function_name === FunctionPql::COUNT) {
                 if ($this->countGroupedByData) {
-                    $this->query->columns[] = $function_column_name;
+                    $this->query->selectedColumns[] = $function_column_name;
 
                     foreach ($this->result as &$row) {
                         $row[$function_column_name] = $row['__group_count'];
@@ -309,7 +321,7 @@ class Select extends BaseQuery
 
             if ($function_name === FunctionPql::AVERAGE) {
                 if ($this->countGroupedByData) {
-                    $this->query->columns[] = $function_column_name;
+                    $this->query->selectedColumns[] = $function_column_name;
                     $functionGroupByResult  = [];
 
                     foreach ($this->groupedByData as $groupedByColumn => $groupedByValues) {
@@ -334,7 +346,7 @@ class Select extends BaseQuery
 
             if ($function_name === FunctionPql::MIN) {
                 if ($this->countGroupedByData) {
-                    $this->query->columns[] = $function_column_name;
+                    $this->query->selectedColumns[] = $function_column_name;
                     $functionGroupByResult  = [];
 
                     foreach ($this->groupedByData as $groupedByColumn => $groupedByValues) {
@@ -359,7 +371,7 @@ class Select extends BaseQuery
 
             if ($function_name === FunctionPql::MAX) {
                 if ($this->countGroupedByData) {
-                    $this->query->columns[] = $function_column_name;
+                    $this->query->selectedColumns[] = $function_column_name;
                     $functionGroupByResult  = [];
 
                     foreach ($this->groupedByData as $groupedByColumn => $groupedByValues) {
@@ -384,7 +396,7 @@ class Select extends BaseQuery
 
             if ($function_name === FunctionPql::MEDIAN) {
                 if ($this->countGroupedByData) {
-                    $this->query->columns[] = $function_column_name;
+                    $this->query->selectedColumns[] = $function_column_name;
                     $functionGroupByResult  = [];
 
                     $tmp = [];
@@ -642,6 +654,9 @@ class Select extends BaseQuery
         }
 
         $this->groupedByData      = $groups;
+
+        bdump($this->groupedByData, '$this->groupedByData');
+
         $this->countGroupedByData = count($groups);
 
         foreach ($groups as $column => $groupData) {
@@ -732,7 +747,7 @@ class Select extends BaseQuery
             $newRow = new Row([]);
             
             foreach ($row as $column => $value) {
-                if (in_array($column, $this->query->getColumns(), true)) {
+                if (in_array($column, $this->query->getSelectedColumns(), true)) {
                     $newRow->get()->{$column} = $value;
                 }
             }
@@ -784,7 +799,11 @@ class Select extends BaseQuery
 
             return $result;
         } else {
-            return $this->query->getTable()->getRows();
+            if ($this->query->getTable() instanceof Table) {
+                return $this->query->getTable()->getRows();
+            } elseif ($this->query->getTable() instanceof Query) {
+                return $this->query->getTable()->run()->getQuery()->getResult();
+            }
         }
     }
 
@@ -801,7 +820,7 @@ class Select extends BaseQuery
 
             $runResult = $unionQuery->run();
 
-            if (count($runResult->getColumns()) !== count($this->query->getColumns())) {
+            if (count($runResult->getColumns()) !== count($this->query->getSelectedColumns())) {
                 throw new Exception('Unioned query has not the same count of columns as a main query.');
             }
 

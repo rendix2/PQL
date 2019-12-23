@@ -57,9 +57,9 @@ class Query
     private $database;
 
     /**
-     * @var array $columns
+     * @var array $selectedColumns
      */
-    public $columns;
+    public $selectedColumns;
 
     /**
      * @var FunctionPql[] $functions
@@ -230,7 +230,7 @@ class Query
     {
         $this->database = $database;
 
-        $this->columns = [];
+        $this->selectedColumns = [];
         $this->functions = [];
 
         $this->hasTableAlias = false;
@@ -269,6 +269,10 @@ class Query
 
         $this->union = [];
 
+        $this->intersect = [];
+
+        $this->except = [];
+
         $this->timeLimit = ini_get('max_execution_time');
     }
 
@@ -280,7 +284,7 @@ class Query
         Profiler::start('destruct');
         $this->database = null;
 
-        $this->columns = null;
+        $this->selectedColumns = null;
         $this->functions = null;
 
         $this->table = null;
@@ -511,9 +515,9 @@ class Query
     /**
      * @return array
      */
-    public function getColumns()
+    public function getSelectedColumns()
     {
-        return $this->columns;
+        return $this->selectedColumns;
     }
 
     /**
@@ -729,21 +733,32 @@ class Query
      */
     public function select(array $columns = [])
     {
-        $this->columns = $columns;
+        $this->selectedColumns = $columns;
         $this->type    = self::SELECT;
 
         return $this;
     }
 
     /**
-     * @param string      $table
+     * @param string $table
      * @param string|null $alias
      *
      * @return Query
+     * @throws Exception
      */
     public function from($table, $alias = null)
     {
-        $this->table = new Table($this->database, $table);
+        if (is_string($table)) {
+            $this->table = new Table($this->database, $table);
+        } elseif ($table instanceof self) {
+            if ( $table->type !== self::SELECT) {
+                throw new Exception('Not select query.');
+            }
+
+            $this->table = $table;
+        } else {
+            throw new Exception('Unknown input Table.');
+        }
 
         if ($alias) {
             $this->tableAlias = new Alias($this->table, $alias);
@@ -1033,20 +1048,9 @@ class Query
      */
     public function union(Query $query)
     {
-         $this->union[] = $query;
+        $this->union[] = $query;
 
-         /*
-        $query = new Query($this->database);
-        $query->union = $this->union;
-        $query->type = self::SELECT;
-        $query->columns = $this->columns;
-        $query->table = $this->table;
-        $query->tableAlias = $this->tableAlias;
-
-        return $query;
-        */
-
-         return $this;
+        return $this;
     }
 
     /**
@@ -1131,7 +1135,7 @@ class Query
                 $endTime     = microtime(true);
                 $executeTime = $endTime - $startTime;
 
-                return $this->result = new Result($this->columns, $rows, $executeTime, $select);
+                return $this->result = new Result($this->selectedColumns, $rows, $executeTime, $select);
             case self::INSERT:
                 $insert       = new Insert($this);
                 $affectedRows = $insert->run();

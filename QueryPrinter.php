@@ -162,10 +162,10 @@ class QueryPrinter
      */
     private function select()
     {
-        $select = 'SELECT ' . implode(', ', $this->query->getColumns());
+        $select = 'SELECT ' . implode(', ', $this->query->getSelectedColumns());
         $functions = '';
 
-        $columnsCount = count($this->query->getColumns());
+        $columnsCount = count($this->query->getSelectedColumns());
 
         /**
          * @var FunctionPql $function
@@ -178,7 +178,13 @@ class QueryPrinter
             }
         }
 
-        $from = '<br> FROM ' . $this->query->getTable()->getName();
+        $from = '<br> FROM ';
+
+        if ($this->query->getTable() instanceof Table) {
+            $from .= $this->query->getTable()->getName();
+        } elseif ($this->query->getTable() instanceof Query) {
+            $from .= '(<br><br>' . (string)$this->query->getTable() . '<br<br><br>)';
+        }
 
         if ($this->query->hasTableAlias()) {
             $from .= ' AS ' . $this->query->getTableAlias()->getTo();
@@ -287,7 +293,7 @@ class QueryPrinter
         $selectClause = $select . $functions;
         $joins = $innerJoin . $crossJoin . $leftJoin . $rightJoin . $fullJoin;
 
-        return $selectClause . $from . $joins . $where . $orderBy . $groupBy . $having . $limit . $offset . $union . '<br><br>';
+        return $selectClause . $from . $joins . $where . $orderBy . $groupBy . $having . $limit . $offset . $union;
     }
 
     /**

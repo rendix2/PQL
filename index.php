@@ -204,7 +204,36 @@ $query2->select(['a.article_id', 'a.article_text','user_name'  /*'u.user_id', 'u
 
 $query = new Query($database);
 
-$query->select(['a.article_id', 'a.article_text','user_name'  /*'u.user_id', 'u.user_name', 'c.comment_text', 'a.c'*/])
+$query->select(['a.article_id', 'a.article_text','user_name'  /*'u.user_id', 'u.user_name', 'c.comment_text',*/, 'a.c'])
+    ->sum('c')
+    ->from('articles', 'a')
+    ->innerJoin(
+        'users',
+        [
+            new Condition('a.article_user_id', '=', 'u.user_id'),
+            //new Condition('article_text', '=', 'user_name'),
+        ],
+        'u'
+    )
+    ->leftJoin('comments', [new Condition('a.article_id', '=', 'c.comment_article_id')], 'c')
+    //->groupBy('user_name')
+    ->orderBy('user_id', true);
+    //->union($query2);
+
+    //->explain();
+    //->limit(1)
+    //->offset(1);
+    //->where(new Condition('user_id', '!=', 2));
+    //->where(new Condition('article_id', '!=', 2));
+
+//bdump($query);
+
+echo $query;
+echo $query->run();
+
+$query = new Query($database);
+
+$query->select(['a.article_id', 'a.article_text','user_name'  /*'u.user_id', 'u.user_name', 'c.comment_text',*/, 'a.c'])
     ->sum('c')
     ->from('articles', 'a')
     ->innerJoin(
@@ -217,15 +246,16 @@ $query->select(['a.article_id', 'a.article_text','user_name'  /*'u.user_id', 'u.
     )
     ->leftJoin('comments', [new Condition('a.article_id', '=', 'c.comment_article_id')], 'c')
     ->groupBy('user_name')
-    ->orderBy('user_id', false)
-    ->union($query2)
-    ->union($query2);
+    ->orderBy('user_id', true);
+//->union($query2);
 
-    //->explain();
-    //->limit(1)
-    //->offset(1);
-    //->where(new Condition('user_id', '!=', 2));
-    //->where(new Condition('article_id', '!=', 2));
+//->explain();
+//->limit(1)
+//->offset(1);
+//->where(new Condition('user_id', '!=', 2));
+//->where(new Condition('article_id', '!=', 2));
+
+//bdump($query);
 
 echo $query;
 echo $query->run();
@@ -235,8 +265,17 @@ echo $query->run();
 //echo $query2;
 //echo $query2->run();
 
-//bdump($query);
-//bdump($query2);
+$query3 = new Query($database);
+$query3->select(['a.article_id', 'a.article_text','user_name'  /*'u.user_id', 'u.user_name', 'c.comment_text', 'a.c'*/])
+    ->sum('SUM(c)')
+    ->from($query)
+    ->orderBy('article_id');
+
+echo $query3;
+echo  $query3->run();
+
+bdump($query3, '$query3');
+
 
 /*
 
