@@ -67,7 +67,7 @@ class Query
     private $functions;
 
     /**
-     * @var Table $table
+     * @var Table|Query $table
      */
     private $table;
 
