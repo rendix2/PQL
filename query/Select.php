@@ -161,6 +161,12 @@ class Select extends BaseQuery
 
         //bdump($this->result, '$this->result UNION');
 
+        Profiler::start('INTERSECT');
+        $this->intersect();
+        Profiler::finish('INTERSECT');
+
+        //bdump($this->result, '$this->result INTERSECT');
+
         Profiler::start('createRows');
         $rows =  $this->createRows();
         Profiler::finish('createRows');
@@ -837,6 +843,18 @@ class Select extends BaseQuery
             }
 
             $this->result = array_merge($this->result, $runResult->getQuery()->getResult());
+        }
+
+        return $this->result;
+    }
+
+    /**
+     * @return array
+     */
+    private function intersect()
+    {
+        foreach ($this->query->getIntersect() as $intersectQuery) {
+
         }
 
         return $this->result;

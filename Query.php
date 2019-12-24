@@ -1137,6 +1137,14 @@ class Query
     }
 
     /**
+     * @return Query[]
+     */
+    public function getIntersect()
+    {
+        return $this->intersect;
+    }
+
+    /**
      * @return Result
      * @throws Exception
      */
