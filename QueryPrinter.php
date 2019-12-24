@@ -331,11 +331,12 @@ class QueryPrinter
 
         foreach ($this->query->getIntersect() as $i => $intersectQuery) {
             if ($i === 0) {
-                $union .= '<br><br>';
+                $intersect .= '<br><br>';
             }
 
-            $union .= ' INTERSECT <br><br>' . (string) $intersectQuery;
+            $intersect .= ' INTERSECT <br><br>' . (string) $intersectQuery;
         }
+
 
         $selectClause = $select . $functions;
         $joins = $innerJoin . $crossJoin . $leftJoin . $rightJoin . $fullJoin;
