@@ -31,19 +31,25 @@ final class Result implements ITable
     private $affectedRows;
 
     /**
-     * @var int $rowsCount
-     */
-    private $rowsCount;
-
-    /**
      * @var Row[] $rows
      */
     private $rows;
 
     /**
+     * @var int $rowsCount
+     */
+    private $rowsCount;
+
+    /**
      * @var array $columns
      */
     private $columns;
+
+    /**
+     * @var int $columnsCount
+     */
+    private $columnsCount;
+
     /**
      * @var BaseQuery $query
      */
@@ -63,6 +69,7 @@ final class Result implements ITable
         $this->rows          = $rows;
         $this->rowsCount     = count($rows);
         $this->columns       = $columns;
+        $this->columnsCount  = count($columns);
         $this->time          = $time;
         $this->timeFormatted = (float)number_format($time, 5);
         $this->query         = $query;
@@ -80,6 +87,7 @@ final class Result implements ITable
         $this->rowsCount     = null;
         $this->affectedRows  = null;
         $this->columns       = null;
+        $this->columnsCount  = null;
         $this->query         = null;
     }
 
@@ -88,7 +96,7 @@ final class Result implements ITable
      */
     public function __toString()
     {
-        if (count($this->rows)) {
+        if ($this->rowsCount) {
             $table  = '<table border="1">';
             $table .= '<thead><tr>';
 
@@ -128,6 +136,22 @@ final class Result implements ITable
     public function getColumns()
     {
         return $this->columns;
+    }
+
+    /**
+     * @return int
+     */
+    public function getRowsCount()
+    {
+        return $this->rowsCount;
+    }
+
+    /**
+     * @return int
+     */
+    public function getColumnsCount()
+    {
+        return $this->columnsCount;
     }
 
     /**

@@ -191,7 +191,7 @@ class QueryPrinter
 
         $innerJoin = '';
 
-        if (count($this->query->getInnerJoinedTables())) {
+        if ($this->query->hasInnerJoinedTable()) {
             foreach ($this->query->getInnerJoinedTables() as $innerJoinedTable) {
                 $innerJoin .= ' <br>INNER JOIN ';
 
@@ -208,7 +208,7 @@ class QueryPrinter
 
         $crossJoin = '';
 
-        if (count($this->query->getCrossJoinedTables())) {
+        if ($this->query->hasCrossJoinedTable()) {
             foreach ($this->query->getCrossJoinedTables() as $crossJoinedTable) {
                 $crossJoin .= ' <br>CROSS JOIN ';
 
@@ -224,7 +224,7 @@ class QueryPrinter
 
         $leftJoin = '';
 
-        if (count($this->query->getLeftJoinedTables())) {
+        if ($this->query->hasLeftJoinedTable()) {
             foreach ($this->query->getLeftJoinedTables() as $leftJoinedTable) {
                 $leftJoin .= ' <br>LEFT JOIN ';
 
@@ -241,7 +241,7 @@ class QueryPrinter
 
         $rightJoin = '';
 
-        if (count($this->query->getRightJoinedTables())) {
+        if ($this->query->hasRightJoinedTable()) {
             foreach ($this->query->getRightJoinedTables() as $rightJoinedTable) {
                 $rightJoin .= ' <br>RIGHT JOIN ';
 
@@ -258,7 +258,7 @@ class QueryPrinter
 
         $fullJoin = '';
 
-        if (count($this->query->getFullJoinedTables())) {
+        if ($this->query->hasFullJoinedTable()) {
             foreach ($this->query->getFullJoinedTables() as $fullJoinedTable) {
                 $fullJoin .= ' <br>FULL JOIN ';
 
@@ -305,7 +305,7 @@ class QueryPrinter
 
         $having = '';
 
-        if (count($this->query->getHavingConditions())) {
+        if ($this->query->hasHavingCondition()) {
             $having = ' <br> HAVING ';
 
             /**

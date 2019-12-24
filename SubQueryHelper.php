@@ -24,17 +24,15 @@ class SubQueryHelper
             throw new Exception('SubQuery has no result.');
         }
 
-        if (count($subQueryResult->getRows()) > 1){
+        if ($subQueryResult->getRowsCount() > 1){
             throw new Exception('Subquery fetched more than one row.');
         }
 
-        $columnsCount = count($subQueryResult->getColumns());
-
-        if (!$columnsCount) {
+        if (!$subQueryResult->getColumnsCount()) {
             throw new Exception('Subquery has no column.');
         }
 
-        if ($columnsCount > 1) {
+        if ($subQueryResult->getColumnsCount() > 1) {
             throw new Exception('Subquery has more than one column');
         }
 
@@ -59,13 +57,11 @@ class SubQueryHelper
             throw new Exception('SubQuery has no result.');
         }
 
-        $columnsCount = count($subQueryResult->getColumns());
-
-        if (!$columnsCount) {
+        if (!$subQueryResult->getColumnsCount()) {
             throw new Exception('Subquery has no column.');
         }
 
-        if ($columnsCount > 1) {
+        if ($subQueryResult->getColumnsCount() > 1) {
             throw new Exception('Subquery has more than one column');
         }
 
