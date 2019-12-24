@@ -38,13 +38,15 @@ class QueryPrinter
             case Query::SELECT:
                 return $this->select();
             case Query::INSERT:
-                return $this->insertInto();
+                return $this->insert();
             case Query::DELETE:
                 return $this->delete();
             case Query::UPDATE:
                 return $this->update();
             case Query::EXPLAIN:
                 return $this->explain();
+            case Query::INSERT_SELECT:
+                return $this->insertSelect();
             default:
                 return 'Unknown query type.';
         }
@@ -358,7 +360,7 @@ class QueryPrinter
     /**
      * @return string
      */
-    private function insertInto()
+    private function insert()
     {
         $columns   = array_keys($this->query->getInsertData());
         $values    = array_values($this->query->getInsertData());
@@ -387,7 +389,7 @@ class QueryPrinter
     /**
      * @return string
      */
-    public function update()
+    private function update()
     {
         $update = 'UPDATE ' . $this->query->getTable()->getName();
 
@@ -416,8 +418,16 @@ class QueryPrinter
     /**
      * @throws Exception
      */
-    public function explain()
+    private function explain()
     {
         return 'EXPLAIN ' . $this->select();
+    }
+
+    /**
+     * @return string
+     */
+    private function insertSelect()
+    {
+        return 'UNSUPPORTED OPERATION';
     }
 }
