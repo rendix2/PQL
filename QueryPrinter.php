@@ -327,10 +327,20 @@ class QueryPrinter
             }
         }
 
+        $intersect = '';
+
+        foreach ($this->query->getIntersect() as $i => $intersectQuery) {
+            if ($i === 0) {
+                $union .= '<br><br> INTERSECT <br><br>' . (string) $intersectQuery;
+            } else {
+                $union .= ' INTERSECT <br><br>' . (string) $intersectQuery;
+            }
+        }
+
         $selectClause = $select . $functions;
         $joins = $innerJoin . $crossJoin . $leftJoin . $rightJoin . $fullJoin;
 
-        return $selectClause . $from . $joins . $where . $orderBy . $groupBy . $having . $limit . $offset . $union;
+        return $selectClause . $from . $joins . $where . $orderBy . $groupBy . $having . $limit . $offset . $union . $intersect;
     }
 
     /**
