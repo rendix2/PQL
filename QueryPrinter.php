@@ -321,20 +321,20 @@ class QueryPrinter
 
         foreach ($this->query->getUnion() as $i => $unionQuery) {
             if ($i === 0) {
-                $union .= '<br><br> UNION <br><br>' . (string) $unionQuery;
-            } else {
-                $union .= ' UNION <br><br>' . (string) $unionQuery;
+                $union .= '<br><br>';
             }
+
+            $union .= ' UNION <br><br>' . (string) $unionQuery;
         }
 
         $intersect = '';
 
         foreach ($this->query->getIntersect() as $i => $intersectQuery) {
             if ($i === 0) {
-                $union .= '<br><br> INTERSECT <br><br>' . (string) $intersectQuery;
-            } else {
-                $union .= ' INTERSECT <br><br>' . (string) $intersectQuery;
+                $union .= '<br><br>';
             }
+
+            $union .= ' INTERSECT <br><br>' . (string) $intersectQuery;
         }
 
         $selectClause = $select . $functions;
