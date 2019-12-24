@@ -269,7 +269,8 @@ echo $query->run();
 $query3 = new Query($database);
 $query3->select(['a.article_id', 'a.article_text','user_name', 'a.c', 'COUNT(c)'  /*'u.user_id', 'u.user_name', 'c.comment_text', */])
     ->from($query)
-    ->orderBy('article_id');
+    ->orderBy('article_id')
+    ->explain();
 
 echo $query3;
 echo  $query3->run();

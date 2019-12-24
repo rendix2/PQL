@@ -505,7 +505,7 @@ class Query
     }
 
     /**
-     * @return Table
+     * @return Table|Query
      */
     public function getTable()
     {

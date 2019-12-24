@@ -60,9 +60,10 @@ class Select extends BaseQuery
      */
     public function __destruct()
     {
-        $this->groupedByData = null;
-        $this->optimizer = null;
+        $this->groupedByData      = null;
+        $this->optimizer          = null;
         $this->countGroupedByData = null;
+        $this->columns            = null;
 
         parent::__destruct();
     }
@@ -632,6 +633,12 @@ class Select extends BaseQuery
         return $this->result;
     }
 
+    /**
+     * @param array  $rows
+     * @param string $column
+     *
+     * @return array
+     */
     private function doGroupBy(array $rows, $column)
     {
         $tmp = [];
@@ -738,21 +745,22 @@ class Select extends BaseQuery
      */
     private function createRows()
     {
-        $columnObj = [];
+        $rows    = [];
         $columns = array_merge($this->query->getSelectedColumns(), $this->columns);
         
         foreach ($this->result as $row) {
-            $newRow = new Row([]);
+            $rowObject = new Row([]);
             
             foreach ($row as $column => $value) {
                 if (in_array($column, $columns, true)) {
-                    $newRow->get()->{$column} = $value;
+                    $rowObject->get()->{$column} = $value;
                 }
             }
-            $columnObj[] = $newRow;
+
+            $rows[] = $rowObject;
         }
         
-        return $columnObj;
+        return $rows;
     }
 
     /**
@@ -762,12 +770,17 @@ class Select extends BaseQuery
      */
     private function joinedTableAliases(JoinedTable $table)
     {
+        if ($table->getTable() instanceof Table) {
+            $rows = $table->getTable()->getRows();
+        } elseif ($table->getTable() instanceof Query) {
+            $rows = $table->getTable()->run()->getQuery()->getResult();
+        }
+
         if (!$table->hasAlias()) {
-            return $this->result;
+            return $rows;
         }
 
         $result = [];
-        $rows = $table->getTable()->getRows();
 
         foreach ($rows as $rowNumber => $row) {
             foreach ($row as $columnName => $columnValue) {
@@ -784,25 +797,26 @@ class Select extends BaseQuery
      */
     private function fromTableAliases()
     {
-        if ($this->query->hasTableAlias()) {
+        if ($this->query->getTable() instanceof Table) {
             $rows = $this->query->getTable()->getRows();
-            $result = [];
+        } elseif ($this->query->getTable() instanceof Query) {
+            $rows = $this->query->getTable()->run()->getQuery()->getResult();
+        }
 
-            foreach ($rows as $rowNumber => $row) {
-                foreach ($row as $columnName => $columnValue) {
-                    $result[$rowNumber][$this->query->getTableAlias()->getTo() . Alias::DELIMITER . $columnName] = $columnValue;
-                    $result[$rowNumber][$columnName] = $columnValue;
-                }
-            }
+        if (!$this->query->hasTableAlias()) {
+            return $rows;
+        }
 
-            return $result;
-        } else {
-            if ($this->query->getTable() instanceof Table) {
-                return $this->query->getTable()->getRows();
-            } elseif ($this->query->getTable() instanceof Query) {
-                return $this->query->getTable()->run()->getQuery()->getResult();
+        $result = [];
+
+        foreach ($rows as $rowNumber => $row) {
+            foreach ($row as $columnName => $columnValue) {
+                $result[$rowNumber][$this->query->getTableAlias()->getTo() . Alias::DELIMITER . $columnName] = $columnValue;
+                $result[$rowNumber][$columnName] = $columnValue;
             }
         }
+
+        return $result;
     }
 
     /**

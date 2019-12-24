@@ -5,6 +5,7 @@ namespace query;
 use Optimizer;
 use Query;
 use Row;
+use Table;
 
 /**
  * Class Explain
@@ -55,17 +56,28 @@ class Explain extends BaseQuery
     {
         $tables = [];
 
-        $row = [
-            'table' => $query->getTable()->getName(),
-            'rows' => $query->getTable()->getRowsCount(),
-            'type' => 'FROM CLAUSE',
-            'condition' => null,
-            'algorithm' => null,
-        ];
+        if ($query->getTable() instanceof Table) {
+            $row = [
+                'table' => $query->getTable()->getName(),
+                'rows' => $query->getTable()->getRowsCount(),
+                'type' => 'FROM CLAUSE',
+                'condition' => null,
+                'algorithm' => null,
+            ];
 
-        $row = new Row($row);
+            $tables[] = new Row($row);
+        } elseif ($query->getTable() instanceof Query) {
+            $row = [
+                'table' => 'sub query',
+                'rows' => '---',
+                'type' => 'FROM CLAUSE',
+                'condition' => null,
+                'algorithm' => null,
+            ];
 
-        $tables[] = $row;
+            $tables[] = new Row($row);
+            $tables = array_merge($tables, $this->explainHelper($query->getTable()));
+        }
 
         foreach ($query->getInnerJoinedTables() as $innerJoinedTable) {
             $tables[] = new Row(
