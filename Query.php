@@ -1145,6 +1145,14 @@ class Query
     }
 
     /**
+     * @return Query[]
+     */
+    public function getExcept()
+    {
+        return $this->except;
+    }
+
+    /**
      * @return Result
      * @throws Exception
      */

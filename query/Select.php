@@ -167,6 +167,12 @@ class Select extends BaseQuery
 
         //bdump($this->result, '$this->result INTERSECT');
 
+        Profiler::start('EXCEPT');
+        $this->except();
+        Profiler::finish('EXCEPT');
+
+        //bdump($this->result, '$this->result EXCEPT');
+
         Profiler::start('createRows');
         $rows =  $this->createRows();
         Profiler::finish('createRows');
@@ -854,6 +860,18 @@ class Select extends BaseQuery
     private function intersect()
     {
         foreach ($this->query->getIntersect() as $intersectQuery) {
+
+        }
+
+        return $this->result;
+    }
+
+    /**
+     * @return array
+     */
+    public function except()
+    {
+        foreach ($this->query->getExcept() as $exceptQuery) {
 
         }
 
