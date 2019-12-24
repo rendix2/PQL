@@ -337,11 +337,22 @@ class QueryPrinter
             $intersect .= ' INTERSECT <br><br>' . (string) $intersectQuery;
         }
 
+        $except = '';
+
+        foreach ($this->query->getExcept() as $i => $exceptQuery) {
+            if ($i === 0) {
+                $except .= '<br><br>';
+            }
+
+            $except .= ' EXCEPT <br><br>' . (string) $exceptQuery;
+        }
 
         $selectClause = $select . $functions;
         $joins = $innerJoin . $crossJoin . $leftJoin . $rightJoin . $fullJoin;
+        $setOperations = $union . $intersect . $except;
+        $limitOperations = $limit . $offset;
 
-        return $selectClause . $from . $joins . $where . $orderBy . $groupBy . $having . $limit . $offset . $union . $intersect;
+        return $selectClause . $from . $joins . $where . $orderBy . $groupBy . $having . $limitOperations . $setOperations;
     }
 
     /**
