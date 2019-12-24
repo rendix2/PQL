@@ -4,6 +4,7 @@ use Netpromotion\Profiler\Profiler;
 use query\Delete;
 use query\Explain;
 use query\Insert;
+use query\InsertSelect;
 use query\Select;
 use query\Update;
 
@@ -1098,7 +1099,7 @@ class Query
      * @return Query
      * @throws Exception
      */
-    public function add($table, array $data)
+    public function insert($table, array $data)
     {
         $this->type       = self::INSERT;
         $this->insertData = $data;
@@ -1111,6 +1112,21 @@ class Query
                 throw new Exception(sprintf('Column "%s" does not exist.', $column));
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @param Query  $select
+     * @param string $table
+     *
+     * @return Query
+     */
+    public function insertSelect(Query $select, $table)
+    {
+        $this->type       = self::INSERT_SELECT;
+        $this->insertData = $select;
+        $this->table      = new Table($this->database, $table);
 
         return $this;
     }
@@ -1211,6 +1227,13 @@ class Query
                 $executeTime  = $endTime - $startTime;
 
                 return $this->result = new Result($columns, $rows, $executeTime, $explain, 0);
+            case self::INSERT_SELECT:
+                $insertSelect = new InsertSelect($this);
+                $affectedRows = $insertSelect->run();
+                $endTime      = microtime(true);
+                $executeTime  = $endTime - $startTime;
+
+                return $this->result = new Result([], [], $executeTime, $insertSelect, $affectedRows);
             default:
                 throw new Exception('Unknown query type.');
         }
