@@ -279,6 +279,21 @@ class Explain extends BaseQuery
             $tables = array_merge($tables, $result);
         }
 
+        foreach ($this->query->getUnionQueries() as $i => $unionQuery) {
+            $result = $this->explainHelper($unionQuery);
+            $tables[] = new Row(
+                [
+                    'table' => '',
+                    'rows' => '',
+                    'type' => 'UNION #' . $i,
+                    'condition' => '',
+                    'algorithm' => '',
+                ]
+            );
+
+            $tables = array_merge($tables, $result);
+        }
+
         return $this->result = $tables;
     }
 }
