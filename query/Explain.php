@@ -253,6 +253,62 @@ class Explain extends BaseQuery
             }
         }
 
+        foreach ($this->query->getWhereConditions() as $whereCondition) {
+            if ($whereCondition->getColumn() instanceof Query) {
+                $row = [
+                    'table' => 'sub query',
+                    'rows' => '---',
+                    'type' => 'WHERE COLUMN CONDITION',
+                    'condition' => null,
+                    'algorithm' => null,
+                ];
+
+                $tables[] = new Row($row);
+                $tables = array_merge($tables, $this->explainHelper($whereCondition->getColumn()));
+            }
+
+            if ($whereCondition->getColumn() instanceof Query) {
+                $row = [
+                    'table' => 'sub query',
+                    'rows' => '---',
+                    'type' => 'WHERE VALUE CONDITION',
+                    'condition' => null,
+                    'algorithm' => null,
+                ];
+
+                $tables[] = new Row($row);
+                $tables = array_merge($tables, $this->explainHelper($whereCondition->getColumn()));
+            }
+        }
+
+        foreach ($this->query->getHavingConditions() as $havingCondition) {
+            if ($havingCondition->getColumn() instanceof Query) {
+                $row = [
+                    'table' => 'sub query',
+                    'rows' => '---',
+                    'type' => 'HAVING COLUMN CONDITION',
+                    'condition' => null,
+                    'algorithm' => null,
+                ];
+
+                $tables[] = new Row($row);
+                $tables = array_merge($tables, $this->explainHelper($havingCondition->getColumn()));
+            }
+
+            if ($havingCondition->getColumn() instanceof Query) {
+                $row = [
+                    'table' => 'sub query',
+                    'rows' => '---',
+                    'type' => 'HAVING VALUE CONDITION',
+                    'condition' => null,
+                    'algorithm' => null,
+                ];
+
+                $tables[] = new Row($row);
+                $tables = array_merge($tables, $this->explainHelper($havingCondition->getColumn()));
+            }
+        }
+
         return $tables;
     }
 
