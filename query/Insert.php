@@ -52,22 +52,25 @@ class Insert extends BaseQuery
                 */
 
                 if ($column->getName() === $key) {
-                    $row[] = $data;
+                    $row[$column->getName()] = $data;
                 }
+            }
+
+            if (!isset($row[$column->getName()])) {
+                $row[$column->getName()] = 'null';
             }
         }
 
         $file = new SplFileObject($this->query->getTable()->getFilePath(), 'a');
 
-        $line = implode(Table::COLUMN_DELIMITER, $row) ;
+        $line = implode(Table::COLUMN_DELIMITER, $row);
 
         $written = $file->fwrite(
             $line . $this->query->getTable()->getFileEnds(),
-            mb_strlen($line) + $this->query->getTable()->getFileEndsLength()
+            strlen($line) + $this->query->getTable()->getFileEndsLength() // mb_strlen is bad! coutn as a one, not two!
         );
         $file = null;
 
         return $written;
     }
 }
-

@@ -230,6 +230,12 @@ $query->select(['a.article_id', 'a.article_text', 'user_name', 'u.user_id', 'u.u
 echo $query;
 echo $query->run();
 
+
+$query5 = new Query($database);
+$query5->insertSelect($query, 'articles');
+//$query5->insert('articles', ['article_title' => 'DDD']);
+$query5->run();
+
 /*
 $query = new Query($database);
 
