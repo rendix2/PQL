@@ -908,11 +908,30 @@ class Select extends BaseQuery
             return $this->result;
         }
 
-        foreach ($this->query->getIntersectQueries() as $intersectQuery) {
+        $intersectTemporary = [];
 
+        foreach ($this->query->getIntersectQueries() as $intersectQuery) {
+            $runResult = $intersectQuery->run();
+
+            $count = count($this->query->getSelectedColumns());
+            $count += count($this->columns);
+
+            if (count($runResult->getColumns()) !== $count) {
+                throw new Exception('Unioned query has not the same count of columns as a main query.');
+            }
+
+            $intersectTemporary = array_merge($intersectTemporary, $runResult->getQuery()->getResult());
         }
 
-        return $this->result;
+        $result = [];
+
+        foreach ($this->result as $row) {
+            if (in_array($row, $intersectTemporary)) {
+                $result[] = $row;
+            }
+        }
+
+        return $this->result = $result;
     }
 
     /**

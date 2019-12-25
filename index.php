@@ -198,7 +198,6 @@ $query2->select(['a.article_id', 'a.article_text', 'user_name', 'u.user_id', 'u.
         'u'
     )
     ->leftJoin('comments', [new Condition('a.article_id', '=', 'c.comment_article_id')], 'c')
-    ->groupBy('user_name')
     ->orderBy('user_id', false);
 
 
@@ -218,7 +217,7 @@ $query->select(['a.article_id', 'a.article_text', 'user_name', 'u.user_id', 'u.u
     ->leftJoin('comments', [new Condition('a.article_id', '=', 'c.comment_article_id')], 'c')
     //->groupBy('user_name')
     ->orderBy('user_id', true)
-    ->unionAll($query2);
+    ->intersect($query2);
 
     //->explain();
     //->limit(1)
