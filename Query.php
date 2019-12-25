@@ -376,15 +376,35 @@ class Query
 
         $this->result = null;
 
-        $this->unionAllQueries = null;
-
         foreach ($this->unionQueries as &$unionQuery) {
             $unionQuery = null;
         }
 
         unset($unionQuery);
 
+        $this->unionQueries = null;
+
+        foreach ($this->unionAllQueries as &$unionAllQuery) {
+            $unionQuery = null;
+        }
+
+        unset($unionAllQuery);
+
+        $this->unionAllQueries = null;
+
+        foreach ($this->intersectQueries as &$intersectQuery) {
+            $intersectQuery = null;
+        }
+
+        unset($intersectQuery);
+
         $this->intersectQueries = null;
+
+        foreach ($this->exceptQueries as &$exceptQuery) {
+            $exceptQuery = null;
+        }
+
+        unset($exceptQuery);
 
         $this->exceptQueries = null;
 
