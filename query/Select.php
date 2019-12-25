@@ -862,11 +862,20 @@ class Select extends BaseQuery
             $unionTemporary = array_merge($unionTemporary, $runResult->getQuery()->getResult());
         }
 
-        $result = [];
+        $result = $unionTemporary;
 
-        foreach ($this->result as $row) {
-            if (!in_array($row, $unionTemporary)) { // yes, NO strict!
-                $result[] = $row;
+        foreach ($unionTemporary as $row2) {
+            $found = false;
+
+            foreach ($this->result as $row) {
+                if ($row === $row2) {
+                    $found = true;
+                    break;
+                }
+            }
+
+            if (!$found) {
+                $result[] = $row2;
             }
         }
 
