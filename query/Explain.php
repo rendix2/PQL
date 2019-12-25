@@ -309,6 +309,21 @@ class Explain extends BaseQuery
             $tables = array_merge($tables, $result);
         }
 
+        foreach ($this->query->getExceptQueries() as $i => $exceptQuery) {
+            $result = $this->explainHelper($exceptQuery);
+            $tables[] = new Row(
+                [
+                    'table' => '',
+                    'rows' => '',
+                    'type' => 'EXCEPT #' . $i,
+                    'condition' => '',
+                    'algorithm' => '',
+                ]
+            );
+
+            $tables = array_merge($tables, $result);
+        }
+
         return $this->result = $tables;
     }
 }
