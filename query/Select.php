@@ -155,6 +155,12 @@ class Select extends BaseQuery
 
        // bdump($this->result, '$this->result LIMIT');
 
+        Profiler::start('UNION');
+        $this->union();
+        Profiler::finish('UNION');
+
+        //bdump($this->result, '$this->result UNION');
+
         Profiler::start('UNION ALL');
         $this->unionAll();
         Profiler::finish('UNION ALL');
@@ -829,6 +835,29 @@ class Select extends BaseQuery
         }
 
         return $result;
+    }
+
+    /**
+     * @return array
+     * @throws Exception
+     */
+    private function union()
+    {
+        foreach ($this->query->getUnionQueries() as $unionQuery) {
+            if ($unionQuery->getType() !== Query::SELECT)  {
+                throw new Exception('Unioned query is not select query.');
+            }
+
+            $runResult = $unionQuery->run();
+
+            if (count($runResult->getColumns()) !== count($this->query->getSelectedColumns())) {
+                throw new Exception('Unioned query has not the same count of columns as a main query.');
+            }
+
+            // TODO implement
+        }
+
+        return $this->result;
     }
 
     /**

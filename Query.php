@@ -218,6 +218,11 @@ class Query
     private $intersect;
 
     /**
+     * @var Query[] $unionQueries
+     */
+    private $unionQueries;
+
+    /**
      * @var Query[] $unionAllQueries
      */
     private $unionAllQueries;
@@ -269,6 +274,8 @@ class Query
         $this->insertData = [];
 
         $this->unionAllQueries = [];
+
+        $this->unionQueries = [];
 
         $this->intersect = [];
 
@@ -370,6 +377,12 @@ class Query
         $this->result = null;
 
         $this->unionAllQueries = null;
+
+        foreach ($this->unionQueries as &$unionQuery) {
+            $unionQuery = null;
+        }
+
+        unset($unionQuery);
 
         $this->intersect = null;
 
@@ -567,6 +580,38 @@ class Query
     public function getResult()
     {
         return $this->result;
+    }
+
+    /**
+     * @return Query[]
+     */
+    public function getUnionQueries()
+    {
+        return $this->unionQueries;
+    }
+
+    /**
+     * @return Query[]
+     */
+    public function getUnionAllQueries()
+    {
+        return $this->unionAllQueries;
+    }
+
+    /**
+     * @return Query[]
+     */
+    public function getIntersect()
+    {
+        return $this->intersect;
+    }
+
+    /**
+     * @return Query[]
+     */
+    public function getExcept()
+    {
+        return $this->except;
     }
 
     /**
@@ -1142,30 +1187,6 @@ class Query
         $this->table = new Table($this->database, $table);
 
         return $this;
-    }
-
-    /**
-     * @return Query[]
-     */
-    public function getUnionAllQueries()
-    {
-        return $this->unionAllQueries;
-    }
-
-    /**
-     * @return Query[]
-     */
-    public function getIntersect()
-    {
-        return $this->intersect;
-    }
-
-    /**
-     * @return Query[]
-     */
-    public function getExcept()
-    {
-        return $this->except;
     }
 
     /**
