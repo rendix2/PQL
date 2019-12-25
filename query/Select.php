@@ -155,11 +155,11 @@ class Select extends BaseQuery
 
        // bdump($this->result, '$this->result LIMIT');
 
-        Profiler::start('UNION');
-        $this->union();
-        Profiler::finish('UNION');
+        Profiler::start('UNION ALL');
+        $this->unionAll();
+        Profiler::finish('UNION ALL');
 
-        //bdump($this->result, '$this->result UNION');
+        //bdump($this->result, '$this->result UNION ALL');
 
         Profiler::start('INTERSECT');
         $this->intersect();
@@ -835,7 +835,7 @@ class Select extends BaseQuery
      * @return array
      * @throws Exception
      */
-    private function union()
+    private function unionAll()
     {
         foreach ($this->query->getUnionAllQueries() as $unionAllQuery) {
             if ($unionAllQuery->getType() !== Query::SELECT)  {
