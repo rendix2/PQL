@@ -294,6 +294,21 @@ class Explain extends BaseQuery
             $tables = array_merge($tables, $result);
         }
 
+        foreach ($this->query->getIntersectQueries() as $i => $intersectQuery) {
+            $result = $this->explainHelper($intersectQuery);
+            $tables[] = new Row(
+                [
+                    'table' => '',
+                    'rows' => '',
+                    'type' => 'INTERSECT #' . $i,
+                    'condition' => '',
+                    'algorithm' => '',
+                ]
+            );
+
+            $tables = array_merge($tables, $result);
+        }
+
         return $this->result = $tables;
     }
 }
