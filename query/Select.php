@@ -926,7 +926,7 @@ class Select extends BaseQuery
         $result = [];
 
         foreach ($this->result as $row) {
-            if (in_array($row, $intersectTemporary)) {
+            if (in_array($row, $intersectTemporary, true)) {
                 $result[] = $row;
             }
         }
@@ -936,6 +936,7 @@ class Select extends BaseQuery
 
     /**
      * @return array
+     * @throws Exception
      */
     public function except()
     {
@@ -943,11 +944,29 @@ class Select extends BaseQuery
             return $this->result;
         }
 
-        foreach ($this->query->getExceptQueries() as $exceptQuery) {
+        $exceptTemporary = [];
 
+        foreach ($this->query->getExceptQueries() as $exceptQuery) {
+            $runResult = $exceptQuery->run();
+
+            $count = count($this->query->getSelectedColumns());
+            $count += count($this->columns);
+
+            if (count($runResult->getColumns()) !== $count) {
+                throw new Exception('Unioned query has not the same count of columns as a main query.');
+            }
+
+            $exceptTemporary = array_merge($exceptTemporary, $runResult->getQuery()->getResult());
         }
 
-        return $this->result;
+        $result = [];
+
+        foreach ($this->result as $row) {
+            if (!in_array($row, $exceptTemporary, true)) {
+                $result[] = $row;
+            }
+        }
+
+        return $this->result = $result;
     }
 }
-
