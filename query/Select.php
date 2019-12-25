@@ -837,12 +837,12 @@ class Select extends BaseQuery
      */
     private function union()
     {
-        foreach ($this->query->getUnion() as $unionQuery) {
-            if ($unionQuery->getType() !== Query::SELECT)  {
+        foreach ($this->query->getUnionAllQueries() as $unionAllQuery) {
+            if ($unionAllQuery->getType() !== Query::SELECT)  {
                 throw new Exception('Unioned query is not select query.');
             }
 
-            $runResult = $unionQuery->run();
+            $runResult = $unionAllQuery->run();
 
             if (count($runResult->getColumns()) !== count($this->query->getSelectedColumns())) {
                 throw new Exception('Unioned query has not the same count of columns as a main query.');

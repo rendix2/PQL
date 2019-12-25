@@ -321,12 +321,12 @@ class QueryPrinter
 
         $union = '';
 
-        foreach ($this->query->getUnion() as $i => $unionQuery) {
+        foreach ($this->query->getUnionAllQueries() as $i => $unionAllQuery) {
             if ($i === 0) {
                 $union .= '<br><br>';
             }
 
-            $union .= ' UNION <br><br>' . (string) $unionQuery;
+            $union .= ' UNION ALL <br><br>' . (string) $unionAllQuery;
         }
 
         $intersect = '';

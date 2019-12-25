@@ -218,9 +218,9 @@ class Query
     private $intersect;
 
     /**
-     * @var Query[] $union
+     * @var Query[] $unionAllQueries
      */
-    private $union;
+    private $unionAllQueries;
 
     /**
      * Query constructor.
@@ -268,7 +268,7 @@ class Query
         $this->updateData = [];
         $this->insertData = [];
 
-        $this->union = [];
+        $this->unionAllQueries = [];
 
         $this->intersect = [];
 
@@ -369,7 +369,7 @@ class Query
 
         $this->result = null;
 
-        $this->union = null;
+        $this->unionAllQueries = null;
 
         $this->intersect = null;
 
@@ -1069,9 +1069,9 @@ class Query
      *
      * @return Query
      */
-    public function union(Query $query)
+    public function unionAll(Query $query)
     {
-        $this->union[] = $query;
+        $this->unionAllQueries[] = $query;
 
         return $this;
     }
@@ -1147,9 +1147,9 @@ class Query
     /**
      * @return Query[]
      */
-    public function getUnion()
+    public function getUnionAllQueries()
     {
-        return $this->union;
+        return $this->unionAllQueries;
     }
 
     /**

@@ -264,13 +264,13 @@ class Explain extends BaseQuery
     {
         $tables = $this->explainHelper($this->query);
 
-        foreach ($this->query->getUnion() as $i => $unionQuery) {
-            $result = $this->explainHelper($unionQuery);
+        foreach ($this->query->getUnionAllQueries() as $i => $unionAllQuery) {
+            $result = $this->explainHelper($unionAllQuery);
             $tables[] = new Row(
                 [
                     'table' => '',
                     'rows' => '',
-                    'type' => 'UNION #' . $i,
+                    'type' => 'UNION ALL #' . $i,
                     'condition' => '',
                     'algorithm' => '',
                 ]
