@@ -319,6 +319,16 @@ class QueryPrinter
         $limit  = $this->printLimit();
         $offset = $this->printOffset();
 
+        $union = '';
+
+        foreach ($this->query->getUnionQueries() as $i => $unionQuery) {
+            if ($i === 0) {
+                $union .= '<br><br>';
+            }
+
+            $union .= ' UNION <br><br>' . (string) $unionQuery;
+        }
+
         $unionAll = '';
 
         foreach ($this->query->getUnionAllQueries() as $i => $unionAllQuery) {
@@ -351,7 +361,7 @@ class QueryPrinter
 
         $selectClause = $select . $functions;
         $joins = $innerJoin . $crossJoin . $leftJoin . $rightJoin . $fullJoin;
-        $setOperations = $unionAll . $intersect . $except;
+        $setOperations = $union . $unionAll . $intersect . $except;
         $limitOperations = $limit . $offset;
 
         return $selectClause . $from . $joins . $where . $orderBy . $groupBy . $having . $limitOperations . $setOperations;
