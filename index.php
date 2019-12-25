@@ -186,7 +186,7 @@ $query->update('test', ['a' => '888'])->where('id', '=', '96')->run();
 Profiler::start('select');
 $query2 = new Query($database);
 
-$query2->select(['a.article_id', 'a.article_text','user_name'  /*'u.user_id', 'u.user_name', 'c.comment_text', 'a.c'*/])
+$query2->select(['a.article_id', 'a.article_text', 'user_name', 'u.user_id', 'u.user_name', 'c.comment_text', 'a.c'])
     ->count('c')
     ->from('articles', 'a')
     ->innerJoin(
@@ -204,7 +204,7 @@ $query2->select(['a.article_id', 'a.article_text','user_name'  /*'u.user_id', 'u
 
 $query = new Query($database);
 
-$query->select(['a.article_id', 'a.article_text','user_name','u.user_id', 'u.user_name', 'c.comment_text','a.c'])
+$query->select(['a.article_id', 'a.article_text', 'user_name', 'u.user_id', 'u.user_name', 'c.comment_text', 'a.c'])
     ->count('c')
     ->from('articles', 'a')
     ->innerJoin(
@@ -217,8 +217,8 @@ $query->select(['a.article_id', 'a.article_text','user_name','u.user_id', 'u.use
     )
     ->leftJoin('comments', [new Condition('a.article_id', '=', 'c.comment_article_id')], 'c')
     //->groupBy('user_name')
-    ->orderBy('user_id', true);
-    //->union($query2);
+    ->orderBy('user_id', true)
+    ->unionAll($query2);
 
     //->explain();
     //->limit(1)
@@ -231,9 +231,11 @@ $query->select(['a.article_id', 'a.article_text','user_name','u.user_id', 'u.use
 echo $query;
 echo $query->run();
 
+/*
 $query = new Query($database);
 
-$query->select(['a.article_id', 'a.article_text','user_name'  /*'u.user_id', 'u.user_name', 'c.comment_text',*/, 'a.c'])
+
+$query->select(['a.article_id', 'a.article_text','user_name'  /*'u.user_id', 'u.user_name', 'c.comment_text',*//*, 'a.c'])
     ->count('c')
     ->from('articles', 'a')
     ->innerJoin(
@@ -247,6 +249,7 @@ $query->select(['a.article_id', 'a.article_text','user_name'  /*'u.user_id', 'u.
     ->leftJoin('comments', [new Condition('a.article_id', '=', 'c.comment_article_id')], 'c')
     ->groupBy('user_name')
     ->orderBy('user_id', true);
+*/
 //->union($query2);
 
 //->explain();
@@ -257,8 +260,8 @@ $query->select(['a.article_id', 'a.article_text','user_name'  /*'u.user_id', 'u.
 
 //bdump($query);
 
-echo $query;
-echo $query->run();
+//echo $query;
+//echo $query->run();
 
 
 
@@ -266,8 +269,9 @@ echo $query->run();
 //echo $query2->run();
 
 
+/*
 $query3 = new Query($database);
-$query3->select(['a.article_id', 'a.article_text','user_name', 'a.c', 'COUNT(c)'  /*'u.user_id', 'u.user_name', 'c.comment_text', */])
+$query3->select(['a.article_id', 'a.article_text','user_name', 'a.c', 'COUNT(c)'  /*'u.user_id', 'u.user_name', 'c.comment_text', *//*])
     ->from($query)
     ->orderBy('article_id')
     ->explain();

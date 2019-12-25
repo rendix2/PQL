@@ -226,6 +226,25 @@ class Query
      * @var Query[] $unionAllQueries
      */
     private $unionAllQueries;
+    /**
+     * @var bool $hasUnionAllQuery
+     */
+    private $hasUnionAllQuery;
+
+    /**
+     * @var bool $hasUnionQuery
+     */
+    private $hasUnionQuery;
+
+    /**
+     * @var bool $hasExceptQuery
+     */
+    private $hasExceptQuery;
+
+    /**
+     * @var bool
+     */
+    private $hasIntersectQuery;
 
     /**
      * Query constructor.
@@ -273,13 +292,17 @@ class Query
         $this->updateData = [];
         $this->insertData = [];
 
-        $this->unionAllQueries = [];
+        $this->unionAllQueries  = [];
+        $this->hasUnionAllQuery = false;
 
-        $this->unionQueries = [];
+        $this->unionQueries  = [];
+        $this->hasUnionQuery = false;
 
-        $this->intersectQueries = [];
+        $this->intersectQueries  = [];
+        $this->hasIntersectQuery = false;
 
-        $this->exceptQueries = [];
+        $this->exceptQueries  = [];
+        $this->hasExceptQuery = false;
 
         $this->timeLimit = ini_get('max_execution_time');
     }
@@ -382,7 +405,8 @@ class Query
 
         unset($unionQuery);
 
-        $this->unionQueries = null;
+        $this->unionQueries  = null;
+        $this->hasUnionQuery = null;
 
         foreach ($this->unionAllQueries as &$unionAllQuery) {
             $unionQuery = null;
@@ -390,7 +414,8 @@ class Query
 
         unset($unionAllQuery);
 
-        $this->unionAllQueries = null;
+        $this->unionAllQueries  = null;
+        $this->hasUnionAllQuery = null;
 
         foreach ($this->intersectQueries as &$intersectQuery) {
             $intersectQuery = null;
@@ -398,7 +423,8 @@ class Query
 
         unset($intersectQuery);
 
-        $this->intersectQueries = null;
+        $this->intersectQueries  = null;
+        $this->hasIntersectQuery = null;
 
         foreach ($this->exceptQueries as &$exceptQuery) {
             $exceptQuery = null;
@@ -406,7 +432,8 @@ class Query
 
         unset($exceptQuery);
 
-        $this->exceptQueries = null;
+        $this->exceptQueries  = null;
+        $this->hasExceptQuery = null;
 
         $this->tableAlias = null;
 
@@ -712,6 +739,38 @@ class Query
     public function hasHavingCondition()
     {
         return $this->hasHavingCondition;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isHasUnionAllQuery()
+    {
+        return $this->hasUnionAllQuery;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isHasUnionQuery()
+    {
+        return $this->hasUnionQuery;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isHasExceptQuery()
+    {
+        return $this->hasExceptQuery;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isHasIntersectQuery()
+    {
+        return $this->hasIntersectQuery;
     }
 
     /**
@@ -1113,6 +1172,7 @@ class Query
     public function except(Query $query)
     {
         $this->exceptQueries[] = $query;
+        $this->hasExceptQuery  = true;
 
         return $this;
     }
@@ -1125,7 +1185,7 @@ class Query
     public function intersect(Query $query)
     {
         $this->intersectQueries[] = $query;
-
+        $this->hasIntersectQuery  = true;
         return $query;
     }
 
@@ -1133,10 +1193,34 @@ class Query
      * @param Query $query
      *
      * @return Query
+     * @throws Exception
+     */
+    public function union(Query $query)
+    {
+        if ($query->getType() !== self::SELECT)  {
+            throw new Exception('Unioned query is not select query.');
+        }
+
+        $this->unionQueries[] = $query;
+        $this->hasUnionQuery  = true;
+
+        return $this;
+    }
+
+    /**
+     * @param Query $query
+     *
+     * @return Query
+     * @throws Exception
      */
     public function unionAll(Query $query)
     {
+        if ($query->getType() !== self::SELECT)  {
+            throw new Exception('Unioned query is not select query.');
+        }
+
         $this->unionAllQueries[] = $query;
+        $this->hasUnionAllQuery  = true;
 
         return $this;
     }

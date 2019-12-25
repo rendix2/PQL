@@ -843,21 +843,34 @@ class Select extends BaseQuery
      */
     private function union()
     {
-        foreach ($this->query->getUnionQueries() as $unionQuery) {
-            if ($unionQuery->getType() !== Query::SELECT)  {
-                throw new Exception('Unioned query is not select query.');
-            }
+        if (!$this->query->isHasUnionQuery()) {
+            return $this->result;
+        }
 
+        $unionTemporary = [];
+
+        foreach ($this->query->getUnionQueries() as $unionQuery) {
             $runResult = $unionQuery->run();
 
-            if (count($runResult->getColumns()) !== count($this->query->getSelectedColumns())) {
+            $count = count($this->query->getSelectedColumns());
+            $count += count($this->columns);
+
+            if (count($runResult->getColumns()) !== $count) {
                 throw new Exception('Unioned query has not the same count of columns as a main query.');
             }
 
-            // TODO implement
+            $unionTemporary = array_merge($unionTemporary, $runResult->getQuery()->getResult());
         }
 
-        return $this->result;
+        $result = [];
+
+        foreach ($this->result as $row) {
+            if (!in_array($row, $unionTemporary)) { // yes, NO strict!
+                $result[] = $row;
+            }
+        }
+
+        return $this->result = $result;
     }
 
     /**
@@ -866,14 +879,17 @@ class Select extends BaseQuery
      */
     private function unionAll()
     {
-        foreach ($this->query->getUnionAllQueries() as $unionAllQuery) {
-            if ($unionAllQuery->getType() !== Query::SELECT)  {
-                throw new Exception('Unioned query is not select query.');
-            }
+        if (!$this->query->isHasUnionAllQuery()) {
+            return $this->result;
+        }
 
+        foreach ($this->query->getUnionAllQueries() as $unionAllQuery) {
             $runResult = $unionAllQuery->run();
 
-            if (count($runResult->getColumns()) !== count($this->query->getSelectedColumns())) {
+            $count = count($this->query->getSelectedColumns());
+            $count += count($this->columns);
+
+            if (count($runResult->getColumns()) !== $count) {
                 throw new Exception('Unioned query has not the same count of columns as a main query.');
             }
 
@@ -888,6 +904,10 @@ class Select extends BaseQuery
      */
     private function intersect()
     {
+        if (!$this->query->isHasIntersectQuery()) {
+            return $this->result;
+        }
+
         foreach ($this->query->getIntersectQueries() as $intersectQuery) {
 
         }
@@ -900,6 +920,10 @@ class Select extends BaseQuery
      */
     public function except()
     {
+        if (!$this->query->isHasExceptQuery()) {
+            return $this->result;
+        }
+
         foreach ($this->query->getExceptQueries() as $exceptQuery) {
 
         }
