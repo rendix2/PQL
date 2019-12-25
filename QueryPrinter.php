@@ -331,7 +331,7 @@ class QueryPrinter
 
         $intersect = '';
 
-        foreach ($this->query->getIntersect() as $i => $intersectQuery) {
+        foreach ($this->query->getIntersectQueries() as $i => $intersectQuery) {
             if ($i === 0) {
                 $intersect .= '<br><br>';
             }
@@ -341,7 +341,7 @@ class QueryPrinter
 
         $except = '';
 
-        foreach ($this->query->getExcept() as $i => $exceptQuery) {
+        foreach ($this->query->getExceptQueries() as $i => $exceptQuery) {
             if ($i === 0) {
                 $except .= '<br><br>';
             }

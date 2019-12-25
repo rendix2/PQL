@@ -208,14 +208,14 @@ class Query
     private $timeLimit;
 
     /**
-     * @var Query[] $except
+     * @var Query[] $exceptQueries
      */
-    private $except;
+    private $exceptQueries;
 
     /**
-     * @var Query[] $intersect
+     * @var Query[] $intersectQueries
      */
-    private $intersect;
+    private $intersectQueries;
 
     /**
      * @var Query[] $unionQueries
@@ -277,9 +277,9 @@ class Query
 
         $this->unionQueries = [];
 
-        $this->intersect = [];
+        $this->intersectQueries = [];
 
-        $this->except = [];
+        $this->exceptQueries = [];
 
         $this->timeLimit = ini_get('max_execution_time');
     }
@@ -384,9 +384,9 @@ class Query
 
         unset($unionQuery);
 
-        $this->intersect = null;
+        $this->intersectQueries = null;
 
-        $this->except = null;
+        $this->exceptQueries = null;
 
         $this->tableAlias = null;
 
@@ -601,17 +601,17 @@ class Query
     /**
      * @return Query[]
      */
-    public function getIntersect()
+    public function getIntersectQueries()
     {
-        return $this->intersect;
+        return $this->intersectQueries;
     }
 
     /**
      * @return Query[]
      */
-    public function getExcept()
+    public function getExceptQueries()
     {
-        return $this->except;
+        return $this->exceptQueries;
     }
 
     /**
@@ -1092,7 +1092,7 @@ class Query
      */
     public function except(Query $query)
     {
-        $this->except[] = $query;
+        $this->exceptQueries[] = $query;
 
         return $this;
     }
@@ -1104,7 +1104,7 @@ class Query
      */
     public function intersect(Query $query)
     {
-        $this->intersect[] = $query;
+        $this->intersectQueries[] = $query;
 
         return $query;
     }

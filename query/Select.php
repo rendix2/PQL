@@ -888,7 +888,7 @@ class Select extends BaseQuery
      */
     private function intersect()
     {
-        foreach ($this->query->getIntersect() as $intersectQuery) {
+        foreach ($this->query->getIntersectQueries() as $intersectQuery) {
 
         }
 
@@ -900,7 +900,7 @@ class Select extends BaseQuery
      */
     public function except()
     {
-        foreach ($this->query->getExcept() as $exceptQuery) {
+        foreach ($this->query->getExceptQueries() as $exceptQuery) {
 
         }
 
