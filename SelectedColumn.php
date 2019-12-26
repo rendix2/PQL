@@ -38,6 +38,17 @@ class SelectedColumn
     }
 
     /**
+     * SelectedColumn destructor.
+     */
+    public function __destruct()
+    {
+        $this->column = null;
+        $this->alias = null;
+        $this->hasAlias = null;
+        $this->hasTableAlias = null;
+    }
+
+    /**
      * @return string
      */
     public function getColumn()

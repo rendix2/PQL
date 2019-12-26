@@ -192,7 +192,7 @@ $query2->select(['a.article_id', 'a.article_text', 'user_name', 'u.user_id', 'u.
     ->innerJoin(
         'users',
         [
-            new Condition('a.article_user_id', '=', 'u.user_id'),
+            new Condition('a.user_id', '=', 'u.user_id'),
             //new Condition('article_text', '=', 'user_name'),
         ],
         'u'
@@ -209,7 +209,7 @@ $query->select(['a.article_id', 'a.article_text', 'user_name', 'u.user_id', 'u.u
     ->innerJoin(
         'users',
         [
-            new Condition('a.article_user_id', '=', 'u.user_id'),
+            new Condition('a.user_id', '=', 'u.user_id'),
             //new Condition('article_text', '=', 'user_name'),
         ],
         'u'
