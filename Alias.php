@@ -30,7 +30,7 @@ class Alias
     /**
      * Alias constructor.
      *
-     * @param Table $from
+     * @param Table|string $from
      * @param string $to
      */
     public function __construct($from, $to)
@@ -62,5 +62,15 @@ class Alias
     public function getTo()
     {
         return $this->to;
+    }
+
+    /**
+     * @param string $string
+     *
+     * @return bool
+     */
+    public static function hasAlias($string)
+    {
+        return strpos($string, self::DELIMITER) !== false;
     }
 }

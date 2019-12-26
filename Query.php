@@ -58,9 +58,14 @@ class Query
     private $database;
 
     /**
-     * @var array $selectedColumns
+     * @var SelectedColumn[] $selectedColumns
      */
     private $selectedColumns;
+
+    /**
+     * @var int $selectedColumnsCount
+     */
+    private $selectedColumnsCount;
 
     /**
      * @var FunctionPql[] $functions
@@ -315,7 +320,15 @@ class Query
         Profiler::start('destruct');
         $this->database = null;
 
-        $this->selectedColumns = null;
+        foreach ($this->selectedColumns as &$selectedColumn) {
+            $selectedColumn = null;
+        }
+
+        unset($selectedColumn);
+
+        $this->selectedColumns      = null;
+        $this->selectedColumnsCount = null;
+
         $this->functions = null;
 
         $this->table = null;
@@ -574,11 +587,19 @@ class Query
     }
 
     /**
-     * @return array
+     * @return SelectedColumn[]
      */
     public function getSelectedColumns()
     {
         return $this->selectedColumns;
+    }
+
+    /**
+     * @return int
+     */
+    public function getSelectedColumnsCount()
+    {
+        return $this->selectedColumnsCount;
     }
 
     /**
@@ -858,16 +879,46 @@ class Query
     }
 
     /**
-     * @param array $columns
-     *
+     * @param array|string $columns
+     * @param string|null $alias
      * @return Query
      * @throws Exception
-     *
      */
-    public function select(array $columns = [])
+    public function select(array $columns = [], $alias = null)
     {
-        $this->selectedColumns = $columns;
-        $this->type    = self::SELECT;
+        if (is_string($columns)) {
+            if (strpos(', ', $columns) === false) {
+                if ($alias) {
+                    $this->selectedColumns[] = [new SelectedColumn($columns, new Alias($columns, $alias))];
+                } else {
+                    $this->selectedColumns[] = [new SelectedColumn($columns)];
+                }
+            } else {
+                if ($alias) {
+                    throw new Exception('Using alias does not make any sence.');
+                }
+
+                $columns = explode(', ', $columns);
+                $selectedColumns = [];
+
+                foreach ($columns as $column) {
+                    $selectedColumns[] = new SelectedColumn($column);
+                }
+
+                $this->selectedColumns = array_merge($this->selectedColumns, $selectedColumns);
+            }
+        } elseif (is_array($columns)) {
+            $selectedColumns = [];
+
+            foreach ($columns as $column) {
+                $selectedColumns[] = new SelectedColumn($column);
+            }
+
+            $this->selectedColumns = array_merge($this->selectedColumns, $selectedColumns);
+        }
+
+        $this->type = self::SELECT;
+        $this->selectedColumnsCount = count($this->selectedColumns);
 
         return $this;
     }

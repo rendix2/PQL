@@ -164,10 +164,25 @@ class QueryPrinter
      */
     private function select()
     {
-        $select = 'SELECT ' . implode(', ', $this->query->getSelectedColumns());
+        $select = 'SELECT ';
+
+        $lastColumn = $this->query->getSelectedColumnsCount() - 1;
+
+        foreach ($this->query->getSelectedColumns() as $i => $selectedColumn) {
+            $select .= $selectedColumn->getColumn();
+
+            if ($selectedColumn->hasAlias()) {
+                $select .= ' AS ' . $selectedColumn->getAlias()->getTo();
+            }
+
+            if ($i !== $lastColumn) {
+                $select .= ', ';
+            }
+        }
+
         $functions = '';
 
-        $columnsCount = count($this->query->getSelectedColumns());
+        $columnsCount = $this->query->getSelectedColumnsCount();
 
         foreach ($this->query->getFunctions() as $i => $function) {
             if (($i === 0 && $columnsCount) || $i > 0) {

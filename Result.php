@@ -41,7 +41,7 @@ final class Result implements ITable
     private $rowsCount;
 
     /**
-     * @var array $columns
+     * @var SelectedColumn[] $columns
      */
     private $columns;
 
@@ -58,11 +58,11 @@ final class Result implements ITable
     /**
      * Result constructor.
      *
-     * @param array     $columns
-     * @param array     $rows
-     * @param float     $time
-     * @param BaseQuery $query
-     * @param int       $affectedRows
+     * @param SelectedColumn[] $columns
+     * @param array            $rows
+     * @param float            $time
+     * @param BaseQuery        $query
+     * @param int              $affectedRows
      */
     public function __construct(array $columns, array $rows, $time, BaseQuery $query, $affectedRows = 0)
     {
@@ -101,7 +101,7 @@ final class Result implements ITable
             $table .= '<thead><tr>';
 
             foreach ($this->columns as $column) {
-                $table .= sprintf('<td>%s</td>', $column);
+                $table .= sprintf('<td>%s</td>', $column->getColumn());
             }
 
             $table.= '</tr></thead><tbody>';
@@ -110,7 +110,7 @@ final class Result implements ITable
                 $table .= '<tr>';
 
                 foreach ($this->columns as $columnList) {
-                    $value = $row->get()->{$columnList};
+                    $value = $row->get()->{$columnList->getColumn()};
 
                     if ($value === null) {
                         $value = '<i>NULL</i>';

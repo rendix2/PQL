@@ -67,7 +67,7 @@ class Insert extends BaseQuery
 
         $written = $file->fwrite(
             $line . $this->query->getTable()->getFileEnds(),
-            strlen($line) + $this->query->getTable()->getFileEndsLength() // mb_strlen is bad! coutn as a one, not two!
+            strlen($line) + $this->query->getTable()->getFileEndsLength() // mb_strlen is bad! count as a one, not two!
         );
         $file = null;
 
