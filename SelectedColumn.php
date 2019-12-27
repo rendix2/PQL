@@ -51,6 +51,14 @@ class SelectedColumn
     /**
      * @return string
      */
+    public function __toString()
+    {
+        return $this->hasAlias ? $this->column . ' AS ' . $this->alias->getTo() : $this->column;
+    }
+
+    /**
+     * @return string
+     */
     public function getColumn()
     {
         return $this->column;

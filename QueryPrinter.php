@@ -169,11 +169,7 @@ class QueryPrinter
         $lastColumn = $this->query->getSelectedColumnsCount() - 1;
 
         foreach ($this->query->getSelectedColumns() as $i => $selectedColumn) {
-            $select .= $selectedColumn->getColumn();
-
-            if ($selectedColumn->hasAlias()) {
-                $select .= ' AS ' . $selectedColumn->getAlias()->getTo();
-            }
+            $select .= (string) $selectedColumn;
 
             if ($i !== $lastColumn) {
                 $select .= ', ';
