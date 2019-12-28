@@ -87,5 +87,4 @@ class SelectedColumn
     {
         return $this->hasTableAlias;
     }
-
 }

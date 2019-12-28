@@ -3,7 +3,7 @@
 namespace query;
 
 use Condition;
-use FunctionPql;
+use AggregateFunctions;
 use Operator;
 use Query;
 use SubQueryHelper;
@@ -29,8 +29,8 @@ class ConditionHelper
         $isValueArray = is_array($condition->getValue());
         $isColumnArray = is_array($condition->getColumn());
         $isBetweenOperator = $condition->getOperator() === Operator::BETWEEN || $condition->getOperator() === Operator::BETWEEN_INCLUSIVE;
-        $columnIsFunction = $condition->getColumn() instanceof FunctionPql;
-        $valueIsFunction = $condition->getValue() instanceof FunctionPql;
+        $columnIsFunction = $condition->getColumn() instanceof AggregateFunctions;
+        $valueIsFunction = $condition->getValue() instanceof AggregateFunctions;
 
         // set flags
         if ($hasSubQueryColumn || $hasSubQueryValue) {

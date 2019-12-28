@@ -390,7 +390,7 @@ echo $res;
 
 /*
 Profiler::start('add');
-$myNew->addColumn('testfd', Column::STRING);
+$myNew->addColumn('testfd', TableColumn::STRING);
 Profiler::finish('add');
 */
 

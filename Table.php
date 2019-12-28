@@ -92,7 +92,7 @@ class Table implements ITable
     private $database;
 
     /**
-     * @var Column[] $columns
+     * @var TableColumn[] $columns
      */
     private $columns;
 
@@ -193,7 +193,7 @@ class Table implements ITable
 
         foreach ($columnNames as $column) {
             $columnExploded = explode(self::COLUMN_DATA_DELIMITER, trim($column));
-            $columns[]      = new Column($columnExploded[0], $columnExploded[1], $this);
+            $columns[]      = new TableColumn($columnExploded[0], $columnExploded[1], $this);
         }
 
         $this->columns       = $columns;
@@ -257,7 +257,7 @@ class Table implements ITable
     }
 
     /**
-     * @return Column[]
+     * @return TableColumn[]
      */
     public function getColumns()
     {
@@ -378,7 +378,7 @@ class Table implements ITable
     /**
      * @param Database  $database
      * @param string    $name
-     * @param Column[]  $columns
+     * @param TableColumn[]  $columns
      *
      * @return Table
      * @throws Exception
@@ -394,13 +394,13 @@ class Table implements ITable
         $columnsNames = [];
 
         /**
-         * @var Column $column
+         * @var TableColumn $column
          */
         foreach ($columns as $column) {
-            if ($column instanceof Column) {
+            if ($column instanceof TableColumn) {
                 $columnsNames[] = sprintf('%s:%s', $column->getName(), $column->getType());
             } else {
-                throw new Exception('Unknown param "$columns". It should be instance of Column class.');
+                throw new Exception('Unknown param "$columns". It should be instance of TableColumn class.');
             }
         }
 
@@ -419,13 +419,13 @@ class Table implements ITable
      */
     public function addColumn($name, $type)
     {
-        if($this->columnExists($name)) {
+        if ($this->columnExists($name)) {
             $message = sprintf('Table "%s" already has column "%s".', $this->name, $name);
 
             throw new Exception($message);
         }
 
-        if(!in_array($type, Column::COLUMN_TYPES, true)) {
+        if (!in_array($type, TableColumn::COLUMN_TYPES, true)) {
             $message = sprintf('Unknown "%s" column type.', $type);
 
             throw new Exception($message);
@@ -460,7 +460,7 @@ class Table implements ITable
 
         $this->database->setSize($this->database->calculateDatabaseSize());
         $this->size = $size;
-        $this->columns[] = new Column($name, $type, $this);
+        $this->columns[] = new TableColumn($name, $type, $this);
         $this->columnsString = $firstRow;
         $this->columnsCount++;
 
@@ -495,7 +495,7 @@ class Table implements ITable
         foreach ($explodedColumns as $column) {
             $columnName = explode(self::COLUMN_DATA_DELIMITER, $column);
 
-            if ($columnName[Column::COLUMN_NAME] === $name) {
+            if ($columnName[TableColumn::COLUMN_NAME] === $name) {
                 unset($explodedColumns[$column2Delete]);
                 break;
             }
@@ -537,6 +537,21 @@ class Table implements ITable
     }
 
     /**
+     * @param string $from
+     * @param string $to
+     * @return Table
+     */
+    public function renameColumn($from, $to)
+    {
+        return $this;
+    }
+
+    public function truncate()
+    {
+        return $this;
+    }
+
+    /**
      *
      * @return bool
      * @throws Exception
@@ -569,17 +584,18 @@ class Table implements ITable
      */
     public function getRows($object = false)
     {
-        $columnNames = [];
-        $rows        = $this->toArray();
-        $rowsObj      = [];
+        $fileRows = $this->toArray();
+        unset($fileRows[0]);
 
-        unset($rows[0]);
+        $columnNames = [];
 
         foreach ($this->columns as $column) {
             $columnNames[] = $column->getName();
         }
+
+        $resultRows = [];
         
-        foreach ($rows as $row) {
+        foreach ($fileRows as $row) {
             $row = str_replace($this->lineEnds, '', $row);
 
             $exploded = explode(self::COLUMN_DELIMITER, $row);
@@ -587,16 +603,16 @@ class Table implements ITable
 
             foreach ($this->columns as $column) {
                 switch ($column->getType()) {
-                    case Column::BOOL:
+                    case TableColumn::BOOL:
                         $columnValuesArray[$column->getName()] = (bool) $columnValuesArray[$column->getName()];
                         break;
-                    case Column::FLOAT:
+                    case TableColumn::FLOAT:
                         $columnValuesArray[$column->getName()] = (float) $columnValuesArray[$column->getName()];
                         break;
-                    case Column::INTEGER:
+                    case TableColumn::INTEGER:
                         $columnValuesArray[$column->getName()] = (int) $columnValuesArray[$column->getName()];
                         break;
-                    case Column::STRING:
+                    case TableColumn::STRING:
                         $columnValuesArray[$column->getName()] = (string)$columnValuesArray[$column->getName()];
                         break;
                     default:
@@ -607,13 +623,13 @@ class Table implements ITable
             }
 
             if ($object) {
-                $rowsObj[] = new Row($columnValuesArray);
+                $resultRows[] = new Row($columnValuesArray);
             } else {
-                $rowsObj[] = $columnValuesArray;
+                $resultRows[] = $columnValuesArray;
             }
         }
         
-        return $rowsObj;        
+        return $resultRows;
     }
 
     /**

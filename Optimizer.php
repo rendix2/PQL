@@ -69,8 +69,8 @@ class Optimizer
     {
         $equalOperator = $condition->getOperator() === Operator::EQUAL;
 
-        if (count($this->query->getOrderBy()) === 1) {
-            $orderBy = $this->query->getOrderBy()[0];
+        if (count($this->query->getOrderByColumns()) === 1) {
+            $orderBy = $this->query->getOrderByColumns()[0];
 
             if ($equalOperator &&
                 (

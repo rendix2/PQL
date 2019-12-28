@@ -7,10 +7,10 @@
  */
 
 /**
- * Class OrderBy
+ * Class OrderByColumn
  *
  */
-class OrderBy
+class OrderByColumn
 {
     /**
      * @var string $column
@@ -23,7 +23,7 @@ class OrderBy
     private $asc;
 
     /**
-     * OrderBy constructor.
+     * OrderByColumn constructor.
      *
      * @param string $column
      * @param bool   $asc
@@ -35,7 +35,7 @@ class OrderBy
     }
 
     /**
-     * OrderBy destructor.
+     * OrderByColumn destructor.
      */
     public function __destruct()
     {
@@ -52,7 +52,7 @@ class OrderBy
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getColumn()
     {

@@ -68,7 +68,7 @@ class Query
     private $selectedColumnsCount;
 
     /**
-     * @var FunctionPql[] $functions
+     * @var AggregateFunctions[] $functions
      */
     private $functions;
 
@@ -148,9 +148,9 @@ class Query
     private $hasWhereCondition;
 
     /**
-     * @var array $orderBy
+     * @var OrderByColumn[] $orderByColumns
      */
-    private $orderBy;
+    private $orderByColumns;
 
     /**
      * @var bool $hasOrderBy
@@ -168,9 +168,9 @@ class Query
     private $hasHavingCondition;
 
     /**
-     * @var array $groupBy
+     * @var GroupByColumn[] $groupByColumns
      */
-    private $groupBy;
+    private $groupByColumns;
 
     /**
      * @var bool $hasGroupBy
@@ -213,28 +213,9 @@ class Query
     private $timeLimit;
 
     /**
-     * @var Query[] $exceptQueries
-     */
-    private $exceptQueries;
-
-    /**
-     * @var Query[] $intersectQueries
-     */
-    private $intersectQueries;
-
-    /**
      * @var Query[] $unionQueries
      */
     private $unionQueries;
-
-    /**
-     * @var Query[] $unionAllQueries
-     */
-    private $unionAllQueries;
-    /**
-     * @var bool $hasUnionAllQuery
-     */
-    private $hasUnionAllQuery;
 
     /**
      * @var bool $hasUnionQuery
@@ -242,14 +223,34 @@ class Query
     private $hasUnionQuery;
 
     /**
-     * @var bool $hasExceptQuery
+     * @var Query[] $unionAllQueries
      */
-    private $hasExceptQuery;
+    private $unionAllQueries;
+
+    /**
+     * @var bool $hasUnionAllQuery
+     */
+    private $hasUnionAllQuery;
+
+    /**
+     * @var Query[] $intersectQueries
+     */
+    private $intersectQueries;
 
     /**
      * @var bool
      */
     private $hasIntersectQuery;
+
+    /**
+     * @var Query[] $exceptQueries
+     */
+    private $exceptQueries;
+
+    /**
+     * @var bool $hasExceptQuery
+     */
+    private $hasExceptQuery;
 
     /**
      * Query constructor.
@@ -283,10 +284,10 @@ class Query
         $this->whereConditions   = [];
         $this->hasWhereCondition = false;
 
-        $this->orderBy    = [];
+        $this->orderByColumns    = [];
         $this->hasOrderBy = false;
 
-        $this->groupBy    = [];
+        $this->groupByColumns    = [];
         $this->hasGroupBy = false;
 
         $this->havingConditions   = [];
@@ -387,18 +388,18 @@ class Query
         $this->whereConditions   = null;
         $this->hasWhereCondition = null;
 
-        foreach ($this->groupBy as &$groupByColumn) {
+        foreach ($this->groupByColumns as &$groupByColumn) {
             $groupByColumn = null;
         }
 
         unset($groupByColumn);
 
-        $this->groupBy = null;
+        $this->groupByColumns = null;
 
         $this->havingConditions   = null;
         $this->hasHavingCondition = null;
 
-        $this->orderBy    = null;
+        $this->orderByColumns    = null;
         $this->hasOrderBy = null;
 
         $this->limit = null;
@@ -491,7 +492,7 @@ class Query
     }
 
     /**
-     * @return FunctionPql[]
+     * @return AggregateFunctions[]
      */
     public function getFunctions()
     {
@@ -507,19 +508,19 @@ class Query
     }
 
     /**
-     * @return array
+     * @return GroupByColumn[]
      */
-    public function getGroupBy()
+    public function getGroupByColumns()
     {
-        return $this->groupBy;
+        return $this->groupByColumns;
     }
 
     /**
-     * @return OrderBy[]
+     * @return OrderByColumn[]
      */
-    public function getOrderBy()
+    public function getOrderByColumns()
     {
-        return $this->orderBy;
+        return $this->orderByColumns;
     }
 
     /**
@@ -603,7 +604,7 @@ class Query
     }
 
     /**
-     * @return array
+     * @return Condition[]
      */
     public function getHavingConditions()
     {
@@ -765,7 +766,7 @@ class Query
     /**
      * @return bool
      */
-    public function isHasUnionAllQuery()
+    public function hasUnionAllQuery()
     {
         return $this->hasUnionAllQuery;
     }
@@ -773,7 +774,7 @@ class Query
     /**
      * @return bool
      */
-    public function isHasUnionQuery()
+    public function hasUnionQuery()
     {
         return $this->hasUnionQuery;
     }
@@ -781,7 +782,7 @@ class Query
     /**
      * @return bool
      */
-    public function isHasExceptQuery()
+    public function hasExceptQuery()
     {
         return $this->hasExceptQuery;
     }
@@ -789,7 +790,7 @@ class Query
     /**
      * @return bool
      */
-    public function isHasIntersectQuery()
+    public function hasIntersectQuery()
     {
         return $this->hasIntersectQuery;
     }
@@ -801,7 +802,7 @@ class Query
      */
     public function count($column)
     {
-        $this->functions[] = new FunctionPql(FunctionPql::COUNT, [$column]);
+        $this->functions[] = new AggregateFunctions(AggregateFunctions::COUNT, [$column]);
 
         $this->type = self::SELECT;
 
@@ -815,7 +816,7 @@ class Query
      */
     public function sum($column)
     {
-        $this->functions[] = new FunctionPql(FunctionPql::SUM, [$column]);
+        $this->functions[] = new AggregateFunctions(AggregateFunctions::SUM, [$column]);
 
         $this->type = self::SELECT;
 
@@ -829,7 +830,7 @@ class Query
      */
     public function avg($column)
     {
-        $this->functions[] = new FunctionPql(FunctionPql::AVERAGE, [$column]);
+        $this->functions[] = new AggregateFunctions(AggregateFunctions::AVERAGE, [$column]);
 
         $this->type = self::SELECT;
 
@@ -843,7 +844,7 @@ class Query
      */
     public function min($column)
     {
-        $this->functions[] = new FunctionPql(FunctionPql::MIN, [$column]);
+        $this->functions[] = new AggregateFunctions(AggregateFunctions::MIN, [$column]);
 
         $this->type = self::SELECT;
 
@@ -857,7 +858,7 @@ class Query
      */
     public function max($column)
     {
-        $this->functions[] = new FunctionPql(FunctionPql::MAX, [$column]);
+        $this->functions[] = new AggregateFunctions(AggregateFunctions::MAX, [$column]);
 
         $this->type = self::SELECT;
 
@@ -871,7 +872,7 @@ class Query
      */
     public function median($column)
     {
-        $this->functions[] = new FunctionPql(FunctionPql::MEDIAN, [$column]);
+        $this->functions[] = new AggregateFunctions(AggregateFunctions::MEDIAN, [$column]);
 
         $this->type = self::SELECT;
 
@@ -975,7 +976,7 @@ class Query
      */
     public function orderBy($column, $asc = true)
     {
-        $this->orderBy[] = new OrderBy($column, $asc);
+        $this->orderByColumns[] = new OrderByColumn($column, $asc);
         $this->hasOrderBy = true;
 
         return $this;
@@ -990,7 +991,7 @@ class Query
      */
     public function groupBy($column)
     {
-        $this->groupBy[] = $column;
+        $this->groupByColumns[]  = new GroupByColumn($column);
         $this->hasGroupBy = true;
 
         return $this;
@@ -1011,11 +1012,11 @@ class Query
         $matchedValue = preg_match('#^([a-zA-Z]*)\((([a-zA-Z0-9,_ ]*)\))$#', $value, $functionNameValue);
 
         if ($matchedColumn) {
-            $column = new FunctionPql($functionNameColumn[1], explode(', ', $functionNameColumn[3]));
+            $column = new AggregateFunctions($functionNameColumn[1], explode(', ', $functionNameColumn[3]));
         }
 
         if ($matchedValue) {
-            $value = new FunctionPql($functionNameValue[1], explode(', ', $functionNameValue[3]));
+            $value = new AggregateFunctions($functionNameValue[1], explode(', ', $functionNameValue[3]));
         }
 
         $this->havingConditions[] = new Condition($column, $operator, $value);

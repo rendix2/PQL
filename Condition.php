@@ -6,7 +6,7 @@
 class Condition
 {
     /**
-     * @var string|array|Query|FunctionPql $column
+     * @var string|array|Query|AggregateFunctions $column
      */
     private $column;
 
@@ -16,15 +16,15 @@ class Condition
     private $operator;
 
     /**
-     * @var string|array|Query|FunctionPql $value
+     * @var string|array|Query|AggregateFunctions $value
      */
     private $value;
 
     /**
      * Condition constructor.
-     * @param string|array|Query|FunctionPql $column
-     * @param string                         $operator
-     * @param string|array|Query|FunctionPql $value
+     * @param string|array|Query|AggregateFunctions $column
+     * @param string                                $operator
+     * @param string|array|Query|AggregateFunctions $value
      *
      * @throws Exception
      */
@@ -44,9 +44,9 @@ class Condition
      */
     public function __destruct()
     {
-        $this->column = null;
+        $this->column   = null;
         $this->operator = null;
-        $this->value = null;
+        $this->value    = null;
     }
 
     /**
@@ -58,7 +58,7 @@ class Condition
     }
 
     /**
-     * @return string|array|Query|FunctionPql
+     * @return string|array|Query|AggregateFunctions
      */
     public function getColumn()
     {
@@ -74,7 +74,7 @@ class Condition
     }
 
     /**
-     * @return string|array|Query|FunctionPql
+     * @return string|array|Query|AggregateFunctions
      */
     public function getValue()
     {

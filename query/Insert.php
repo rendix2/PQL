@@ -1,7 +1,7 @@
 <?php
 namespace query;
 
-use Column;
+use TableColumn;
 use SplFileObject;
 use Table;
 use BTree\BtreeJ;
@@ -29,7 +29,7 @@ class Insert extends BaseQuery
 
                 /**
                  * index maintenance
-                 * @var Column $column
+                 * @var TableColumn $column
                  */
                 foreach ($this->query->getTable()->getIndexes() as $indexColumn => $indexFile) {
                     if ($column->getName() === $indexColumn) {

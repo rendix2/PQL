@@ -166,14 +166,12 @@ class QueryPrinter
     {
         $select = 'SELECT ';
 
-        $lastColumn = $this->query->getSelectedColumnsCount() - 1;
-
         foreach ($this->query->getSelectedColumns() as $i => $selectedColumn) {
-            $select .= (string) $selectedColumn;
-
-            if ($i !== $lastColumn) {
+            if ($i !== 0) {
                 $select .= ', ';
             }
+
+            $select .= (string) $selectedColumn;
         }
 
         $functions = '';
@@ -291,12 +289,12 @@ class QueryPrinter
         if ($this->query->hasOrderBy()) {
             $orderBy = '<br> ORDER BY ';
 
-            foreach ($this->query->getOrderBy() as $i => $orderedBy) {
-                if ($i === 0) {
-                    $orderBy .= (string) $orderedBy;
-                } else {
-                    $orderBy .= ', ' . (string) $orderedBy;
+            foreach ($this->query->getOrderByColumns() as $i => $orderedBy) {
+                if ($i !== 0) {
+                    $orderBy .= ', ';
                 }
+
+                $orderBy .= (string) $orderedBy;
             }
         }
 
@@ -305,12 +303,12 @@ class QueryPrinter
         if ($this->query->hasGroupBy()) {
             $groupBy = '<br> GROUP BY ';
 
-            foreach ($this->query->getGroupBy() as $i => $groupedBy) {
-                if ($i === 0) {
-                    $groupBy .= $groupedBy;
-                } else {
-                    $groupBy .= ', ' . $groupedBy;
+            foreach ($this->query->getGroupByColumns() as $i => $groupByColumn) {
+                if ($i !== 0) {
+                    $groupBy .= ', ';
                 }
+
+                $groupBy .= (string) $groupByColumn;
             }
         }
 

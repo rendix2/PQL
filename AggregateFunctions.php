@@ -1,11 +1,11 @@
 <?php
 
 /**
- * Class FunctionPql
+ * Class AggregateFunctions
  *
  * name is because of Function is key word of php
  */
-class FunctionPql
+class AggregateFunctions
 {
     /**
      * @var string
@@ -48,7 +48,7 @@ class FunctionPql
     private $params;
 
     /**
-     * FunctionPql constructor.
+     * AggregateFunctions constructor.
      *
      * @param string $name
      * @param array $params
@@ -60,7 +60,7 @@ class FunctionPql
     }
 
     /**
-     * FunctionPql destructor.
+     * AggregateFunctions destructor.
      */
     public function __destruct()
     {

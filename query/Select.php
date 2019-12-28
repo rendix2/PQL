@@ -4,7 +4,7 @@ namespace query;
 use Alias;
 use Condition;
 use Exception;
-use FunctionPql;
+use AggregateFunctions;
 use JoinedTable;
 use Netpromotion\Profiler\Profiler;
 use Optimizer;
@@ -29,9 +29,9 @@ class Select extends BaseQuery
     private $groupedByData;
 
     /**
-     * @var int $countGroupedByData
+     * @var int $groupedByDataCount
      */
-    private $countGroupedByData;
+    private $groupedByDataCount;
 
     /**
      * @var Optimizer $optimizer
@@ -39,7 +39,7 @@ class Select extends BaseQuery
     private $optimizer;
 
     /**
-     * @var array $columns
+     * @var SelectedColumn $columns
      */
     private $columns;
 
@@ -63,14 +63,14 @@ class Select extends BaseQuery
     {
         $this->groupedByData      = null;
         $this->optimizer          = null;
-        $this->countGroupedByData = null;
+        $this->groupedByDataCount = null;
         $this->columns            = null;
 
         parent::__destruct();
     }
 
     /**
-     * @return array
+     * @return SelectedColumn[]
      */
     public function getColumns()
     {
@@ -306,8 +306,8 @@ class Select extends BaseQuery
 
             $functionColumnName = sprintf('%s(%s)', mb_strtoupper($functionName), $column);
 
-            if ($functionName === FunctionPql::SUM) {
-                if ($this->countGroupedByData) {
+            if ($functionName === AggregateFunctions::SUM) {
+                if ($this->groupedByDataCount) {
                     $this->columns[] = new SelectedColumn($functionColumnName);
                     $functionGroupByResult  = [];
 
@@ -330,8 +330,8 @@ class Select extends BaseQuery
                 }
             }
 
-            if ($functionName === FunctionPql::COUNT) {
-                if ($this->countGroupedByData) {
+            if ($functionName === AggregateFunctions::COUNT) {
+                if ($this->groupedByDataCount) {
                     $this->columns[] = new SelectedColumn($functionColumnName);
                     $functionGroupByResult = [];
 
@@ -347,8 +347,8 @@ class Select extends BaseQuery
                 }
             }
 
-            if ($functionName === FunctionPql::AVERAGE) {
-                if ($this->countGroupedByData) {
+            if ($functionName === AggregateFunctions::AVERAGE) {
+                if ($this->groupedByDataCount) {
                     $this->columns[] = new SelectedColumn($functionColumnName);
                     $functionGroupByResult  = [];
 
@@ -372,8 +372,8 @@ class Select extends BaseQuery
                 }
             }
 
-            if ($functionName === FunctionPql::MIN) {
-                if ($this->countGroupedByData) {
+            if ($functionName === AggregateFunctions::MIN) {
+                if ($this->groupedByDataCount) {
                     $this->columns[] = new SelectedColumn($functionColumnName);
                     $functionGroupByResult  = [];
 
@@ -397,8 +397,8 @@ class Select extends BaseQuery
                 }
             }
 
-            if ($functionName === FunctionPql::MAX) {
-                if ($this->countGroupedByData) {
+            if ($functionName === AggregateFunctions::MAX) {
+                if ($this->groupedByDataCount) {
                     $this->columns[] = new SelectedColumn($functionColumnName);
                     $functionGroupByResult  = [];
 
@@ -422,8 +422,8 @@ class Select extends BaseQuery
                 }
             }
 
-            if ($functionName === FunctionPql::MEDIAN) {
-                if ($this->countGroupedByData) {
+            if ($functionName === AggregateFunctions::MEDIAN) {
+                if ($this->groupedByDataCount) {
                     $this->columns[] = new SelectedColumn($functionColumnName);
                     $functionGroupByResult  = [];
 
@@ -660,18 +660,18 @@ class Select extends BaseQuery
      */
     private function doGroupBy(array $rows, $column)
     {
-        $tmp = [];
+        $groupByTemp = [];
 
         foreach ($rows as $row) {
-            $tmp[$column][$row[$column]][] = $row;
+            $groupByTemp[$column][$row[$column]][] = $row;
         }
 
-        $this->groupedByData = $tmp;
-        $this->countGroupedByData = count($this->groupedByData);
+        $this->groupedByData      = $groupByTemp;
+        $this->groupedByDataCount = count($this->groupedByData);
 
         $result = [];
 
-        foreach ($tmp[$column] as $groupRows) {
+        foreach ($groupByTemp[$column] as $groupRows) {
             $result[] = $groupRows[0];
         }
 
@@ -687,8 +687,8 @@ class Select extends BaseQuery
             return  $this->result;
         }
         
-        foreach ($this->query->getGroupBy() as $groupByColumn) {
-            $this->result = $this->doGroupBy($this->result, $groupByColumn);
+        foreach ($this->query->getGroupByColumns() as $groupByColumn) {
+            $this->result = $this->doGroupBy($this->result, $groupByColumn->getColumn());
         }
 
         return $this->result;
@@ -738,25 +738,26 @@ class Select extends BaseQuery
             return $this->result;
         }
 
-        $tmpSort = [];
-        $tmp     = [];
+        $resultTemp = [];
             
-        foreach ($this->result as $column => $values) {
-            foreach ($values as $key => $value) {
-                $tmp[$column][$key] = $value;
+        foreach ($this->result as $rowNumber => $row) {
+            foreach ($row as $columnName => $columnValue) {
+                $resultTemp[$rowNumber][$columnName] = $columnValue;
             }
         }
 
-        foreach ($this->query->getOrderBy() as $orderBy) {
-            $tmpSort[] = array_column($tmp, $orderBy->getColumn());
-            $tmpSort[] = $orderBy->getSortingConst();
-            $tmpSort[] = SORT_REGULAR;
+        $sortTemp = [];
+
+        foreach ($this->query->getOrderByColumns() as $orderBy) {
+            $sortTemp[] = array_column($resultTemp, $orderBy->getColumn());
+            $sortTemp[] = $orderBy->getSortingConst();
+            $sortTemp[] = SORT_REGULAR;
         }
             
-        $tmpSort[] = &$tmp;
-        $sortRes   = array_multisort(...$tmpSort);
+        $sortTemp[] = &$resultTemp;
+        $sortRes   = array_multisort(...$sortTemp);
 
-        return $this->result = $tmp;
+        return $this->result = $resultTemp;
     }
 
     /**
@@ -764,21 +765,22 @@ class Select extends BaseQuery
      */
     private function createRows()
     {
-        $tmpColumns = array_merge($this->query->getSelectedColumns(), $this->columns);
+        $columnsTemp = array_merge($this->query->getSelectedColumns(), $this->columns);
 
         $columns = [];
-        $rows    = [];
 
         /**
          * @var SelectedColumn $column
          */
-        foreach ($tmpColumns as $column) {
+        foreach ($columnsTemp as $column) {
             if ($column->hasAlias()) {
                 $columns[] = $column->getAlias()->getTo();
             } else {
                 $columns[] = $column->getColumn();
             }
         }
+
+        $rows = [];
 
         foreach ($this->result as $row) {
             $rowObject = new Row([]);
@@ -857,7 +859,7 @@ class Select extends BaseQuery
      */
     private function union()
     {
-        if (!$this->query->isHasUnionQuery()) {
+        if (!$this->query->hasUnionQuery()) {
             return $this->result;
         }
 
@@ -902,7 +904,7 @@ class Select extends BaseQuery
      */
     private function unionAll()
     {
-        if (!$this->query->isHasUnionAllQuery()) {
+        if (!$this->query->hasUnionAllQuery()) {
             return $this->result;
         }
 
@@ -928,7 +930,7 @@ class Select extends BaseQuery
      */
     private function intersect()
     {
-        if (!$this->query->isHasIntersectQuery()) {
+        if (!$this->query->hasIntersectQuery()) {
             return $this->result;
         }
 
@@ -962,9 +964,9 @@ class Select extends BaseQuery
      * @return array
      * @throws Exception
      */
-    public function except()
+    private function except()
     {
-        if (!$this->query->isHasExceptQuery()) {
+        if (!$this->query->hasExceptQuery()) {
             return $this->result;
         }
 

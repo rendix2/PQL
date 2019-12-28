@@ -1,6 +1,9 @@
 <?php
 
-class Column
+/**
+ * Class TableColumn
+ */
+class TableColumn
 {
     /**
      * @var array
@@ -53,7 +56,7 @@ class Column
     private $table;
 
     /**
-     * Column constructor.
+     * TableColumn constructor.
      *
      * @param string     $name
      * @param string     $type
@@ -73,7 +76,7 @@ class Column
     }
 
     /**
-     * Column destructor.
+     * TableColumn destructor.
      */
     public function __destruct()
     {

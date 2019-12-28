@@ -18,7 +18,7 @@ class Alias
     const DELIMITER = '.';
 
     /**
-     * @var Table $from
+     * @var Table|string $from
      */
     private $from;
 

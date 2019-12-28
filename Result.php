@@ -16,14 +16,14 @@ use query\BaseQuery;
 final class Result implements ITable
 {
     /**
-     * @var float $time
+     * @var float $executeTime
      */
-    private $time;
+    private $executeTime;
     
     /**
-     * @var float $timeFormatted
+     * @var float $formattedTime
      */
-    private $timeFormatted;
+    private $formattedTime;
 
     /**
      * @var int|null $affectedRows
@@ -60,18 +60,18 @@ final class Result implements ITable
      *
      * @param SelectedColumn[] $columns
      * @param array            $rows
-     * @param float            $time
+     * @param float            $executeTime
      * @param BaseQuery        $query
      * @param int              $affectedRows
      */
-    public function __construct(array $columns, array $rows, $time, BaseQuery $query, $affectedRows = 0)
+    public function __construct(array $columns, array $rows, $executeTime, BaseQuery $query, $affectedRows = 0)
     {
         $this->rows          = $rows;
         $this->rowsCount     = count($rows);
         $this->columns       = $columns;
         $this->columnsCount  = count($columns);
-        $this->time          = $time;
-        $this->timeFormatted = (float)number_format($time, 5);
+        $this->executeTime   = $executeTime;
+        $this->formattedTime = (float)number_format($executeTime, 5);
         $this->query         = $query;
         $this->affectedRows  = $affectedRows;
     }
@@ -82,8 +82,8 @@ final class Result implements ITable
     public function __destruct()
     {
         $this->rows          = null;
-        $this->time          = null;
-        $this->timeFormatted = null;
+        $this->executeTime   = null;
+        $this->formattedTime = null;
         $this->rowsCount     = null;
         $this->affectedRows  = null;
         $this->columns       = null;
@@ -131,7 +131,7 @@ final class Result implements ITable
     }
 
     /**
-     * @return array
+     * @return SelectedColumn[]
      */
     public function getColumns()
     {
