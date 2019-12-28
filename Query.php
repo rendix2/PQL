@@ -1220,6 +1220,22 @@ class Query
     }
 
     /**
+     * @param Condition[] $onConditions
+     * @param string|null $alias
+     *
+     * @return Query
+     * @throws Exception
+     */
+    public function selfJoin(array $onConditions = [], $alias = null)
+    {
+        if (!$this->table) {
+            throw new Exception('Cannot do SELF JOIN, if i have empty FROM clause.');
+        }
+
+        return $this->innerJoin($this->table, $onConditions, $alias);
+    }
+
+    /**
      * @param string|Query $table
      * @param string|null  $alias
      *
