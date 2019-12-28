@@ -77,7 +77,7 @@ class Database
         $this->size = $size;
         $this->name = $name;
 
-        $this->tables = [];
+        $this->tables = $this->findTables();
 
         $this->tablesCount = $files->count();
     }
@@ -255,5 +255,20 @@ class Database
         FileSystem::rename($this->name, $newName);
 
         return $this;
+    }
+
+    /**
+     * @param string $table
+     * @return bool
+     */
+    public function tableExists(Table $table)
+    {
+        foreach ($this->tables as $tableObject) {
+            if ($table->getName() === $tableObject->getName()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

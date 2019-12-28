@@ -896,7 +896,7 @@ class Query
                 }
             } else {
                 if ($alias) {
-                    throw new Exception('Using alias does not make any sence.');
+                    throw new Exception('Using alias does not make any sense.');
                 }
 
                 $columns = explode(', ', $columns);
@@ -1103,9 +1103,29 @@ class Query
     {
         if (is_string($table)) {
             $joinedTable = new Table($this->database, $table);
+
+            if (!$this->database->tableExists($joinedTable)) {
+                $message = sprintf(
+                    'Selected table "%s" is not from selected database "%s".',
+                    $joinedTable->getName(),
+                    $this->database->getName()
+                );
+
+                throw new Exception($message);
+            }
         } elseif ($table instanceof self) {
             if ($table->type !== self::SELECT) {
-                throw new Exception('Not a select query.');
+                throw new Exception('It is not a SELECT query.');
+            }
+
+            if (!$this->database->tableExists($table->getTable())) {
+                $message = sprintf(
+                    'Selected table "%s" is not from selected database "%s".',
+                    $table->getTable(),
+                    $this->database->getName()
+                );
+
+                throw new Exception($message);
             }
 
             $joinedTable = $table;
@@ -1310,7 +1330,9 @@ class Query
         
         foreach ($columns as $column) {
             if (!$this->table->columnExists($column)) {
-                throw new Exception(sprintf('Column "%s" does not exist.', $column));
+                $message = sprintf('Column "%s" does not exist in "%s".', $column, $table);
+
+                throw new Exception($message);
             }
         }
 
