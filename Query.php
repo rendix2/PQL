@@ -198,7 +198,7 @@ class Query
     private $updateData;
 
     /**
-     * @var array $insertData
+     * @var array|Query $insertData
      */
     private $insertData;
 
@@ -612,7 +612,7 @@ class Query
     }
 
     /**
-     * @return array
+     * @return array|Query
      */
     public function getInsertData()
     {

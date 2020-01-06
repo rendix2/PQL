@@ -447,6 +447,11 @@ class QueryPrinter
      */
     private function insertSelect()
     {
-        return 'UNSUPPORTED OPERATION';
+        $insert = 'INSERT INTO ' .  $this->query->getTable()->getName();
+
+        $selectQueryPrinter = new QueryPrinter($this->query->getInsertData());
+        $select = $selectQueryPrinter->printQuery();
+
+        return $insert . $select;
     }
 }
