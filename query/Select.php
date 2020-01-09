@@ -78,7 +78,7 @@ class Select extends BaseQuery
     }
 
     /**
-     * @return array|Row[]
+     * @return Row[]
      */
     public function run()
     {
@@ -761,7 +761,7 @@ class Select extends BaseQuery
     }
 
     /**
-     * @return array
+     * @return Row[]
      */
     private function createRows()
     {

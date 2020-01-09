@@ -1,4 +1,10 @@
 <?php
+/**
+ * Created by PhpStorm.
+ * User: Tom
+ * Date: 1. 2. 2019
+ * Time: 9:53
+ */
 
 use Netpromotion\Profiler\Profiler;
 use query\Delete;
@@ -7,13 +13,6 @@ use query\Insert;
 use query\InsertSelect;
 use query\Select;
 use query\Update;
-
-/**
- * Created by PhpStorm.
- * User: Tom
- * Date: 1. 2. 2019
- * Time: 9:53
- */
 
 /**
  * Class Query
