@@ -18,22 +18,10 @@ class SubQueryHelper
      */
     public static function runAndCheckOneRowOneColumn(Query $subQuery)
     {
-        $subQueryResult = $subQuery->run();
-
-        if (!($subQueryResult instanceof Result)) {
-            throw new Exception('SubQuery has no result.');
-        }
+        $subQueryResult = self::runAndCheckOneColumn($subQuery);
 
         if ($subQueryResult->getRowsCount() > 1){
-            throw new Exception('Subquery fetched more than one row.');
-        }
-
-        if (!$subQueryResult->getColumnsCount()) {
-            throw new Exception('Subquery has no column.');
-        }
-
-        if ($subQueryResult->getColumnsCount() > 1) {
-            throw new Exception('Subquery has more than one column');
+            throw new Exception('SubQuery fetched more than one row.');
         }
 
         return $subQueryResult;
@@ -62,9 +50,10 @@ class SubQueryHelper
         }
 
         if ($subQueryResult->getColumnsCount() > 1) {
-            throw new Exception('Subquery has more than one column');
+            throw new Exception('SubQuery has more than one column');
         }
 
         return $subQueryResult;
     }
 }
+
