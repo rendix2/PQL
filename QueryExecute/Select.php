@@ -1,18 +1,19 @@
 <?php
 
-namespace pql\query;
+namespace pql\QueryExecute;
 
 use pql\Alias;
 use pql\Condition;
 use Exception;
 use pql\AggregateFunctions;
+use pql\ConditionHelper;
 use pql\JoinedTable;
 use Netpromotion\Profiler\Profiler;
 use pql\Optimizer;
 use pql\Query;
-use pql\query\Joins\NestedLoopJoin;
-use pql\query\Joins\HashJoin;
-use pql\query\Joins\SortMergeJoin;
+use pql\QueryExecute\Joins\NestedLoopJoin;
+use pql\QueryExecute\Joins\HashJoin;
+use pql\QueryExecute\Joins\SortMergeJoin;
 use pql\Row;
 use pql\SelectedColumn;
 use pql\Table;
@@ -21,7 +22,7 @@ use pql\Table;
  * Class Select
  *
  * @author  rendix2 <rendix2@seznam.cz>
- * @package query
+ * @package QueryExecute
  */
 class Select extends BaseQuery
 {

@@ -6,13 +6,13 @@
  * Time: 13:14
  */
 
-namespace pql\query;
+namespace pql\QueryExecute;
 
 /**
  * Class Functions
  *
  * @author  rendix2 <rendix2@seznam.cz>
- * @package query
+ * @package QueryExecute
  */
 class Functions
 {

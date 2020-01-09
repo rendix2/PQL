@@ -6,7 +6,7 @@
  * Time: 15:37
  */
 
-namespace pql\query;
+namespace pql\QueryExecute;
 
 use pql\Query;
 use pql\Row;
@@ -15,7 +15,7 @@ use pql\Row;
  * Class Query
  *
  * @author  rendix2 <rendix2@seznam.cz>
- * @package query
+ * @package QueryExecute
  */
 abstract class BaseQuery
 {

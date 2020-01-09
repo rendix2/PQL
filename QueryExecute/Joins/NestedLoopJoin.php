@@ -1,9 +1,9 @@
 <?php
 
-namespace pql\query\Joins;
+namespace pql\QueryExecute\Joins;
 
 use pql\Condition;
-use pql\query\ConditionHelper;
+use pql\ConditionHelper;
 
 /**
  * Class NestedLoopJoin
@@ -11,7 +11,7 @@ use pql\query\ConditionHelper;
  * Simplest algorithm for joining two tables
  *
  * @author  rendix2 <rendix2@seznam.cz>
- * @package query\Join
+ * @package QueryExecute\Join
  */
 class NestedLoopJoin implements IJoin
 {

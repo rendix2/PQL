@@ -1,8 +1,12 @@
 <?php
 
-namespace pql;
+namespace pql\QueryPrinter;
 
 use Exception;
+use pql\Condition;
+use pql\JoinedTable;
+use pql\Query;
+use pql\Table;
 
 /**
  * Class QueryPrinter

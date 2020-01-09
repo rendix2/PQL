@@ -6,14 +6,14 @@
  * Time: 13:26
  */
 
-namespace pql\query\Joins;
+namespace pql\QueryExecute\Joins;
 
 use pql\Condition;
 
 /**
  * Class SortMergeJoin
  *
- * @package query\Join
+ * @package QueryExecute\Join
  * @author  rendix2 <rendix2@seznam.cz>
  */
 class SortMergeJoin implements IJoin

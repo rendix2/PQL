@@ -1,6 +1,6 @@
 <?php
 
-namespace pql\query;
+namespace pql\QueryExecute;
 
 use pql\TableColumn;
 use SplFileObject;
@@ -11,7 +11,7 @@ use pql\BTree\BtreeJ;
  * Class Insert
  *
  * @author  rendix2 <rendix2@seznam.cz>
- * @package query
+ * @package QueryExecute
  */
 class Insert extends BaseQuery
 {

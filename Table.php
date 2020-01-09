@@ -547,6 +547,7 @@ class Table implements ITable
     /**
      * @param string $from
      * @param string $to
+     *
      * @return Table
      */
     public function renameColumn($from, $to)
@@ -554,6 +555,9 @@ class Table implements ITable
         return $this;
     }
 
+    /**
+     * @return Table
+     */
     public function truncate()
     {
         return $this;

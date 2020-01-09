@@ -10,12 +10,13 @@ namespace pql;
 
 use Exception;
 use Netpromotion\Profiler\Profiler;
-use pql\query\Delete;
-use pql\query\Explain;
-use pql\query\Insert;
-use pql\query\InsertSelect;
-use pql\query\Select;
-use pql\query\Update;
+use pql\QueryExecute\Delete;
+use pql\QueryExecute\Explain;
+use pql\QueryExecute\Insert;
+use pql\QueryExecute\InsertSelect;
+use pql\QueryExecute\Select;
+use pql\QueryExecute\Update;
+use pql\QueryPrinter\QueryPrinter;
 
 /**
  * Class Query
@@ -870,7 +871,7 @@ class Query
     /**
      * @param string $column
      *
-     * @return $this
+     * @return Query
      */
     public function median($column)
     {
@@ -1163,7 +1164,7 @@ class Query
      * @param array        $onConditions
      * @param string|null  $alias
      *
-     * @return $this
+     * @return Query
      * @throws Exception
      */
     public function fullJoin($table, array $onConditions, $alias = null)

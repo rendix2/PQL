@@ -1,6 +1,6 @@
 <?php
 
-namespace pql\query\Joins;
+namespace pql\QueryExecute\Joins;
 
 use pql\Condition;
 
@@ -10,7 +10,7 @@ use pql\Condition;
  * HashJoin is used for joins if Condition Operator is EQUAL ("=") which is used
  *
  * @author  rendix2 <rendix2@seznam.cz>
- * @package query\Join
+ * @package QueryExecute\Join
  */
 class HashJoin implements IJoin
 {

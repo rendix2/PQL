@@ -1,6 +1,6 @@
 <?php
 
-namespace pql\query;
+namespace pql;
 
 use pql\Condition;
 use pql\AggregateFunctions;
@@ -12,7 +12,7 @@ use pql\SubQueryHelper;
  * Class ConditionHelper
  *
  * @author  rendix2 <rendix2@seznam.cz>
- * @package query
+ * @package QueryExecute
  */
 class ConditionHelper
 {

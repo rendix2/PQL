@@ -8,7 +8,7 @@
 
 namespace pql;
 
-use pql\query\BaseQuery;
+use pql\QueryExecute\BaseQuery;
 
 /**
  * Class Result

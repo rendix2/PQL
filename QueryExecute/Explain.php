@@ -1,6 +1,6 @@
 <?php
 
-namespace pql\query;
+namespace pql\QueryExecute;
 
 use pql\Optimizer;
 use pql\Query;
@@ -12,7 +12,7 @@ use pql\Table;
  *
  * @author rendix2 <rendix2@seznam.cz>
 
- * @package query
+ * @package QueryExecute
  */
 class Explain extends BaseQuery
 {

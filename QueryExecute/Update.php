@@ -1,9 +1,10 @@
 <?php
 
-namespace pql\query;
+namespace pql\QueryExecute;
 
 use pql\Condition;
 use Nette\Utils\FileSystem;
+use pql\ConditionHelper;
 use SplFileObject;
 use pql\Table;
 
@@ -11,7 +12,7 @@ use pql\Table;
  * Class Update
  *
  * @author  rendix2 <rendix2@seznam.cz>
- * @package query
+ * @package QueryExecute
  */
 class Update extends BaseQuery
 {

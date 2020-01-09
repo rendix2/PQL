@@ -3,7 +3,6 @@
 use Netpromotion\Profiler\Profiler;
 use Netpromotion\Profiler\Adapter\TracyBarAdapter;
 use pql\AggregateFunctions;
-use pql\Condition;
 use pql\Database;
 use pql\Query;
 use Tracy\Debugger;
@@ -92,7 +91,7 @@ function hashJoin($table1, $table2, $condition) {
         $h[$s[$condition[1]]][] = $s;
     }
 
-    // join phase
+    // Joins phase
     $result = [];
 
     foreach ($table1 as $r) {

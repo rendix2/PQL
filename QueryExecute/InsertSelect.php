@@ -1,6 +1,6 @@
 <?php
 
-namespace pql\query;
+namespace pql\QueryExecute;
 
 use pql\Alias;
 use Exception;
@@ -10,7 +10,7 @@ use pql\Query;
  * Class InsertSelect
  *
  * @author  rendix2 <rendix2@seznam.cz>
- * @package query
+ * @package QueryExecute
  */
 class InsertSelect extends BaseQuery
 {

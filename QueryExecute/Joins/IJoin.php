@@ -1,6 +1,6 @@
 <?php
 
-namespace pql\query\Joins;
+namespace pql\QueryExecute\Joins;
 
 use pql\Condition;
 
@@ -8,7 +8,7 @@ use pql\Condition;
  * Interface IJoin
  *
  * @author  rendix2 <rendix2@seznam.cz>
- * @package query\Join
+ * @package QueryExecute\Join
  */
 interface IJoin
 {
