@@ -68,4 +68,3 @@ class Delete extends BaseQuery
         $this->result = $rows;
     }
 }
-

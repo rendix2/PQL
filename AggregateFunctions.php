@@ -3,7 +3,6 @@
 /**
  * Class AggregateFunctions
  *
- * name is because of Function is key word of php
  */
 class AggregateFunctions
 {
@@ -90,5 +89,13 @@ class AggregateFunctions
     public function getParams()
     {
         return $this->params;
+    }
+
+    /**
+     * @return AggregateFunctions
+     */
+    public function inverse()
+    {
+        return new AggregateFunctions($this->params, $this->name);
     }
 }

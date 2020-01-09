@@ -109,4 +109,3 @@ class TableColumn
         return $this->table;
     }
 }
-

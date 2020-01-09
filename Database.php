@@ -258,7 +258,7 @@ class Database
     }
 
     /**
-     * @param string $table
+     * @param Table $table
      * @return bool
      */
     public function tableExists(Table $table)

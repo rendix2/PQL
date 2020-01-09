@@ -284,20 +284,6 @@ class QueryPrinter
 
         $where = $this->printWhere();
 
-        $orderBy = '';
-
-        if ($this->query->hasOrderBy()) {
-            $orderBy = '<br> ORDER BY ';
-
-            foreach ($this->query->getOrderByColumns() as $i => $orderedBy) {
-                if ($i !== 0) {
-                    $orderBy .= ', ';
-                }
-
-                $orderBy .= (string) $orderedBy;
-            }
-        }
-
         $groupBy = '';
 
         if ($this->query->hasGroupBy()) {
@@ -317,11 +303,26 @@ class QueryPrinter
         if ($this->query->hasHavingCondition()) {
             $having = ' <br> HAVING ';
 
-            /**
-             * @var Condition $havingCondition
-             */
-            foreach ($this->query->getHavingConditions() as $havingCondition) {
+            foreach ($this->query->getHavingConditions() as $i => $havingCondition) {
+                if ($i !== 0) {
+                    $having .= ' <br> &nbsp;&nbsp;&nbsp;&nbsp;AND ';
+                }
+
                 $having.= (string) $havingCondition;
+            }
+        }
+
+        $orderBy = '';
+
+        if ($this->query->hasOrderBy()) {
+            $orderBy = '<br> ORDER BY ';
+
+            foreach ($this->query->getOrderByColumns() as $i => $orderedBy) {
+                if ($i !== 0) {
+                    $orderBy .= ', ';
+                }
+
+                $orderBy .= (string) $orderedBy;
             }
         }
 
@@ -373,7 +374,7 @@ class QueryPrinter
         $setOperations = $union . $unionAll . $intersect . $except;
         $limitOperations = $limit . $offset;
 
-        return $selectClause . $from . $joins . $where . $orderBy . $groupBy . $having . $limitOperations . $setOperations;
+        return $selectClause . $from . $joins . $where . $groupBy . $having . $orderBy . $limitOperations . $setOperations;
     }
 
     /**

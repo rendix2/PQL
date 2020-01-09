@@ -23,7 +23,7 @@ class SortMergeJoin implements IJoin
      */
     public static function leftJoin(array $tableA, array $tableB, Condition $condition)
     {
-        $res = [];
+        $result = [];
 
         $columnAData = array_column($tableA, $condition->getColumn());
         $columnBData = array_column($tableB, $condition->getValue());
@@ -52,7 +52,7 @@ class SortMergeJoin implements IJoin
 
                 $r++;
             } else {
-                $res[] = array_merge($rRow, $qRow);
+                $result[] = array_merge($rRow, $qRow);
                 unset($temp[$rRow[$condition->getColumn()]]);
 
                 $matched = false;
@@ -60,7 +60,7 @@ class SortMergeJoin implements IJoin
                 $q1 = $q+1;
 
                 while ($q1 <= $lastQ && $rRow[$condition->getColumn()] === $tableB[$q1][$condition->getValue()]) {
-                    $res[] = array_merge($rRow, $tableB[$q1]);
+                    $result[] = array_merge($rRow, $tableB[$q1]);
                     $q1++;
                     $matched = true;
                 }
@@ -70,7 +70,7 @@ class SortMergeJoin implements IJoin
                 $r1 = $r+1;
 
                 while ($r1 <= $lastR && $tableA[$r1][$condition->getColumn()] === $qRow[$condition->getValue()]) {
-                    $res[] = array_merge($tableA[$r1], $qRow);
+                    $result[] = array_merge($tableA[$r1], $qRow);
                     $r1++;
                     $matched2 = true;
                 }
@@ -85,10 +85,10 @@ class SortMergeJoin implements IJoin
         }
 
         foreach ($temp as $tempRow) {
-            $res[] = array_merge($tempRow, $missingColumns);
+            $result[] = array_merge($tempRow, $missingColumns);
         }
 
-        return $res;
+        return $result;
     }
 
     /**
@@ -96,7 +96,7 @@ class SortMergeJoin implements IJoin
      */
     public static function rightJoin(array $tableA, array $tableB, Condition $condition)
     {
-        $res = [];
+        $result = [];
 
         $columnAData = array_column($tableA, $condition->getColumn());
         $columnBData = array_column($tableB, $condition->getValue());
@@ -124,7 +124,7 @@ class SortMergeJoin implements IJoin
                 $temp[$qRow[$condition->getValue()]] = $qRow;
                 $r++;
             } else {
-                $res[] = array_merge($rRow, $qRow);
+                $result[] = array_merge($rRow, $qRow);
                 unset($temp[$rRow[$condition->getColumn()]]);
 
                 $matched = false;
@@ -132,7 +132,7 @@ class SortMergeJoin implements IJoin
                 $q1 = $q+1;
 
                 while ($q1 <= $lastQ && $rRow[$condition->getColumn()] === $tableB[$q1][$condition->getValue()]) {
-                    $res[] = array_merge($rRow, $tableB[$q1]);
+                    $result[] = array_merge($rRow, $tableB[$q1]);
                     $q1++;
                     $matched = true;
                 }
@@ -142,7 +142,7 @@ class SortMergeJoin implements IJoin
                 $r1 = $r+1;
 
                 while ($r1 <= $lastR && $tableA[$r1][$condition->getColumn()] === $qRow[$condition->getValue()]) {
-                    $res[] = array_merge($tableA[$r1], $qRow);
+                    $result[] = array_merge($tableA[$r1], $qRow);
                     $r1++;
                     $matched2 = true;
                 }
@@ -157,10 +157,10 @@ class SortMergeJoin implements IJoin
         }
 
         foreach ($temp as $tempRow) {
-            $res[] = array_merge($tempRow, $missingColumns);
+            $result[] = array_merge($tempRow, $missingColumns);
         }
 
-        return $res;
+        return $result;
     }
 
     /**

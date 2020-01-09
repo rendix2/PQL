@@ -14,6 +14,9 @@ use Table;
  */
 class Explain extends BaseQuery
 {
+    /**
+     * @var array
+     */
     const JOIN_ALGORITHMS = [
         Optimizer::MERGE_JOIN  => 'MERGE JOIN',
         Optimizer::HASH_JOIN   => 'HASH JOIN',

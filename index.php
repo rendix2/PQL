@@ -186,6 +186,21 @@ $query->update('test', ['a' => '888'])->where('id', '=', '96')->run();
 Profiler::start('select');
 $query2 = new Query($database);
 
+$query2->select(['id'])
+    ->sum('score')
+    ->from('students')
+    ->groupBy('id')
+    ->having(new AggregateFunctions(AggregateFunctions::AVERAGE, ['score']), '>', 80);
+    //->having(new AggregateFunctions(AggregateFunctions::MEDIAN, ['score']), '<', 91);
+    //->having(new AggregateFunctions(AggregateFunctions::COUNT, ['score']), '=', 2);
+
+bdump($query2);
+echo $query2->run();
+bdump($query2);
+echo $query2;
+
+
+/*
 $query2->select(['a.article_id', 'a.article_text', 'user_name', 'u.user_id', 'u.user_name', 'c.comment_text', 'a.c'])
     ->count('c')
     ->from('articles', 'a')
@@ -198,6 +213,7 @@ $query2->select(['a.article_id', 'a.article_text', 'user_name', 'u.user_id', 'u.
         'u'
     )
     ->leftJoin('comments', [new Condition('a.article_id', '=', 'c.comment_article_id')], 'c')
+    ->groupBy('user_name')
     ->orderBy('user_id', false);
 
 
@@ -215,9 +231,13 @@ $query->select(['a.article_id', 'a.article_text', 'user_name', 'u.user_id', 'u.u
         'u'
     )
     ->leftJoin('comments', [new Condition('a.article_id', '=', 'c.comment_article_id')], 'c')
-    //->groupBy('user_name')
+    ->groupBy('user_name')
     ->orderBy('user_id', true)
-    ->union($query2);
+    //->where(new Condition('a.c', '=', 15))
+    //->where(new Condition('u.user_name', '=', 'xpt26'));
+    //->having(22.5, '=', New AggregateFunctions(AggregateFunctions::MEDIAN, ['c']))
+    ->having(35, '=', New AggregateFunctions(AggregateFunctions::MAX, ['c']))                     ;
+    //->union($query2);
 
     //->explain();
     //->limit(1)

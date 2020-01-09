@@ -53,7 +53,7 @@ class Select extends BaseQuery
         parent::__construct($query);
 
         $this->optimizer = new Optimizer($query);
-        $this->columns = [];
+        $this->columns   = [];
     }
 
     /**
@@ -181,7 +181,7 @@ class Select extends BaseQuery
         //bdump($this->result, '$this->result EXCEPT');
 
         Profiler::start('createRows');
-        $rows =  $this->createRows();
+        $rows = $this->createRows();
         Profiler::finish('createRows');
 
         return $rows;
@@ -244,11 +244,17 @@ class Select extends BaseQuery
                 }
             }
         } elseif ($this->query->getTable() instanceof Query) {
-            $columns = array_merge(
-                $columns,
-                $this->query->getTable()->getSelectedColumns(),
-                $this->query->getTable()->getResult()->getQuery()->getColumns()
-            );
+            $selectedColumns = [];
+
+            foreach ($this->query->getTable()->getSelectedColumns() as $column) {
+                $selectedColumns[] = $column->getColumn();
+            }
+
+            foreach ($this->query->getTable()->getResult()->getQuery()->getColumns() as $column) {
+                $selectedColumns[] = $column->getColumn();
+            }
+
+            $columns = array_merge($columns, $selectedColumns);
         }
 
         foreach ($this->query->getSelectedColumns() as $column) {
@@ -657,6 +663,7 @@ class Select extends BaseQuery
      * @param string $column
      *
      * @return array
+     * @throws Exception
      */
     private function doGroupBy(array $rows, $column)
     {
@@ -664,6 +671,92 @@ class Select extends BaseQuery
 
         foreach ($rows as $row) {
             $groupByTemp[$column][$row[$column]][] = $row;
+        }
+
+        // put into aggregated rows missing selected columns
+        foreach ($this->query->getFunctions() as $function) {
+            foreach ($groupByTemp as &$groupByColumn) {
+                foreach ($groupByColumn as $value => &$groupedRows) {
+                    $functions = new Functions($groupedRows);
+
+                    switch ($function->getName()) {
+                        case AggregateFunctions::SUM:
+                            $functionResult = $functions->sum($function->getParams()[0]);
+                            break;
+                        case AggregateFunctions::COUNT:
+                            $functionResult = $functions->count($function->getParams()[0]);
+                            break;
+                        case AggregateFunctions::MAX:
+                            $functionResult = $functions->max($function->getParams()[0]);
+                            break;
+                        case AggregateFunctions::MIN:
+                            $functionResult = $functions->min($function->getParams()[0]);
+                            break;
+                        case AggregateFunctions::AVERAGE:
+                            $functionResult = $functions->avg($function->getParams()[0]);
+                            break;
+                        case AggregateFunctions::MEDIAN:
+                            $functionResult = $functions->median($function->getParams()[0]);
+                            break;
+                        default:
+                            throw new Exception('Unknponw agregate function.');
+                    }
+
+                    foreach ($groupedRows as &$groupedRow) {
+                        $groupedRow[(string) $function] = $functionResult;
+                    }
+
+                    unset($groupedRow);
+                }
+
+                unset($groupedRows);
+            }
+
+            unset($groupByColumn);
+        }
+
+        // calculate needed functions
+        foreach ($this->query->getHavingConditions() as $havingCondition) {
+            if ($havingCondition->getColumn() instanceof AggregateFunctions) {
+                foreach ($groupByTemp as &$groupByColumn) {
+                    foreach ($groupByColumn as $value => &$groupedRows) {
+                        $functions = new Functions($groupedRows);
+
+                        switch (mb_strtolower($havingCondition->getColumn()->getName())) {
+                            case AggregateFunctions::SUM:
+                                $functionResult = $functions->sum($havingCondition->getColumn()->getParams()[0]);
+                                break;
+                            case AggregateFunctions::COUNT:
+                                $functionResult = $functions->count($havingCondition->getColumn()->getParams()[0]);
+                                break;
+                            case AggregateFunctions::MAX:
+                                $functionResult = $functions->max($havingCondition->getColumn()->getParams()[0]);
+                                break;
+                            case AggregateFunctions::MIN:
+                                $functionResult = $functions->min($havingCondition->getColumn()->getParams()[0]);
+                                break;
+                            case AggregateFunctions::AVERAGE:
+                                $functionResult = $functions->avg($havingCondition->getColumn()->getParams()[0]);
+                                break;
+                            case AggregateFunctions::MEDIAN:
+                                $functionResult = $functions->median($havingCondition->getColumn()->getParams()[0]);
+                                break;
+                            default:
+                                throw new Exception('Unknponw agregate function.');
+                        }
+
+                        foreach ($groupedRows as &$groupedRow) {
+                            $groupedRow[(string) $havingCondition->getColumn()] = $functionResult;
+                        }
+
+                        unset($groupedRow);
+                    }
+
+                    unset($groupedRows);
+                }
+
+                unset($groupByColumn);
+            }
         }
 
         $this->groupedByData      = $groupByTemp;
@@ -696,19 +789,141 @@ class Select extends BaseQuery
 
     /**
      * @param array     $rows
+     * @param array     $havingResult
      * @param Condition $condition
      *
      * @return array
+     */
+    private function havingRowsHelper(array $rows, array $havingResult, Condition $condition)
+    {
+        if (count($rows)) {
+            $havingResultTemp = [];
+
+            foreach ($rows as $row) {
+                if (ConditionHelper::havingCondition($condition, $row[(string)$condition->getColumn()])) {
+                    $havingResultTemp[] = $row;
+                }
+            }
+
+            return $havingResultTemp;
+        }
+
+        return $havingResult;
+    }
+
+    /**
+     * @param array     $rows
+     * @param Condition $condition
+     *
+     * @return array
+     * @throws Exception
      */
     private function doHaving(array $rows, Condition $condition)
     {
         $havingResult = [];
 
-        foreach ($rows as $row) {
-            if (ConditionHelper::condition($condition, $row, [])) {
-                $havingResult[] = $row;
+        $inversed = false;
+
+        if ($condition->getValue() instanceof AggregateFunctions) {
+            $condition = $condition->inverse();
+
+            $inversed = true;
+        }
+
+        if ($condition->getColumn() instanceof AggregateFunctions) {
+            foreach ($this->groupedByData as $groupByColumn => $groupByValues) {
+                foreach ($groupByValues as $groupedRows) {
+                    $functions = new Functions($groupedRows);
+
+                    switch (mb_strtolower($condition->getColumn()->getName())) {
+                        case AggregateFunctions::SUM:
+                            $sum = $functions->sum($condition->getColumn()->getParams()[0]);
+
+                            if (ConditionHelper::havingCondition($condition, $sum)) {
+                                $havingResult[] = $groupedRows[0];
+                            }
+
+                            $havingResult = $this->havingRowsHelper($rows, $havingResult, $condition);
+                            break;
+                        case AggregateFunctions::COUNT:
+                            $count = $functions->count($condition->getColumn()->getParams()[0]);
+
+                            if (ConditionHelper::havingCondition($condition, $count)) {
+                                $havingResult[] = $groupedRows[0];
+                            }
+
+                            $havingResult = $this->havingRowsHelper($rows, $havingResult, $condition);
+                            break;
+                        case AggregateFunctions::AVERAGE:
+                            $avg = $functions->avg($condition->getColumn()->getParams()[0]);
+
+                            if (ConditionHelper::havingCondition($condition, $avg)) {
+                                foreach ($groupedRows as $groupedRow) {
+                                    if (ConditionHelper::havingCondition($condition, $groupedRow[$condition->getColumn()->getParams()[0]])) {
+                                        $havingResult[] = $groupedRows;
+                                    }
+                                }
+                            }
+
+                            $havingResult = $this->havingRowsHelper($rows, $havingResult, $condition);
+                            break;
+                        case AggregateFunctions::MIN:
+                            $min = $functions->min($condition->getColumn()->getParams()[0]);
+
+                            if (ConditionHelper::havingCondition($condition, $min)) {
+                                foreach ($groupedRows as $groupedRow) {
+                                    if (ConditionHelper::havingCondition($condition, $groupedRow[$condition->getColumn()->getParams()[0]])) {
+                                        $havingResult[] = $groupedRow;
+                                    }
+                                }
+                            }
+
+                            $havingResult = $this->havingRowsHelper($rows, $havingResult, $condition);
+                            break;
+                        case AggregateFunctions::MAX:
+                            $max = $functions->max($condition->getColumn()->getParams()[0]);
+
+                            if (ConditionHelper::havingCondition($condition, $max)) {
+                                foreach ($groupedRows as $groupedRow) {
+                                    if (ConditionHelper::havingCondition($condition, $groupedRow[$condition->getColumn()->getParams()[0]])) {
+                                        $havingResult[] = $groupedRow;
+                                    }
+                                }
+                            }
+
+                            $havingResult = $this->havingRowsHelper($rows, $havingResult, $condition);
+                            break;
+                        case AggregateFunctions::MEDIAN:
+                            $median = $functions->median($condition->getColumn()->getParams()[0]);
+
+                            if (ConditionHelper::havingCondition($condition, $median)) {
+                                foreach ($groupedRows as $groupedRow) {
+                                    if (ConditionHelper::havingCondition($condition, $groupedRow[$condition->getColumn()->getParams()[0]])) {
+                                        $havingResult[] = $groupedRow;
+                                    }
+                                }
+                            }
+
+                            $havingResult = $this->havingRowsHelper($rows, $havingResult, $condition);
+                            break;
+                        default:
+                            throw new Exception('Unknown Aggregate function.');
+                    }
+                }
             }
         }
+
+        if ($inversed) {
+            $condition = $condition->inverse();
+        }
+
+        /*
+        foreach ($rows as $row) {
+            if (ConditionHelper::condition($condition, $row, [])) {
+                //$havingResult[] = $row;
+            }
+        }
+        */
 
         return $havingResult;
     }
@@ -722,11 +937,13 @@ class Select extends BaseQuery
             return $this->result;
         }
 
+        $having = [];
+
         foreach ($this->query->getHavingConditions() as $havingCondition) {
-            $this->result = $this->doHaving($this->result, $havingCondition);
+            $having = $this->doHaving($having, $havingCondition);
         }
 
-        return $this->result;
+        return $this->result = $having;
     }
 
     /**

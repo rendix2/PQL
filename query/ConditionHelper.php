@@ -609,4 +609,47 @@ class ConditionHelper
 
         return false;
     }
+
+    /**
+     * @param Condition $condition
+     * @param mixed     $value
+     *
+     * @return bool
+     */
+    public static function havingCondition(Condition $condition, $value)
+    {
+        if ($condition->getOperator() === Operator::EQUAL && $value === $condition->getValue()) {
+            return true;
+        }
+
+        if ($condition->getOperator() === Operator::LESS_THAN && $value < $condition->getValue()) {
+            return true;
+        }
+
+        if ($condition->getOperator() === Operator::LESS_EQUAL_THAN && $value <= $condition->getValue()) {
+            return true;
+        }
+
+        if ($condition->getOperator() === Operator::GREATER_THAN && $value > $condition->getValue()) {
+            return true;
+        }
+
+        if ($condition->getOperator() === Operator::GREATER_EQUAL_THAN && $value >= $condition->getValue()) {
+            return true;
+        }
+
+        if (($condition->getOperator() === Operator::LESS_AND_GREATER_THAN || $condition->getOperator() === Operator::NON_EQUAL) && $value !== $condition->getValue()) {
+            return true;
+        }
+
+        if ($condition->getOperator() === Operator::BETWEEN && $value > $condition->getValue() && $value < $condition->getValue()) {
+            return true;
+        }
+
+        if ($condition->getOperator() === Operator::BETWEEN_INCLUSIVE && $value >= $condition->getValue() && $value <= $condition->getValue()) {
+            return true;
+        }
+
+        return false;
+    }
 }

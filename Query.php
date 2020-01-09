@@ -1009,7 +1009,7 @@ class Query
     {
         // COUNT(column_a, column_b)
         $matchedColumn = preg_match('#^([a-zA-Z]*)\((([a-zA-Z0-9,_ ]*)\))$#', $column, $functionNameColumn);
-        $matchedValue = preg_match('#^([a-zA-Z]*)\((([a-zA-Z0-9,_ ]*)\))$#', $value, $functionNameValue);
+        $matchedValue  = preg_match('#^([a-zA-Z]*)\((([a-zA-Z0-9,_ ]*)\))$#', $value, $functionNameValue);
 
         if ($matchedColumn) {
             $column = new AggregateFunctions($functionNameColumn[1], explode(', ', $functionNameColumn[3]));
@@ -1338,9 +1338,10 @@ class Query
      */
     public function insert($table, array $data)
     {
-        $this->type       = self::INSERT;
+        $this->type  = self::INSERT;
+        $this->table = new Table($this->database, $table);
+
         $this->insertData = $data;
-        $this->table      = new Table($this->database, $table);
         
         $columns = array_keys($data);
         
@@ -1363,9 +1364,10 @@ class Query
      */
     public function insertSelect(Query $select, $table)
     {
-        $this->type       = self::INSERT_SELECT;
+        $this->type  = self::INSERT_SELECT;
+        $this->table = new Table($this->database, $table);
+
         $this->insertData = $select;
-        $this->table      = new Table($this->database, $table);
 
         return $this;
     }
@@ -1395,7 +1397,7 @@ class Query
 
         set_time_limit(0);
 
-         $startTime = microtime(true);
+        $startTime = microtime(true);
 
         switch ($this->type) {
             case self::SELECT:
@@ -1450,7 +1452,9 @@ class Query
 
                 return $this->result = new Result([], [], $executeTime, $insertSelect, $affectedRows);
             default:
-                throw new Exception('Unknown query type.');
+                $message = sprintf('Unknown query type "%s".', $this->type);
+
+                throw new Exception($message);
         }
     }
 }
