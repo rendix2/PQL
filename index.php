@@ -2,6 +2,7 @@
 
 use Netpromotion\Profiler\Profiler;
 use Netpromotion\Profiler\Adapter\TracyBarAdapter;
+use pql\AggregateFunctions;
 use pql\Condition;
 use pql\Database;
 use pql\Query;
