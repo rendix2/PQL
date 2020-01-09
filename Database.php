@@ -6,13 +6,19 @@
  * Time: 16:09
  */
 
+namespace pql;
+
+use Exception;
+use Nette\IOException;
 use Nette\Utils\FileSystem;
 use Nette\Utils\Finder;
+use SplFileInfo;
 
 /**
  * Class Database
  *
- * @author rendix2
+ * @author rendix2 <rendix2@seznam.cz>
+
  */
 class Database
 {
@@ -198,7 +204,7 @@ class Database
      */
     public static function create($name)
     {
-        $path = self::getPath($name);        
+        $path = self::getPath($name);
 
         if (is_dir($path)) {
             throw new Exception('Database already exists.');
@@ -207,8 +213,8 @@ class Database
                 FileSystem::createDir($path);
 
                 return new Database($name);
-            } catch (Nette\IOException $e) {
-                throw new Exception('Database was not created.');                
+            } catch (IOException $e) {
+                throw new Exception('Database was not created.');
             }
         }
     }
@@ -219,7 +225,7 @@ class Database
      * @return Database
      * @throws Exception
      */
-    public function delete($name)    
+    public function delete($name)
     {
         $path = self::getPath($name);
         
@@ -231,7 +237,7 @@ class Database
             FileSystem::delete($path);
             
             return $this;
-        } catch (Nette\IOException $e) {
+        } catch (IOException $e) {
             throw new Exception('Database was not created.');
         }
     }

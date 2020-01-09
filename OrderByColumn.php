@@ -6,9 +6,12 @@
  * Time: 16:52
  */
 
+namespace pql;
+
 /**
  * Class OrderByColumn
  *
+ * @author rendix2 <rendix2@seznam.cz>
  */
 class OrderByColumn
 {

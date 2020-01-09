@@ -1,15 +1,16 @@
 <?php
-namespace query;
 
-use Condition;
+namespace pql\query;
+
+use pql\Condition;
 use Nette\Utils\FileSystem;
 use SplFileObject;
-use Table;
+use pql\Table;
 
 /**
  * Class Update
  *
- * @author  rendix2
+ * @author  rendix2 <rendix2@seznam.cz>
  * @package query
  */
 class Update extends BaseQuery
@@ -24,7 +25,7 @@ class Update extends BaseQuery
 
         $tmpFileName = $this->query->getTable()->getFilePath() . '.tmp';
 
-        $file = new SplFileObject($tmpFileName,'a');
+        $file = new SplFileObject($tmpFileName, 'a');
 
         $file->fwrite($this->query->getTable()->getColumnsString() . $this->query->getTable()->getFileEnds());
         

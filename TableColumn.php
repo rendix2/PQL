@@ -1,7 +1,13 @@
 <?php
 
+namespace pql;
+
+use Exception;
+
 /**
  * Class TableColumn
+ *
+ * @author rendix2 <rendix2@seznam.cz>
  */
 class TableColumn
 {
@@ -90,7 +96,7 @@ class TableColumn
      */
     public function getName()
     {
-        return $this->name;    
+        return $this->name;
     }
 
     /**
@@ -109,4 +115,3 @@ class TableColumn
         return $this->table;
     }
 }
-

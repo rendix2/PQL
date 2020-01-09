@@ -1,9 +1,13 @@
 <?php
 
+namespace pql;
+
 /**
  * Class AggregateFunctions
  *
  * name is because of Function is key word of php
+ *
+ * @author rendix2 <rendix2@seznam.cz>
  */
 class AggregateFunctions
 {

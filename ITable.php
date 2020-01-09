@@ -1,10 +1,23 @@
 <?php
 
+namespace pql;
+
+/**
+ * Interface ITable
+ *
+ * @author rendix2 <rendix2@seznam.cz>
+ */
 interface ITable
 {
+    /**
+     * @return TableColumn[]
+     */
     public function getColumns();
-    
-    public function getRows($object = false);
-    
-}
 
+    /**
+     * @param bool $object
+     *
+     * @return Row[]|array
+     */
+    public function getRows($object = false);
+}

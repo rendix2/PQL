@@ -1,7 +1,11 @@
 <?php
 
+namespace pql;
+
 /**
  * Class Optimizer
+ *
+ * @author rendix2 <rendix2@seznam.cz>
  */
 class Optimizer
 {

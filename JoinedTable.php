@@ -1,7 +1,11 @@
 <?php
 
+namespace pql;
+
 /**
  * Class JoinedTable
+ *
+ * @author rendix2 <rendix2@seznam.cz>
  */
 class JoinedTable
 {
@@ -64,7 +68,7 @@ class JoinedTable
     }
 
     /**
-     * @return Table
+     * @return Table|Query
      */
     public function getTable()
     {

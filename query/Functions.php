@@ -6,13 +6,13 @@
  * Time: 13:14
  */
 
-namespace query;
+namespace pql\query;
 
 /**
  * Class Functions
  *
+ * @author  rendix2 <rendix2@seznam.cz>
  * @package query
- * @author  rendix2
  */
 class Functions
 {

@@ -6,10 +6,14 @@
  * Time: 16:08
  */
 
+namespace pql;
+
+use stdClass;
+
 /**
  * Class Row
  *
- * @author rendix2
+ * @author rendix2 <rendix2@seznam.cz>
  */
 class Row
 {
@@ -83,7 +87,7 @@ class Row
 
     /**
      * @param string $name
-     * @param mixed $value
+     * @param mixed  $value
      */
     public function __set($name, $value)
     {

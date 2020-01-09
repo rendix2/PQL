@@ -6,9 +6,13 @@
  * Time: 14:47
  */
 
+namespace pql;
+
 /**
  * Class Alias
  *
+ * @author rendix2 <rendix2@seznam.cz>
+
  */
 class Alias
 {

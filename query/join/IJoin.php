@@ -1,12 +1,13 @@
 <?php
 
-namespace query\Join;
+namespace pql\query\Joins;
 
-use Condition;
+use pql\Condition;
 
 /**
  * Interface IJoin
  *
+ * @author  rendix2 <rendix2@seznam.cz>
  * @package query\Join
  */
 interface IJoin

@@ -6,9 +6,12 @@
  * Time: 16:02
  */
 
+namespace pql;
+
 /**
  * Class TemporaryTable
  *
+ * @author rendix2 <rendix2@seznam.cz>
  */
 class TemporaryTable implements ITable
 {

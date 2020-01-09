@@ -1,11 +1,18 @@
 <?php
-namespace query;
 
-use TableColumn;
+namespace pql\query;
+
+use pql\TableColumn;
 use SplFileObject;
-use Table;
-use BTree\BtreeJ;
+use pql\Table;
+use pql\BTree\BtreeJ;
 
+/**
+ * Class Insert
+ *
+ * @author  rendix2 <rendix2@seznam.cz>
+ * @package query
+ */
 class Insert extends BaseQuery
 {
 

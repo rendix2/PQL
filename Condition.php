@@ -1,7 +1,13 @@
 <?php
 
+namespace pql;
+
+use Exception;
+
 /**
  * Class Condition
+ *
+ * @author rendix2 <rendix2@seznam.cz>
  */
 class Condition
 {

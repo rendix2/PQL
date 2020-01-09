@@ -1,7 +1,13 @@
 <?php
 
+namespace pql;
+
+use Exception;
+
 /**
  * Class QueryPrinter
+ *
+ * @author rendix2 <rendix2@seznam.cz>
  */
 class QueryPrinter
 {
@@ -223,7 +229,7 @@ class QueryPrinter
 
                 if ($crossJoinedTable->getTable() instanceof Table) {
                     $crossJoin .= $crossJoinedTable->getTable()->getName();
-                } elseif($crossJoinedTable->getTable() instanceof Query) {
+                } elseif ($crossJoinedTable->getTable() instanceof Query) {
                     $crossJoin .= '(<br><br>' . (string)$this->query->getTable() . '<br<br><br>)';
                 }
 

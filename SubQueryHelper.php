@@ -1,15 +1,20 @@
 <?php
 
+namespace pql;
+
+use Exception;
+
 /**
  * Class SubQueryHelper
  *
+ * @author rendix2 <rendix2@seznam.cz>
  */
 class SubQueryHelper
 {
     /**
-     * run subQuery
+     * Run subQuery.
      *
-     * check if it has one only row and only one column
+     * Check if it has one only row and only one column.
      *
      * @param Query $subQuery
      *
@@ -20,7 +25,7 @@ class SubQueryHelper
     {
         $subQueryResult = self::runAndCheckOneColumn($subQuery);
 
-        if ($subQueryResult->getRowsCount() > 1){
+        if ($subQueryResult->getRowsCount() > 1) {
             throw new Exception('SubQuery fetched more than one row.');
         }
 
@@ -28,9 +33,9 @@ class SubQueryHelper
     }
 
     /**
-     * run subQuery
+     * Run subQuery.
      *
-     * check if it has one only row and only one column
+     * Check if it has one only row and only one column.
      *
      * @param Query $subQuery
      *
@@ -56,4 +61,3 @@ class SubQueryHelper
         return $subQueryResult;
     }
 }
-

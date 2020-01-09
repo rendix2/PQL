@@ -1,24 +1,26 @@
 <?php
-namespace query;
 
-use Alias;
-use Condition;
+namespace pql\query;
+
+use pql\Alias;
+use pql\Condition;
 use Exception;
-use AggregateFunctions;
-use JoinedTable;
+use pql\AggregateFunctions;
+use pql\JoinedTable;
 use Netpromotion\Profiler\Profiler;
-use Optimizer;
-use Query;
-use query\Join\NestedLoopJoin;
-use query\Join\HashJoin;
-use query\Join\SortMergeJoin;
-use Row;
-use SelectedColumn;
-use Table;
+use pql\Optimizer;
+use pql\Query;
+use pql\query\Joins\NestedLoopJoin;
+use pql\query\Joins\HashJoin;
+use pql\query\Joins\SortMergeJoin;
+use pql\Row;
+use pql\SelectedColumn;
+use pql\Table;
 
 /**
  * Class Select
  *
+ * @author  rendix2 <rendix2@seznam.cz>
  * @package query
  */
 class Select extends BaseQuery
@@ -323,7 +325,11 @@ class Select extends BaseQuery
                             }
                         }
 
-                        $this->addGroupedFunctionDataIntoResult($groupByColumn, $functionGroupByResult, $functionColumnName);
+                        $this->addGroupedFunctionDataIntoResult(
+                            $groupByColumn,
+                            $functionGroupByResult,
+                            $functionColumnName
+                        );
                     }
                 } else {
                     $this->addFunctionIntoResult($functionColumnName, $functions->sum($column));
@@ -340,7 +346,11 @@ class Select extends BaseQuery
                             $functionGroupByResult[$groupedByColumn][$groupByValue] = count($groupedRows);
                         }
 
-                        $this->addGroupedFunctionDataIntoResult($groupedByColumn, $functionGroupByResult, $functionColumnName);
+                        $this->addGroupedFunctionDataIntoResult(
+                            $groupedByColumn,
+                            $functionGroupByResult,
+                            $functionColumnName
+                        );
                     }
                 } else {
                     $this->addFunctionIntoResult($functionColumnName, $functions->count($column));
@@ -365,7 +375,11 @@ class Select extends BaseQuery
                             $functionGroupByResult[$groupByColumn][$groupByValue] /= count($groupedRows);
                         }
 
-                        $this->addGroupedFunctionDataIntoResult($groupByColumn, $functionGroupByResult, $functionColumnName);
+                        $this->addGroupedFunctionDataIntoResult(
+                            $groupByColumn,
+                            $functionGroupByResult,
+                            $functionColumnName
+                        );
                     }
                 } else {
                     $this->addFunctionIntoResult($functionColumnName, $functions->avg($column));
@@ -384,13 +398,17 @@ class Select extends BaseQuery
                                     $functionGroupByResult[$groupByColumn][$groupByValue] = INF;
                                 }
 
-                                if ($groupedRow[$column] < $functionGroupByResult[$groupByColumn][$groupByValue] ) {
+                                if ($groupedRow[$column] < $functionGroupByResult[$groupByColumn][$groupByValue]) {
                                     $functionGroupByResult[$groupByColumn][$groupByValue]= $groupedRow[$column];
                                 }
                             }
                         }
 
-                        $this->addGroupedFunctionDataIntoResult($groupByColumn, $functionGroupByResult, $functionColumnName);
+                        $this->addGroupedFunctionDataIntoResult(
+                            $groupByColumn,
+                            $functionGroupByResult,
+                            $functionColumnName
+                        );
                     }
                 } else {
                     $this->addFunctionIntoResult($functionColumnName, $functions->min($column));
@@ -409,13 +427,17 @@ class Select extends BaseQuery
                                     $functionGroupByResult[$groupByColumn][$groupByValue] = -INF;
                                 }
 
-                                if ($groupedRow[$column] > $functionGroupByResult[$groupByColumn][$groupByValue] ) {
+                                if ($groupedRow[$column] > $functionGroupByResult[$groupByColumn][$groupByValue]) {
                                     $functionGroupByResult[$groupByColumn][$groupByValue] = $groupedRow[$column];
                                 }
                             }
                         }
 
-                        $this->addGroupedFunctionDataIntoResult($groupByColumn, $functionGroupByResult, $functionColumnName);
+                        $this->addGroupedFunctionDataIntoResult(
+                            $groupByColumn,
+                            $functionGroupByResult,
+                            $functionColumnName
+                        );
                     }
                 } else {
                     $this->addFunctionIntoResult($functionColumnName, $functions->max($column));
@@ -450,7 +472,11 @@ class Select extends BaseQuery
                             }
                         }
 
-                        $this->addGroupedFunctionDataIntoResult($groupByColumn, $functionGroupByResult, $functionColumnName);
+                        $this->addGroupedFunctionDataIntoResult(
+                            $groupByColumn,
+                            $functionGroupByResult,
+                            $functionColumnName
+                        );
                     }
                 } else {
                     $this->addFunctionIntoResult($functionColumnName, $functions->median($column));
@@ -682,7 +708,7 @@ class Select extends BaseQuery
      * @return array|Row[]
      */
     private function groupBy()
-    {        
+    {
         if (!$this->query->hasGroupBy()) {
             return  $this->result;
         }

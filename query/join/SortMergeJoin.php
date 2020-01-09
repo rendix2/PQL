@@ -6,15 +6,15 @@
  * Time: 13:26
  */
 
-namespace query\Join;
+namespace pql\query\Joins;
 
-use Condition;
+use pql\Condition;
 
 /**
  * Class SortMergeJoin
  *
  * @package query\Join
- * @author  Tomáš Babický tomas.babicky@websta.de
+ * @author  rendix2 <rendix2@seznam.cz>
  */
 class SortMergeJoin implements IJoin
 {
@@ -49,7 +49,6 @@ class SortMergeJoin implements IJoin
                 $temp[$rRow[$condition->getColumn()]] = $rRow;
                 $q++;
             } elseif ($rRow[$condition->getColumn()] < $qRow[$condition->getValue()]) {
-
                 $r++;
             } else {
                 $res[] = array_merge($rRow, $qRow);
@@ -189,7 +188,6 @@ class SortMergeJoin implements IJoin
             if ($rRow[$condition->getColumn()] > $qRow[$condition->getValue()]) {
                 $q++;
             } elseif ($rRow[$condition->getColumn()] < $qRow[$condition->getValue()]) {
-
                 $r++;
             } else {
                 $res[] = array_merge($rRow, $qRow);

@@ -1,14 +1,15 @@
 <?php
 
-namespace query;
+namespace pql\query;
 
-use Alias;
+use pql\Alias;
 use Exception;
-use Query;
+use pql\Query;
 
 /**
  * Class InsertSelect
  *
+ * @author  rendix2 <rendix2@seznam.cz>
  * @package query
  */
 class InsertSelect extends BaseQuery
@@ -33,7 +34,7 @@ class InsertSelect extends BaseQuery
             $explodedCount = count($exploded);
 
             if ($this->query->getTable()->columnExists($exploded[$explodedCount-1])) {
-                $selectedColumns[$selectedColumn] = $exploded[$explodedCount-1];
+                $selectedColumns[$selectedColumn->getColumn()] = $exploded[$explodedCount-1];
             }
         }
 
