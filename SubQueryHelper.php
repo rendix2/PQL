@@ -1,15 +1,20 @@
 <?php
 
+namespace pql;
+
+use Exception;
+
 /**
  * Class SubQueryHelper
  *
+ * @author rendix2 <rendix2@seznam.cz>
  */
 class SubQueryHelper
 {
     /**
-     * run subQuery
+     * Run subQuery.
      *
-     * check if it has one only row and only one column
+     * Check if it has one only row and only one column.
      *
      * @param Query $subQuery
      *
@@ -18,31 +23,19 @@ class SubQueryHelper
      */
     public static function runAndCheckOneRowOneColumn(Query $subQuery)
     {
-        $subQueryResult = $subQuery->run();
+        $subQueryResult = self::runAndCheckOneColumn($subQuery);
 
-        if (!($subQueryResult instanceof Result)) {
-            throw new Exception('SubQuery has no result.');
-        }
-
-        if ($subQueryResult->getRowsCount() > 1){
-            throw new Exception('Subquery fetched more than one row.');
-        }
-
-        if (!$subQueryResult->getColumnsCount()) {
-            throw new Exception('Subquery has no column.');
-        }
-
-        if ($subQueryResult->getColumnsCount() > 1) {
-            throw new Exception('Subquery has more than one column');
+        if ($subQueryResult->getRowsCount() > 1) {
+            throw new Exception('SubQuery fetched more than one row.');
         }
 
         return $subQueryResult;
     }
 
     /**
-     * run subQuery
+     * Run subQuery.
      *
-     * check if it has one only row and only one column
+     * Check if it has one only row and only one column.
      *
      * @param Query $subQuery
      *
@@ -62,7 +55,7 @@ class SubQueryHelper
         }
 
         if ($subQueryResult->getColumnsCount() > 1) {
-            throw new Exception('Subquery has more than one column');
+            throw new Exception('SubQuery has more than one column');
         }
 
         return $subQueryResult;

@@ -6,12 +6,14 @@
  * Time: 15:15
  */
 
-use query\BaseQuery;
+namespace pql;
+
+use pql\query\BaseQuery;
 
 /**
  * Class Result
  *
- * @author rendix2
+ * @author rendix2 <rendix2@seznam.cz>
  */
 final class Result implements ITable
 {

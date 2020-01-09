@@ -6,14 +6,15 @@
  * Time: 15:37
  */
 
-namespace query;
+namespace pql\query;
 
-use Query;
-use Row;
+use pql\Query;
+use pql\Row;
 
 /**
  * Class Query
  *
+ * @author  rendix2 <rendix2@seznam.cz>
  * @package query
  */
 abstract class BaseQuery
@@ -66,7 +67,7 @@ abstract class BaseQuery
 
         $limit = $this->query->getLimit() > $rowsCount ? $rowsCount : $this->query->getLimit();
 
-        return $this->result = array_slice($this->result, $this->query->getOffset(), $limit,true);
+        return $this->result = array_slice($this->result, $this->query->getOffset(), $limit, true);
     }
 
     /**

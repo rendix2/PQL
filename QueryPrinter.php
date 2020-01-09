@@ -1,7 +1,13 @@
 <?php
 
+namespace pql;
+
+use Exception;
+
 /**
  * Class QueryPrinter
+ *
+ * @author rendix2 <rendix2@seznam.cz>
  */
 class QueryPrinter
 {
@@ -223,7 +229,7 @@ class QueryPrinter
 
                 if ($crossJoinedTable->getTable() instanceof Table) {
                     $crossJoin .= $crossJoinedTable->getTable()->getName();
-                } elseif($crossJoinedTable->getTable() instanceof Query) {
+                } elseif ($crossJoinedTable->getTable() instanceof Query) {
                     $crossJoin .= '(<br><br>' . (string)$this->query->getTable() . '<br<br><br>)';
                 }
 
@@ -448,6 +454,11 @@ class QueryPrinter
      */
     private function insertSelect()
     {
-        return 'UNSUPPORTED OPERATION';
+        $insert = 'INSERT INTO ' .  $this->query->getTable()->getName();
+
+        $selectQueryPrinter = new QueryPrinter($this->query->getInsertData());
+        $select = $selectQueryPrinter->printQuery();
+
+        return $insert . $select;
     }
 }

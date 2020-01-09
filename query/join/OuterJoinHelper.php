@@ -6,11 +6,12 @@
  * Time: 16:36
  */
 
-namespace query\Join;
+namespace pql\query\Joins;
 
 /**
  * Class OuterJoinHelper
  *
+ * @author  rendix2 <rendix2@seznam.cz>
  * @package query\Join
  */
 class OuterJoinHelper

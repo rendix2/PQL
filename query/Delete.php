@@ -1,12 +1,19 @@
 <?php
-namespace query;
 
-use Condition;
+namespace pql\query;
+
+use pql\Condition;
 use Exception;
 use Nette\Utils\FileSystem;
 use SplFileObject;
-use Table;
+use pql\Table;
 
+/**
+ * Class Delete
+ *
+ * @author rendix2 <rendix2@seznam.cz>
+ * @package query
+ */
 class Delete extends BaseQuery
 {
     /**
@@ -27,7 +34,7 @@ class Delete extends BaseQuery
             $fileTemp->fwrite(implode(Table::COLUMN_DELIMITER, $row) . $this->query->getTable()->getFileEnds());
         }
         
-        $fileTemp = null;        
+        $fileTemp = null;
         $tmpFile  = file_get_contents($tmpFileName);
 
         file_put_contents($this->query->getTable()->getFilePath(), $tmpFile);

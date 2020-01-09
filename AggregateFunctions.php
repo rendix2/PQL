@@ -1,8 +1,11 @@
 <?php
 
+namespace pql;
+
 /**
  * Class AggregateFunctions
  *
+ * @author rendix2 <rendix2@seznam.cz>
  */
 class AggregateFunctions
 {

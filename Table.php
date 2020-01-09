@@ -6,13 +6,19 @@
  * Time: 16:08
  */
 
+namespace pql;
+
+use Exception;
+use Nette\IOException;
 use Nette\Utils\FileSystem;
 use Nette\Utils\Finder;
+use SplFileInfo;
+use SplFileObject;
 
 /**
  * Class Table
  *
- * @author rendix2
+ * @author rendix2 <rendix2@seznam.cz>
  */
 class Table implements ITable
 {
@@ -203,16 +209,16 @@ class Table implements ITable
 
         // check line ends
         if (preg_match("#\\r\\n$#", $fileContent[0])) {
-            $this->columnsString = substr($fileContent[0],0, -2);
+            $this->columnsString = substr($fileContent[0], 0, -2);
             $this->lineEnds = "\r\n";
         } elseif (preg_match("#\\n\\r$#", $fileContent[0])) {
-            $this->columnsString = substr($fileContent[0],0, -2);
+            $this->columnsString = substr($fileContent[0], 0, -2);
             $this->lineEnds = "\n\r";
         } elseif (preg_match("#\\r$#", $fileContent[0])) {
-            $this->columnsString = substr($fileContent[0],0, -1);
+            $this->columnsString = substr($fileContent[0], 0, -1);
             $this->lineEnds = "\r";
         } elseif (preg_match("#\\n$#", $fileContent[0])) {
-            $this->columnsString = substr($fileContent[0],0, -1);
+            $this->columnsString = substr($fileContent[0], 0, -1);
             $this->lineEnds = "\n";
         }
 
@@ -404,8 +410,10 @@ class Table implements ITable
             }
         }
 
-        FileSystem::write(self::getFilePathFromDatabase($database, $name),
-            implode(self::COLUMN_DELIMITER, $columnsNames));
+        FileSystem::write(
+            self::getFilePathFromDatabase($database, $name),
+            implode(self::COLUMN_DELIMITER, $columnsNames)
+        );
 
         return new Table($database, $name);
     }
@@ -435,7 +443,7 @@ class Table implements ITable
         $firstRow = $this->columnsString . $newColumn . $this->lineEnds;
         $tmpFileName = $this->getFilePath() . '.tmp';
 
-        $file = new SplFileObject($tmpFileName,'a');
+        $file = new SplFileObject($tmpFileName, 'a');
 
         $file->fwrite($firstRow);
         $lastColumn = $this->columns[$this->columnsCount - 1]->getName();
@@ -476,7 +484,7 @@ class Table implements ITable
     public function deleteColumn($name)
     {
         // initial checks
-        if(!$this->columnsCount) {
+        if (!$this->columnsCount) {
             $message = sprintf('Table %s does not have any column.', $this->name);
 
             throw new Exception($message);
@@ -559,7 +567,8 @@ class Table implements ITable
     public function delete()
     {
         if (!file_exists($this->filePath)) {
-             $message = sprintf('Table "%s" does not exist in database "%s".',
+             $message = sprintf(
+                 'Table "%s" does not exist in database "%s".',
                  $this->name,
                  $this->database->getName()
              );
@@ -571,7 +580,7 @@ class Table implements ITable
             FileSystem::delete($this->filePath);
                 
             return true;
-        } catch (Nette\IOException $e) {
+        } catch (IOException $e) {
             return false;
         }
     }

@@ -1,15 +1,17 @@
 <?php
 
-namespace query;
+namespace pql\query;
 
-use Optimizer;
-use Query;
-use Row;
-use Table;
+use pql\Optimizer;
+use pql\Query;
+use pql\Row;
+use pql\Table;
 
 /**
  * Class Explain
  *
+ * @author rendix2 <rendix2@seznam.cz>
+
  * @package query
  */
 class Explain extends BaseQuery
@@ -220,7 +222,6 @@ class Explain extends BaseQuery
 
         foreach ($query->getFullJoinedTables() as $fullJoinedTable) {
             if ($fullJoinedTable instanceof Table) {
-
                 $tables[] = new Row(
                     [
                         'table' => $fullJoinedTable->getTable()->getName(),

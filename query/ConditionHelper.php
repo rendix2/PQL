@@ -1,16 +1,17 @@
 <?php
 
-namespace query;
+namespace pql\query;
 
-use Condition;
-use AggregateFunctions;
-use Operator;
-use Query;
-use SubQueryHelper;
+use pql\Condition;
+use pql\AggregateFunctions;
+use pql\Operator;
+use pql\Query;
+use pql\SubQueryHelper;
 
 /**
  * Class ConditionHelper
  *
+ * @author  rendix2 <rendix2@seznam.cz>
  * @package query
  */
 class ConditionHelper

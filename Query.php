@@ -1,13 +1,4 @@
 <?php
-
-use Netpromotion\Profiler\Profiler;
-use query\Delete;
-use query\Explain;
-use query\Insert;
-use query\InsertSelect;
-use query\Select;
-use query\Update;
-
 /**
  * Created by PhpStorm.
  * User: Tom
@@ -15,10 +6,21 @@ use query\Update;
  * Time: 9:53
  */
 
+namespace pql;
+
+use Exception;
+use Netpromotion\Profiler\Profiler;
+use pql\query\Delete;
+use pql\query\Explain;
+use pql\query\Insert;
+use pql\query\InsertSelect;
+use pql\query\Select;
+use pql\query\Update;
+
 /**
  * Class Query
  *
- * @author rendix2
+ * @author rendix2 <rendix2@seznam.cz>
  */
 class Query
 {
@@ -198,7 +200,7 @@ class Query
     private $updateData;
 
     /**
-     * @var array $insertData
+     * @var array|Query $insertData
      */
     private $insertData;
 
@@ -612,7 +614,7 @@ class Query
     }
 
     /**
-     * @return array
+     * @return array|Query
      */
     public function getInsertData()
     {
@@ -1285,7 +1287,7 @@ class Query
      */
     public function union(Query $query)
     {
-        if ($query->getType() !== self::SELECT)  {
+        if ($query->getType() !== self::SELECT) {
             throw new Exception('Unioned query is not select query.');
         }
 
@@ -1303,7 +1305,7 @@ class Query
      */
     public function unionAll(Query $query)
     {
-        if ($query->getType() !== self::SELECT)  {
+        if ($query->getType() !== self::SELECT) {
             throw new Exception('Unioned query is not select query.');
         }
 

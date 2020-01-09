@@ -6,53 +6,53 @@
  * Time: 13:11
  */
 
-namespace BTree;
+namespace pql\BTree;
 
 /**
  * Class BtreeJ
  *
  * @package BTree
- * @author  rendix2
+ * @author  rendix2 <rendix2@seznam.cz>
  */
 class BtreeJ
 {
     /**
-     * is leaf?
+     * Is leaf?
      *
      * @var bool $leaf
      */
     public $leaf;
 
     /**
-     * how much keys is stored in node
+     * How much keys is stored in node
      *
      * @var int $n
      */
     public $n;
 
     /**
-     * stored data in node
+     * Stored data in node
      *
      * @var array $keys
      */
     public $keys;
 
     /**
-     * how much keys we can store in node
+     * How much keys we can store in node
      *
      * @var int $degree
      */
     public $degree;
 
     /**
-     * children of node
+     * Children of node
      *
      * @var array $c
      */
     public $c;
 
     /**
-     * root node
+     * Root node
      *
      * @var BtreeJ $root
      */
@@ -90,7 +90,7 @@ class BtreeJ
     }
     
     /**
-     * 
+     *
      * @param string $path
      * @return BtreeJ
      */
@@ -172,7 +172,7 @@ class BtreeJ
         $i = $x->n - 1;
 
         if ($x->leaf) {
-            for (;$i >= 0 && strcmp($k, $x->keys[$i]) < 0; $i--) {
+            for (; $i >= 0 && strcmp($k, $x->keys[$i]) < 0; $i--) {
                 $x->keys[$i + 1] = $x->keys[$i];
             }
 
@@ -192,13 +192,13 @@ class BtreeJ
             */
             $i++;
 
-           if ($x->c[$i] !== null && $x->c[$i]->n === 2 * $this->degree - 1) {
-               $this->split($x, $i, $x->c[$i]);
+            if ($x->c[$i] !== null && $x->c[$i]->n === 2 * $this->degree - 1) {
+                $this->split($x, $i, $x->c[$i]);
 
-               if (strcmp($k, $x->keys[$i]) > 0) {
-                   $i++;
-               }
-           }
+                if (strcmp($k, $x->keys[$i]) > 0) {
+                    $i++;
+                }
+            }
 
             $this->insertNonFull($x->c[$i], $k);
         }
@@ -240,13 +240,13 @@ class BtreeJ
     {
         $i = 0;
 
-        while ($i < $x->n && strcmp($k, $x->keys[$i]) > 0){
+        while ($i < $x->n && strcmp($k, $x->keys[$i]) > 0) {
             $i++;
         }
 
         if ($i <= $x->n && $k === $x->keys[$i]) {
             return $x;
-        } elseif($x->leaf) {
+        } elseif ($x->leaf) {
             return null;
         } else {
             return $this->search($x->c[$i], $k);
