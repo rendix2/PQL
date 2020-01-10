@@ -2,8 +2,8 @@
 
 namespace pql\QueryExecute;
 
-use pql\Alias;
 use Exception;
+use pql\Alias;
 use pql\Query;
 
 /**

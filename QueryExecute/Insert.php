@@ -2,10 +2,10 @@
 
 namespace pql\QueryExecute;
 
+use pql\BTree\BtreeJ;
+use pql\Table;
 use pql\TableColumn;
 use SplFileObject;
-use pql\Table;
-use pql\BTree\BtreeJ;
 
 /**
  * Class Insert
@@ -51,12 +51,6 @@ class Insert extends BaseQuery
                         $columnRootIndex->write($this->query->getTable()->getIndexDir() . $indexFile);
                     }
                 }
-
-                /*
-                if ($column->getType() !== Help::getType($data[$column])) {
-                    throw new Exception('Incorrect data type.');
-                }
-                */
 
                 if ($column->getName() === $key) {
                     $row[$column->getName()] = $data;

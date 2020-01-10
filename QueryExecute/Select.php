@@ -467,14 +467,14 @@ class Select extends BaseQuery
                             sort($tmp[$groupByColumn][$groupByValue]);
 
                             $count = count($tmp[$groupByColumn][$groupByValue]);
+                            $avgValue = $tmp[$groupByColumn][$groupByValue][$count / 2];
 
                             if ($count % 2) {
-                                $functionGroupByResult[$groupByColumn][$groupByValue] = $tmp[$groupByColumn][$groupByValue][$count / 2];
+                                $functionGroupByResult[$groupByColumn][$groupByValue] = $avgValue;
                             } else {
                                 $functionGroupByResult[$groupByColumn][$groupByValue]=
                                     (
-                                        $tmp[$groupByColumn][$groupByValue][$count / 2 ] +
-                                        $tmp[$groupByColumn][$groupByValue][$count / 2 - 1]
+                                        $avgValue + $tmp[$groupByColumn][$groupByValue][$count / 2 - 1]
                                     ) / 2;
                             }
                         }
@@ -726,7 +726,7 @@ class Select extends BaseQuery
                             $functionResult = $functions->median($function->getParams()[0]);
                             break;
                         default:
-                            throw new Exception('Unknponw agregate function.');
+                            throw new Exception('Unknown agregate function.');
                     }
 
                     foreach ($groupedRows as &$groupedRow) {
@@ -804,7 +804,7 @@ class Select extends BaseQuery
     private function groupBy()
     {
         if (!$this->query->hasGroupBy()) {
-            return  $this->result;
+            return $this->result;
         }
         
         foreach ($this->query->getGroupByColumns() as $groupByColumn) {
@@ -858,13 +858,15 @@ class Select extends BaseQuery
         }
 
         if ($condition->getColumn() instanceof AggregateFunction) {
+            $functionParameter = $condition->getColumn()->getParams()[0];
+
             foreach ($this->groupedByData as $groupByColumn => $groupByValues) {
                 foreach ($groupByValues as $groupedRows) {
                     $functions = new Functions($groupedRows);
 
                     switch (mb_strtolower($condition->getColumn()->getName())) {
                         case AggregateFunction::SUM:
-                            $sum = $functions->sum($condition->getColumn()->getParams()[0]);
+                            $sum = $functions->sum($functionParameter);
 
                             if (ConditionHelper::havingCondition($condition, $sum)) {
                                 $havingResult[] = $groupedRows[0];
@@ -873,7 +875,7 @@ class Select extends BaseQuery
                             $havingResult = $this->havingRowsHelper($rows, $havingResult, $condition);
                             break;
                         case AggregateFunction::COUNT:
-                            $count = $functions->count($condition->getColumn()->getParams()[0]);
+                            $count = $functions->count($functionParameter);
 
                             if (ConditionHelper::havingCondition($condition, $count)) {
                                 $havingResult[] = $groupedRows[0];
@@ -882,11 +884,11 @@ class Select extends BaseQuery
                             $havingResult = $this->havingRowsHelper($rows, $havingResult, $condition);
                             break;
                         case AggregateFunction::AVERAGE:
-                            $avg = $functions->avg($condition->getColumn()->getParams()[0]);
+                            $avg = $functions->avg($functionParameter);
 
                             if (ConditionHelper::havingCondition($condition, $avg)) {
                                 foreach ($groupedRows as $groupedRow) {
-                                    if (ConditionHelper::havingCondition($condition, $groupedRow[$condition->getColumn()->getParams()[0]])) {
+                                    if (ConditionHelper::havingCondition($condition, $groupedRow[$functionParameter])) {
                                         $havingResult[] = $groupedRows;
                                     }
                                 }
@@ -895,11 +897,11 @@ class Select extends BaseQuery
                             $havingResult = $this->havingRowsHelper($rows, $havingResult, $condition);
                             break;
                         case AggregateFunction::MIN:
-                            $min = $functions->min($condition->getColumn()->getParams()[0]);
+                            $min = $functions->min($functionParameter);
 
                             if (ConditionHelper::havingCondition($condition, $min)) {
                                 foreach ($groupedRows as $groupedRow) {
-                                    if (ConditionHelper::havingCondition($condition, $groupedRow[$condition->getColumn()->getParams()[0]])) {
+                                    if (ConditionHelper::havingCondition($condition, $groupedRow[$functionParameter])) {
                                         $havingResult[] = $groupedRow;
                                     }
                                 }
@@ -908,11 +910,11 @@ class Select extends BaseQuery
                             $havingResult = $this->havingRowsHelper($rows, $havingResult, $condition);
                             break;
                         case AggregateFunction::MAX:
-                            $max = $functions->max($condition->getColumn()->getParams()[0]);
+                            $max = $functions->max($functionParameter);
 
                             if (ConditionHelper::havingCondition($condition, $max)) {
                                 foreach ($groupedRows as $groupedRow) {
-                                    if (ConditionHelper::havingCondition($condition, $groupedRow[$condition->getColumn()->getParams()[0]])) {
+                                    if (ConditionHelper::havingCondition($condition, $groupedRow[$functionParameter])) {
                                         $havingResult[] = $groupedRow;
                                     }
                                 }
@@ -921,11 +923,11 @@ class Select extends BaseQuery
                             $havingResult = $this->havingRowsHelper($rows, $havingResult, $condition);
                             break;
                         case AggregateFunction::MEDIAN:
-                            $median = $functions->median($condition->getColumn()->getParams()[0]);
+                            $median = $functions->median($functionParameter);
 
                             if (ConditionHelper::havingCondition($condition, $median)) {
                                 foreach ($groupedRows as $groupedRow) {
-                                    if (ConditionHelper::havingCondition($condition, $groupedRow[$condition->getColumn()->getParams()[0]])) {
+                                    if (ConditionHelper::havingCondition($condition, $groupedRow[$functionParameter])) {
                                         $havingResult[] = $groupedRow;
                                     }
                                 }
@@ -943,14 +945,6 @@ class Select extends BaseQuery
         if ($inversed) {
             $condition = $condition->inverse();
         }
-
-        /*
-        foreach ($rows as $row) {
-            if (ConditionHelper::condition($condition, $row, [])) {
-                //$havingResult[] = $row;
-            }
-        }
-        */
 
         return $havingResult;
     }
@@ -999,7 +993,7 @@ class Select extends BaseQuery
         }
             
         $sortTemp[] = &$resultTemp;
-        $sortRes   = array_multisort(...$sortTemp);
+        $sortRes    = array_multisort(...$sortTemp);
 
         return $this->result = $resultTemp;
     }
@@ -1045,6 +1039,7 @@ class Select extends BaseQuery
      * @param JoinedTable $table
      *
      * @return array
+     * @throws Exception
      */
     private function joinedTableAliases(JoinedTable $table)
     {
@@ -1052,6 +1047,8 @@ class Select extends BaseQuery
             $rows = $table->getTable()->getRows();
         } elseif ($table->getTable() instanceof Query) {
             $rows = $table->getTable()->run()->getQuery()->getResult();
+        } else {
+            throw new Exception('Unknown input in FROM clause.');
         }
 
         if (!$table->hasAlias()) {
@@ -1072,6 +1069,7 @@ class Select extends BaseQuery
 
     /**
      * @return array|Row[]
+     * @throws Exception
      */
     private function fromTableAliases()
     {
@@ -1079,6 +1077,8 @@ class Select extends BaseQuery
             $rows = $this->query->getTable()->getRows();
         } elseif ($this->query->getTable() instanceof Query) {
             $rows = $this->query->getTable()->run()->getQuery()->getResult();
+        } else {
+            throw new Exception('Unknown input in FROM clause.');
         }
 
         if (!$this->query->hasTableAlias()) {
@@ -1089,8 +1089,9 @@ class Select extends BaseQuery
 
         foreach ($rows as $rowNumber => $row) {
             foreach ($row as $columnName => $columnValue) {
-                $result[$rowNumber][$this->query->getTableAlias()->getTo() . Alias::DELIMITER . $columnName] = $columnValue;
-                $result[$rowNumber][$columnName] = $columnValue;
+                $aliasColumnName = $this->query->getTableAlias()->getTo() . Alias::DELIMITER . $columnName;
+
+                $result[$rowNumber][$aliasColumnName] = $result[$rowNumber][$columnName] = $columnValue;
             }
         }
 

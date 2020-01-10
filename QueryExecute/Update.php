@@ -2,11 +2,11 @@
 
 namespace pql\QueryExecute;
 
-use pql\Condition;
 use Nette\Utils\FileSystem;
+use pql\Condition;
 use pql\ConditionHelper;
-use SplFileObject;
 use pql\Table;
+use SplFileObject;
 
 /**
  * Class Update
