@@ -81,16 +81,16 @@ class Explain extends BaseQuery
             ];
 
             $tables[] = new Row($row);
-            $tables = array_merge($tables, $this->explainHelper($query->getTable()));
+            $tables   = array_merge($tables, $this->explainHelper($query->getTable()));
         }
 
         foreach ($query->getInnerJoinedTables() as $innerJoinedTable) {
             if ($innerJoinedTable->getTable() instanceof Table) {
                 $tables[] = new Row(
                     [
-                        'table' => $innerJoinedTable->getTable()->getName(),
-                        'rows' => $innerJoinedTable->getTable()->getRowsCount(),
-                        'type' => 'INNER JOIN',
+                        'table'     => $innerJoinedTable->getTable()->getName(),
+                        'rows'      => $innerJoinedTable->getTable()->getRowsCount(),
+                        'type'      => 'INNER JOIN',
                         'condition' => null,
                         'algorithm' => null,
                     ]
@@ -99,25 +99,25 @@ class Explain extends BaseQuery
                 foreach ($innerJoinedTable->getOnConditions() as $condition) {
                     $tables[] = new Row(
                         [
-                            'table' => '---',
-                            'rows' => '---',
-                            'type' => '---',
-                            'condition' => (string) $condition,
+                            'table'     => '---',
+                            'rows'      => '---',
+                            'type'      => '---',
+                            'condition' => (string)$condition,
                             'algorithm' => self::JOIN_ALGORITHMS[$this->optimizer->sayJoinAlgorithm($condition)]
                         ]
                     );
                 }
             } elseif ($innerJoinedTable->getTable() instanceof Query) {
                 $row = [
-                    'table' => 'sub query',
-                    'rows' => '---',
-                    'type' => 'INNER JOIN',
+                    'table'     => 'sub query',
+                    'rows'      => '---',
+                    'type'      => 'INNER JOIN',
                     'condition' => null,
                     'algorithm' => null,
                 ];
 
                 $tables[] = new Row($row);
-                $tables = array_merge($tables, $this->explainHelper($innerJoinedTable->getTable()));
+                $tables   = array_merge($tables, $this->explainHelper($innerJoinedTable->getTable()));
             }
         }
 
@@ -125,24 +125,24 @@ class Explain extends BaseQuery
             if ($crossJoinedTable->getTable() instanceof Table) {
                 $tables[] = new Row(
                     [
-                        'table' => $crossJoinedTable->getTable()->getName(),
-                        'rows' => $crossJoinedTable->getTable()->getRowsCount(),
-                        'type' => 'CROSS JOIN',
+                        'table'     => $crossJoinedTable->getTable()->getName(),
+                        'rows'      => $crossJoinedTable->getTable()->getRowsCount(),
+                        'type'      => 'CROSS JOIN',
                         'condition' => null,
                         'algorithm' => self::JOIN_ALGORITHMS[Optimizer::NESTED_LOOP],
                     ]
                 );
             } elseif ($crossJoinedTable->getTable() instanceof Query) {
                 $row = [
-                    'table' => 'sub query',
-                    'rows' => '---',
-                    'type' => 'CROSS JOIN',
+                    'table'     => 'sub query',
+                    'rows'      => '---',
+                    'type'      => 'CROSS JOIN',
                     'condition' => null,
                     'algorithm' => null,
                 ];
 
                 $tables[] = new Row($row);
-                $tables = array_merge($tables, $this->explainHelper($crossJoinedTable->getTable()));
+                $tables   = array_merge($tables, $this->explainHelper($crossJoinedTable->getTable()));
             }
         }
 
@@ -150,9 +150,9 @@ class Explain extends BaseQuery
             if ($leftJoinedTable->getTable() instanceof Table) {
                 $tables[] = new Row(
                     [
-                        'table' => $leftJoinedTable->getTable()->getName(),
-                        'rows' => $leftJoinedTable->getTable()->getRowsCount(),
-                        'type' => 'LEFT JOIN',
+                        'table'     => $leftJoinedTable->getTable()->getName(),
+                        'rows'      => $leftJoinedTable->getTable()->getRowsCount(),
+                        'type'      => 'LEFT JOIN',
                         'condition' => null,
                         'algorithm' => null,
                     ]
@@ -161,25 +161,25 @@ class Explain extends BaseQuery
                 foreach ($leftJoinedTable->getOnConditions() as $condition) {
                     $tables[] = new Row(
                         [
-                            'table' => '---',
-                            'rows' => '---',
-                            'type' => '---',
-                            'condition' => (string) $condition,
+                            'table'     => '---',
+                            'rows'      => '---',
+                            'type'      => '---',
+                            'condition' => (string)$condition,
                             'algorithm' => self::JOIN_ALGORITHMS[$this->optimizer->sayJoinAlgorithm($condition)]
                         ]
                     );
                 }
             } elseif ($leftJoinedTable->getTable() instanceof Query) {
                 $row = [
-                    'table' => 'sub query',
-                    'rows' => '---',
-                    'type' => 'LEFT JOIN',
+                    'table'     => 'sub query',
+                    'rows'      => '---',
+                    'type'      => 'LEFT JOIN',
                     'condition' => null,
                     'algorithm' => null,
                 ];
 
                 $tables[] = new Row($row);
-                $tables = array_merge($tables, $this->explainHelper($leftJoinedTable->getTable()));
+                $tables   = array_merge($tables, $this->explainHelper($leftJoinedTable->getTable()));
             }
         }
 
@@ -187,9 +187,9 @@ class Explain extends BaseQuery
             if ($rightJoinedTable->getTable() instanceof Table) {
                 $tables[] = new Row(
                     [
-                        'table' => $rightJoinedTable->getTable()->getName(),
-                        'rows' => $rightJoinedTable->getTable()->getRowsCount(),
-                        'type' => 'RIGHT JOIN',
+                        'table'     => $rightJoinedTable->getTable()->getName(),
+                        'rows'      => $rightJoinedTable->getTable()->getRowsCount(),
+                        'type'      => 'RIGHT JOIN',
                         'condition' => null,
                         'algorithm' => null,
                     ]
@@ -198,25 +198,25 @@ class Explain extends BaseQuery
                 foreach ($rightJoinedTable->getOnConditions() as $condition) {
                     $tables[] = new Row(
                         [
-                            'table' => '---',
-                            'rows' => '---',
-                            'type' => '---',
-                            'condition' => (string) $condition,
+                            'table'     => '---',
+                            'rows'      => '---',
+                            'type'      => '---',
+                            'condition' => (string)$condition,
                             'algorithm' => self::JOIN_ALGORITHMS[$this->optimizer->sayJoinAlgorithm($condition)]
                         ]
                     );
                 }
             } elseif ($rightJoinedTable->getTable() instanceof Query) {
                 $row = [
-                    'table' => 'sub query',
-                    'rows' => '---',
-                    'type' => 'RIGHT JOIN',
+                    'table'     => 'sub query',
+                    'rows'      => '---',
+                    'type'      => 'RIGHT JOIN',
                     'condition' => null,
                     'algorithm' => null,
                 ];
 
                 $tables[] = new Row($row);
-                $tables = array_merge($tables, $this->explainHelper($rightJoinedTable->getTable()));
+                $tables   = array_merge($tables, $this->explainHelper($rightJoinedTable->getTable()));
             }
         }
 
@@ -224,9 +224,9 @@ class Explain extends BaseQuery
             if ($fullJoinedTable instanceof Table) {
                 $tables[] = new Row(
                     [
-                        'table' => $fullJoinedTable->getTable()->getName(),
-                        'rows' => $fullJoinedTable->getTable()->getRowsCount(),
-                        'type' => 'FULL JOIN',
+                        'table'     => $fullJoinedTable->getTable()->getName(),
+                        'rows'      => $fullJoinedTable->getTable()->getRowsCount(),
+                        'type'      => 'FULL JOIN',
                         'condition' => null,
                         'algorithm' => null,
                     ]
@@ -235,9 +235,9 @@ class Explain extends BaseQuery
                 foreach ($fullJoinedTable->getOnConditions() as $condition) {
                     $tables[] = new Row(
                         [
-                            'table' => '---',
-                            'rows' => '---',
-                            'type' => '---',
+                            'table'     => '---',
+                            'rows'      => '---',
+                            'type'      => '---',
                             'condition' => (string)$condition,
                             'algorithm' => self::JOIN_ALGORITHMS[$this->optimizer->sayJoinAlgorithm($condition)]
                         ]
@@ -245,71 +245,71 @@ class Explain extends BaseQuery
                 }
             } elseif ($fullJoinedTable->getTable() instanceof Query) {
                 $row = [
-                    'table' => 'sub query',
-                    'rows' => '---',
-                    'type' => 'FULL JOIN',
+                    'table'     => 'sub query',
+                    'rows'      => '---',
+                    'type'      => 'FULL JOIN',
                     'condition' => null,
                     'algorithm' => null,
                 ];
 
                 $tables[] = new Row($row);
-                $tables = array_merge($tables, $this->explainHelper($fullJoinedTable->getTable()));
+                $tables   = array_merge($tables, $this->explainHelper($fullJoinedTable->getTable()));
             }
         }
 
         foreach ($this->query->getWhereConditions() as $whereCondition) {
             if ($whereCondition->getColumn() instanceof Query) {
                 $row = [
-                    'table' => 'sub query',
-                    'rows' => '---',
-                    'type' => 'WHERE COLUMN CONDITION',
+                    'table'     => 'sub query',
+                    'rows'      => '---',
+                    'type'      => 'WHERE COLUMN CONDITION',
                     'condition' => null,
                     'algorithm' => null,
                 ];
 
                 $tables[] = new Row($row);
-                $tables = array_merge($tables, $this->explainHelper($whereCondition->getColumn()));
+                $tables   = array_merge($tables, $this->explainHelper($whereCondition->getColumn()));
             }
 
             if ($whereCondition->getColumn() instanceof Query) {
                 $row = [
-                    'table' => 'sub query',
-                    'rows' => '---',
-                    'type' => 'WHERE VALUE CONDITION',
+                    'table'     => 'sub query',
+                    'rows'      => '---',
+                    'type'      => 'WHERE VALUE CONDITION',
                     'condition' => null,
                     'algorithm' => null,
                 ];
 
                 $tables[] = new Row($row);
-                $tables = array_merge($tables, $this->explainHelper($whereCondition->getColumn()));
+                $tables   = array_merge($tables, $this->explainHelper($whereCondition->getColumn()));
             }
         }
 
         foreach ($this->query->getHavingConditions() as $havingCondition) {
             if ($havingCondition->getColumn() instanceof Query) {
                 $row = [
-                    'table' => 'sub query',
-                    'rows' => '---',
-                    'type' => 'HAVING COLUMN CONDITION',
+                    'table'     => 'sub query',
+                    'rows'      => '---',
+                    'type'      => 'HAVING COLUMN CONDITION',
                     'condition' => null,
                     'algorithm' => null,
                 ];
 
                 $tables[] = new Row($row);
-                $tables = array_merge($tables, $this->explainHelper($havingCondition->getColumn()));
+                $tables   = array_merge($tables, $this->explainHelper($havingCondition->getColumn()));
             }
 
             if ($havingCondition->getColumn() instanceof Query) {
                 $row = [
-                    'table' => 'sub query',
-                    'rows' => '---',
-                    'type' => 'HAVING VALUE CONDITION',
+                    'table'     => 'sub query',
+                    'rows'      => '---',
+                    'type'      => 'HAVING VALUE CONDITION',
                     'condition' => null,
                     'algorithm' => null,
                 ];
 
                 $tables[] = new Row($row);
-                $tables = array_merge($tables, $this->explainHelper($havingCondition->getColumn()));
+                $tables   = array_merge($tables, $this->explainHelper($havingCondition->getColumn()));
             }
         }
 

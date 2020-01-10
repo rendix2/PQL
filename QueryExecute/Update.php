@@ -54,8 +54,8 @@ class Update extends BaseQuery
     {
         foreach ($rows as $rowNumber => $row) {
             if (ConditionHelper::condition($condition, $row, [])) {
-                foreach ($updateData as $upKey => $upValue) {
-                    $rows[$rowNumber][$upKey] = $upValue;
+                foreach ($updateData as $updateColumn => $updateValue) {
+                    $rows[$rowNumber][$updateColumn] = $updateValue;
                 }
             }
         }

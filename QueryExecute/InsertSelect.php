@@ -30,16 +30,16 @@ class InsertSelect extends BaseQuery
                 $selectedColumns[] = $selectedColumn;
             }
 
-            $exploded = explode(Alias::DELIMITER, $selectedColumn);
-            $explodedCount = count($exploded);
+            $exploded   = explode(Alias::DELIMITER, $selectedColumn);
+            $lastColumn = count($exploded) - 1;
 
-            if ($this->query->getTable()->columnExists($exploded[$explodedCount-1])) {
-                $selectedColumns[$selectedColumn->getColumn()] = $exploded[$explodedCount-1];
+            if ($this->query->getTable()->columnExists($exploded[$lastColumn])) {
+                $selectedColumns[$selectedColumn->getColumn()] = $exploded[$lastColumn];
             }
         }
 
         $queryResult = $select->result;
-        $result = [];
+        $result      = [];
 
         foreach ($queryResult as $rowNumber => $row) {
             foreach ($row as $columnName => $columnValue) {
@@ -49,10 +49,15 @@ class InsertSelect extends BaseQuery
             }
         }
 
+        $results = [];
+
         foreach ($result as $insertData) {
             $insertQuery = new Query($this->query->getDatabase());
             $insertQuery->insert($this->query->getTable()->getName(), $insertData);
-            $insertQuery->run();
+
+            $results[] = $insertQuery->run();
         }
+
+        return $results;
     }
 }
