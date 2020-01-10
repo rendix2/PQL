@@ -2,12 +2,6 @@
 
 namespace pql;
 
-use pql\Condition;
-use pql\AggregateFunctions;
-use pql\Operator;
-use pql\Query;
-use pql\SubQueryHelper;
-
 /**
  * Class ConditionHelper
  *
@@ -30,8 +24,8 @@ class ConditionHelper
         $isValueArray = is_array($condition->getValue());
         $isColumnArray = is_array($condition->getColumn());
         $isBetweenOperator = $condition->getOperator() === Operator::BETWEEN || $condition->getOperator() === Operator::BETWEEN_INCLUSIVE;
-        $columnIsFunction = $condition->getColumn() instanceof AggregateFunctions;
-        $valueIsFunction = $condition->getValue() instanceof AggregateFunctions;
+        $columnIsFunction = $condition->getColumn() instanceof AggregateFunction;
+        $valueIsFunction = $condition->getValue() instanceof AggregateFunction;
 
         // set flags
         if ($hasSubQueryColumn || $hasSubQueryValue) {

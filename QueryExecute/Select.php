@@ -2,17 +2,17 @@
 
 namespace pql\QueryExecute;
 
+use Exception;
+use Netpromotion\Profiler\Profiler;
+use pql\AggregateFunction;
 use pql\Alias;
 use pql\Condition;
-use Exception;
-use pql\AggregateFunctions;
 use pql\ConditionHelper;
 use pql\JoinedTable;
-use Netpromotion\Profiler\Profiler;
 use pql\Optimizer;
 use pql\Query;
-use pql\QueryExecute\Joins\NestedLoopJoin;
 use pql\QueryExecute\Joins\HashJoin;
+use pql\QueryExecute\Joins\NestedLoopJoin;
 use pql\QueryExecute\Joins\SortMergeJoin;
 use pql\Row;
 use pql\SelectedColumn;
@@ -315,7 +315,7 @@ class Select extends BaseQuery
 
             $functionColumnName = sprintf('%s(%s)', mb_strtoupper($functionName), $column);
 
-            if ($functionName === AggregateFunctions::SUM) {
+            if ($functionName === AggregateFunction::SUM) {
                 if ($this->groupedByDataCount) {
                     $this->columns[] = new SelectedColumn($functionColumnName);
                     $functionGroupByResult  = [];
@@ -343,7 +343,7 @@ class Select extends BaseQuery
                 }
             }
 
-            if ($functionName === AggregateFunctions::COUNT) {
+            if ($functionName === AggregateFunction::COUNT) {
                 if ($this->groupedByDataCount) {
                     $this->columns[] = new SelectedColumn($functionColumnName);
                     $functionGroupByResult = [];
@@ -364,7 +364,7 @@ class Select extends BaseQuery
                 }
             }
 
-            if ($functionName === AggregateFunctions::AVERAGE) {
+            if ($functionName === AggregateFunction::AVERAGE) {
                 if ($this->groupedByDataCount) {
                     $this->columns[] = new SelectedColumn($functionColumnName);
                     $functionGroupByResult  = [];
@@ -393,7 +393,7 @@ class Select extends BaseQuery
                 }
             }
 
-            if ($functionName === AggregateFunctions::MIN) {
+            if ($functionName === AggregateFunction::MIN) {
                 if ($this->groupedByDataCount) {
                     $this->columns[] = new SelectedColumn($functionColumnName);
                     $functionGroupByResult  = [];
@@ -422,7 +422,7 @@ class Select extends BaseQuery
                 }
             }
 
-            if ($functionName === AggregateFunctions::MAX) {
+            if ($functionName === AggregateFunction::MAX) {
                 if ($this->groupedByDataCount) {
                     $this->columns[] = new SelectedColumn($functionColumnName);
                     $functionGroupByResult  = [];
@@ -451,7 +451,7 @@ class Select extends BaseQuery
                 }
             }
 
-            if ($functionName === AggregateFunctions::MEDIAN) {
+            if ($functionName === AggregateFunction::MEDIAN) {
                 if ($this->groupedByDataCount) {
                     $this->columns[] = new SelectedColumn($functionColumnName);
                     $functionGroupByResult  = [];
@@ -707,22 +707,22 @@ class Select extends BaseQuery
                     $functions = new Functions($groupedRows);
 
                     switch ($function->getName()) {
-                        case AggregateFunctions::SUM:
+                        case AggregateFunction::SUM:
                             $functionResult = $functions->sum($function->getParams()[0]);
                             break;
-                        case AggregateFunctions::COUNT:
+                        case AggregateFunction::COUNT:
                             $functionResult = $functions->count($function->getParams()[0]);
                             break;
-                        case AggregateFunctions::MAX:
+                        case AggregateFunction::MAX:
                             $functionResult = $functions->max($function->getParams()[0]);
                             break;
-                        case AggregateFunctions::MIN:
+                        case AggregateFunction::MIN:
                             $functionResult = $functions->min($function->getParams()[0]);
                             break;
-                        case AggregateFunctions::AVERAGE:
+                        case AggregateFunction::AVERAGE:
                             $functionResult = $functions->avg($function->getParams()[0]);
                             break;
-                        case AggregateFunctions::MEDIAN:
+                        case AggregateFunction::MEDIAN:
                             $functionResult = $functions->median($function->getParams()[0]);
                             break;
                         default:
@@ -744,28 +744,28 @@ class Select extends BaseQuery
 
         // calculate needed functions
         foreach ($this->query->getHavingConditions() as $havingCondition) {
-            if ($havingCondition->getColumn() instanceof AggregateFunctions) {
+            if ($havingCondition->getColumn() instanceof AggregateFunction) {
                 foreach ($groupByTemp as &$groupByColumn) {
                     foreach ($groupByColumn as $value => &$groupedRows) {
                         $functions = new Functions($groupedRows);
 
                         switch (mb_strtolower($havingCondition->getColumn()->getName())) {
-                            case AggregateFunctions::SUM:
+                            case AggregateFunction::SUM:
                                 $functionResult = $functions->sum($havingCondition->getColumn()->getParams()[0]);
                                 break;
-                            case AggregateFunctions::COUNT:
+                            case AggregateFunction::COUNT:
                                 $functionResult = $functions->count($havingCondition->getColumn()->getParams()[0]);
                                 break;
-                            case AggregateFunctions::MAX:
+                            case AggregateFunction::MAX:
                                 $functionResult = $functions->max($havingCondition->getColumn()->getParams()[0]);
                                 break;
-                            case AggregateFunctions::MIN:
+                            case AggregateFunction::MIN:
                                 $functionResult = $functions->min($havingCondition->getColumn()->getParams()[0]);
                                 break;
-                            case AggregateFunctions::AVERAGE:
+                            case AggregateFunction::AVERAGE:
                                 $functionResult = $functions->avg($havingCondition->getColumn()->getParams()[0]);
                                 break;
-                            case AggregateFunctions::MEDIAN:
+                            case AggregateFunction::MEDIAN:
                                 $functionResult = $functions->median($havingCondition->getColumn()->getParams()[0]);
                                 break;
                             default:
@@ -851,19 +851,19 @@ class Select extends BaseQuery
 
         $inversed = false;
 
-        if ($condition->getValue() instanceof AggregateFunctions) {
+        if ($condition->getValue() instanceof AggregateFunction) {
             $condition = $condition->inverse();
 
             $inversed = true;
         }
 
-        if ($condition->getColumn() instanceof AggregateFunctions) {
+        if ($condition->getColumn() instanceof AggregateFunction) {
             foreach ($this->groupedByData as $groupByColumn => $groupByValues) {
                 foreach ($groupByValues as $groupedRows) {
                     $functions = new Functions($groupedRows);
 
                     switch (mb_strtolower($condition->getColumn()->getName())) {
-                        case AggregateFunctions::SUM:
+                        case AggregateFunction::SUM:
                             $sum = $functions->sum($condition->getColumn()->getParams()[0]);
 
                             if (ConditionHelper::havingCondition($condition, $sum)) {
@@ -872,7 +872,7 @@ class Select extends BaseQuery
 
                             $havingResult = $this->havingRowsHelper($rows, $havingResult, $condition);
                             break;
-                        case AggregateFunctions::COUNT:
+                        case AggregateFunction::COUNT:
                             $count = $functions->count($condition->getColumn()->getParams()[0]);
 
                             if (ConditionHelper::havingCondition($condition, $count)) {
@@ -881,7 +881,7 @@ class Select extends BaseQuery
 
                             $havingResult = $this->havingRowsHelper($rows, $havingResult, $condition);
                             break;
-                        case AggregateFunctions::AVERAGE:
+                        case AggregateFunction::AVERAGE:
                             $avg = $functions->avg($condition->getColumn()->getParams()[0]);
 
                             if (ConditionHelper::havingCondition($condition, $avg)) {
@@ -894,7 +894,7 @@ class Select extends BaseQuery
 
                             $havingResult = $this->havingRowsHelper($rows, $havingResult, $condition);
                             break;
-                        case AggregateFunctions::MIN:
+                        case AggregateFunction::MIN:
                             $min = $functions->min($condition->getColumn()->getParams()[0]);
 
                             if (ConditionHelper::havingCondition($condition, $min)) {
@@ -907,7 +907,7 @@ class Select extends BaseQuery
 
                             $havingResult = $this->havingRowsHelper($rows, $havingResult, $condition);
                             break;
-                        case AggregateFunctions::MAX:
+                        case AggregateFunction::MAX:
                             $max = $functions->max($condition->getColumn()->getParams()[0]);
 
                             if (ConditionHelper::havingCondition($condition, $max)) {
@@ -920,7 +920,7 @@ class Select extends BaseQuery
 
                             $havingResult = $this->havingRowsHelper($rows, $havingResult, $condition);
                             break;
-                        case AggregateFunctions::MEDIAN:
+                        case AggregateFunction::MEDIAN:
                             $median = $functions->median($condition->getColumn()->getParams()[0]);
 
                             if (ConditionHelper::havingCondition($condition, $median)) {

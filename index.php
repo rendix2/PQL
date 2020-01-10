@@ -2,7 +2,7 @@
 
 use Netpromotion\Profiler\Profiler;
 use Netpromotion\Profiler\Adapter\TracyBarAdapter;
-use pql\AggregateFunctions;
+use pql\AggregateFunction;
 use pql\Database;
 use pql\Query;
 use Tracy\Debugger;
@@ -193,7 +193,7 @@ $query2->select(['id'])
     ->sum('score')
     ->from('students')
     ->groupBy('id')
-    ->having(new AggregateFunctions(AggregateFunctions::AVERAGE, ['score']), '>', 80);
+    ->having(new AggregateFunction(AggregateFunction::AVERAGE, ['score']), '>', 80);
     //->having(new AggregateFunctions(AggregateFunctions::MEDIAN, ['score']), '<', 91);
     //->having(new AggregateFunctions(AggregateFunctions::COUNT, ['score']), '=', 2);
 
@@ -416,7 +416,5 @@ Profiler::start('add');
 $myNew->addColumn('testfd', TableColumn::STRING);
 Profiler::finish('add');
 */
-
-
 
 //$query->update('myNew', ['prijmeni' => 'bbbb'])->where('jmeno', '=', 'a')->run();

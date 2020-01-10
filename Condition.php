@@ -12,7 +12,7 @@ use Exception;
 class Condition
 {
     /**
-     * @var string|array|Query|AggregateFunctions $column
+     * @var string|array|Query|AggregateFunction $column
      */
     private $column;
 
@@ -22,15 +22,16 @@ class Condition
     private $operator;
 
     /**
-     * @var string|array|Query|AggregateFunctions $value
+     * @var string|array|Query|AggregateFunction $value
      */
     private $value;
 
     /**
      * Condition constructor.
-     * @param string|array|Query|AggregateFunctions $column
-     * @param string                                $operator
-     * @param string|array|Query|AggregateFunctions $value
+     *
+     * @param string|array|Query|AggregateFunction $column
+     * @param string                               $operator
+     * @param string|array|Query|AggregateFunction $value
      *
      * @throws Exception
      */
@@ -64,7 +65,7 @@ class Condition
     }
 
     /**
-     * @return string|array|Query|AggregateFunctions
+     * @return string|array|Query|AggregateFunction
      */
     public function getColumn()
     {
@@ -80,7 +81,7 @@ class Condition
     }
 
     /**
-     * @return string|array|Query|AggregateFunctions
+     * @return string|array|Query|AggregateFunction
      */
     public function getValue()
     {

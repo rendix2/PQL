@@ -3,11 +3,11 @@
 namespace pql;
 
 /**
- * Class AggregateFunctions
+ * Class AggregateFunction
  *
  * @author rendix2 <rendix2@seznam.cz>
  */
-class AggregateFunctions
+class AggregateFunction
 {
     /**
      * @var string
@@ -95,10 +95,10 @@ class AggregateFunctions
     }
 
     /**
-     * @return AggregateFunctions
+     * @return AggregateFunction
      */
     public function inverse()
     {
-        return new AggregateFunctions($this->params, $this->name);
+        return new AggregateFunction($this->params, $this->name);
     }
 }

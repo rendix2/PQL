@@ -71,7 +71,7 @@ class Query
     private $selectedColumnsCount;
 
     /**
-     * @var AggregateFunctions[] $functions
+     * @var AggregateFunction[] $functions
      */
     private $functions;
 
@@ -495,7 +495,7 @@ class Query
     }
 
     /**
-     * @return AggregateFunctions[]
+     * @return AggregateFunction[]
      */
     public function getFunctions()
     {
@@ -805,7 +805,7 @@ class Query
      */
     public function count($column)
     {
-        $this->functions[] = new AggregateFunctions(AggregateFunctions::COUNT, [$column]);
+        $this->functions[] = new AggregateFunction(AggregateFunction::COUNT, [$column]);
 
         $this->type = self::SELECT;
 
@@ -819,7 +819,7 @@ class Query
      */
     public function sum($column)
     {
-        $this->functions[] = new AggregateFunctions(AggregateFunctions::SUM, [$column]);
+        $this->functions[] = new AggregateFunction(AggregateFunction::SUM, [$column]);
 
         $this->type = self::SELECT;
 
@@ -833,7 +833,7 @@ class Query
      */
     public function avg($column)
     {
-        $this->functions[] = new AggregateFunctions(AggregateFunctions::AVERAGE, [$column]);
+        $this->functions[] = new AggregateFunction(AggregateFunction::AVERAGE, [$column]);
 
         $this->type = self::SELECT;
 
@@ -847,7 +847,7 @@ class Query
      */
     public function min($column)
     {
-        $this->functions[] = new AggregateFunctions(AggregateFunctions::MIN, [$column]);
+        $this->functions[] = new AggregateFunction(AggregateFunction::MIN, [$column]);
 
         $this->type = self::SELECT;
 
@@ -861,7 +861,7 @@ class Query
      */
     public function max($column)
     {
-        $this->functions[] = new AggregateFunctions(AggregateFunctions::MAX, [$column]);
+        $this->functions[] = new AggregateFunction(AggregateFunction::MAX, [$column]);
 
         $this->type = self::SELECT;
 
@@ -875,7 +875,7 @@ class Query
      */
     public function median($column)
     {
-        $this->functions[] = new AggregateFunctions(AggregateFunctions::MEDIAN, [$column]);
+        $this->functions[] = new AggregateFunction(AggregateFunction::MEDIAN, [$column]);
 
         $this->type = self::SELECT;
 
@@ -1015,11 +1015,11 @@ class Query
         $matchedValue  = preg_match('#^([a-zA-Z]*)\((([a-zA-Z0-9,_ ]*)\))$#', $value, $functionNameValue);
 
         if ($matchedColumn) {
-            $column = new AggregateFunctions($functionNameColumn[1], explode(', ', $functionNameColumn[3]));
+            $column = new AggregateFunction($functionNameColumn[1], explode(', ', $functionNameColumn[3]));
         }
 
         if ($matchedValue) {
-            $value = new AggregateFunctions($functionNameValue[1], explode(', ', $functionNameValue[3]));
+            $value = new AggregateFunction($functionNameValue[1], explode(', ', $functionNameValue[3]));
         }
 
         $this->havingConditions[] = new Condition($column, $operator, $value);
