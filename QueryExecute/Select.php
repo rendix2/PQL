@@ -81,6 +81,14 @@ class Select extends BaseQuery
     }
 
     /**
+     * @return array
+     */
+    public function getGroupedByData()
+    {
+        return $this->groupedByData;
+    }
+
+    /**
      * @return Row[]
      */
     public function run()
@@ -293,7 +301,7 @@ class Select extends BaseQuery
      * @param array  $groupedByResult
      * @param string $functionColumnName
      */
-    private function addGroupedFunctionDataIntoResult($column, array $groupedByResult, $functionColumnName)
+    public function addGroupedFunctionDataIntoResult($column, array $groupedByResult, $functionColumnName)
     {
         foreach ($this->result as &$row) {
             $row[$functionColumnName] = $groupedByResult[$column][$row[$column]];
@@ -319,26 +327,9 @@ class Select extends BaseQuery
                 case AggregateFunction::SUM:
                     if ($this->groupedByDataCount) {
                         $this->columns[] = new SelectedColumn($functionColumnName);
-                        $functionGroupByResult  = [];
 
-                        // iterate over grouped data!
-                        foreach ($this->groupedByData as $groupByColumn => $groupByRows) {
-                            foreach ($groupByRows as $groupByValue => $groupedRows) {
-                                foreach ($groupedRows as $groupedRow) {
-                                    if (isset($functionGroupByResult[$groupByColumn][$groupByValue])) {
-                                        $functionGroupByResult[$groupByColumn][$groupByValue] += $groupedRow[$column];
-                                    } else {
-                                        $functionGroupByResult[$groupByColumn][$groupByValue] = $groupedRow[$column];
-                                    }
-                                }
-                            }
-
-                            $this->addGroupedFunctionDataIntoResult(
-                                $groupByColumn,
-                                $functionGroupByResult,
-                                $functionColumnName
-                            );
-                        }
+                        $aggregateFunctions = new AggregateFunctions($this);
+                        $aggregateFunctions->sum($column, $functionColumnName);
                     } else {
                         $this->addFunctionIntoResult($functionColumnName, $functions->sum($column));
                     }
@@ -348,19 +339,9 @@ class Select extends BaseQuery
                 case AggregateFunction::COUNT:
                     if ($this->groupedByDataCount) {
                         $this->columns[] = new SelectedColumn($functionColumnName);
-                        $functionGroupByResult = [];
 
-                        foreach ($this->groupedByData as $groupedByColumn => $groupByRows) {
-                            foreach ($groupByRows as $groupByValue => $groupedRows) {
-                                $functionGroupByResult[$groupedByColumn][$groupByValue] = count($groupedRows);
-                            }
-
-                            $this->addGroupedFunctionDataIntoResult(
-                                $groupedByColumn,
-                                $functionGroupByResult,
-                                $functionColumnName
-                            );
-                        }
+                        $aggregateFunctions = new AggregateFunctions($this);
+                        $aggregateFunctions->count($functionColumnName);
                     } else {
                         $this->addFunctionIntoResult($functionColumnName, $functions->count($column));
                     }
@@ -370,27 +351,9 @@ class Select extends BaseQuery
                 case AggregateFunction::AVERAGE:
                     if ($this->groupedByDataCount) {
                         $this->columns[] = new SelectedColumn($functionColumnName);
-                        $functionGroupByResult  = [];
 
-                        foreach ($this->groupedByData as $groupByColumn => $groupByRows) {
-                            foreach ($groupByRows as $groupByValue => $groupedRows) {
-                                foreach ($groupedRows as $groupedRow) {
-                                    if (isset($functionGroupByResult[$groupByColumn][$groupByValue])) {
-                                        $functionGroupByResult[$groupByColumn][$groupByValue] += $groupedRow[$column];
-                                    } else {
-                                        $functionGroupByResult[$groupByColumn][$groupByValue] = $groupedRow[$column];
-                                    }
-                                }
-
-                                $functionGroupByResult[$groupByColumn][$groupByValue] /= count($groupedRows);
-                            }
-
-                            $this->addGroupedFunctionDataIntoResult(
-                                $groupByColumn,
-                                $functionGroupByResult,
-                                $functionColumnName
-                            );
-                        }
+                        $aggregateFunctions = new AggregateFunctions($this);
+                        $aggregateFunctions->average($column, $functionColumnName);
                     } else {
                         $this->addFunctionIntoResult($functionColumnName, $functions->avg($column));
                     }
@@ -400,27 +363,9 @@ class Select extends BaseQuery
                 case AggregateFunction::MIN:
                     if ($this->groupedByDataCount) {
                         $this->columns[] = new SelectedColumn($functionColumnName);
-                        $functionGroupByResult  = [];
 
-                        foreach ($this->groupedByData as $groupByColumn => $groupByRows) {
-                            foreach ($groupByRows as $groupByValue => $groupedRows) {
-                                foreach ($groupedRows as $groupedRow) {
-                                    if (!isset($functionGroupByResult[$groupByColumn][$groupByValue])) {
-                                        $functionGroupByResult[$groupByColumn][$groupByValue] = INF;
-                                    }
-
-                                    if ($groupedRow[$column] < $functionGroupByResult[$groupByColumn][$groupByValue]) {
-                                        $functionGroupByResult[$groupByColumn][$groupByValue]= $groupedRow[$column];
-                                    }
-                                }
-                            }
-
-                            $this->addGroupedFunctionDataIntoResult(
-                                $groupByColumn,
-                                $functionGroupByResult,
-                                $functionColumnName
-                            );
-                        }
+                        $aggregateFunctions = new AggregateFunctions($this);
+                        $aggregateFunctions->min($column, $functionColumnName);
                     } else {
                         $this->addFunctionIntoResult($functionColumnName, $functions->min($column));
                     }
@@ -430,27 +375,9 @@ class Select extends BaseQuery
                 case AggregateFunction::MAX:
                     if ($this->groupedByDataCount) {
                         $this->columns[] = new SelectedColumn($functionColumnName);
-                        $functionGroupByResult  = [];
 
-                        foreach ($this->groupedByData as $groupByColumn => $groupByRows) {
-                            foreach ($groupByRows as $groupByValue => $groupedRows) {
-                                foreach ($groupedRows as $groupedRow) {
-                                    if (!isset($functionGroupByResult[$groupByColumn][$groupByValue])) {
-                                        $functionGroupByResult[$groupByColumn][$groupByValue] = -INF;
-                                    }
-
-                                    if ($groupedRow[$column] > $functionGroupByResult[$groupByColumn][$groupByValue]) {
-                                        $functionGroupByResult[$groupByColumn][$groupByValue] = $groupedRow[$column];
-                                    }
-                                }
-                            }
-
-                            $this->addGroupedFunctionDataIntoResult(
-                                $groupByColumn,
-                                $functionGroupByResult,
-                                $functionColumnName
-                            );
-                        }
+                        $aggregateFunctions = new AggregateFunctions($this);
+                        $aggregateFunctions->max($column, $functionColumnName);
                     } else {
                         $this->addFunctionIntoResult($functionColumnName, $functions->max($column));
                     }
@@ -459,37 +386,9 @@ class Select extends BaseQuery
                 case AggregateFunction::MEDIAN:
                     if ($this->groupedByDataCount) {
                         $this->columns[] = new SelectedColumn($functionColumnName);
-                        $functionGroupByResult  = [];
 
-                        $tmp = [];
-
-                        foreach ($this->groupedByData as $groupByColumn => $groupByRows) {
-                            foreach ($groupByRows as $groupByValue => $groupedRows) {
-                                foreach ($groupedRows as $groupedRow) {
-                                    $tmp[$groupByColumn][$groupByValue][] = $groupedRow[$column];
-                                }
-
-                                sort($tmp[$groupByColumn][$groupByValue]);
-
-                                $count = count($tmp[$groupByColumn][$groupByValue]);
-                                $avgValue = $tmp[$groupByColumn][$groupByValue][$count / 2];
-
-                                if ($count % 2) {
-                                    $functionGroupByResult[$groupByColumn][$groupByValue] = $avgValue;
-                                } else {
-                                    $functionGroupByResult[$groupByColumn][$groupByValue]=
-                                        (
-                                            $avgValue + $tmp[$groupByColumn][$groupByValue][$count / 2 - 1]
-                                        ) / 2;
-                                }
-                            }
-
-                            $this->addGroupedFunctionDataIntoResult(
-                                $groupByColumn,
-                                $functionGroupByResult,
-                                $functionColumnName
-                            );
-                        }
+                        $aggregateFunctions = new AggregateFunctions($this);
+                        $aggregateFunctions->median($column, $functionColumnName);
                     } else {
                         $this->addFunctionIntoResult($functionColumnName, $functions->median($column));
                     }
