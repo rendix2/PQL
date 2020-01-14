@@ -207,7 +207,7 @@ class Query
     private $insertData;
 
     /**
-     * @var Result $result
+     * @var TableResult $result
      */
     private $result;
 
@@ -648,7 +648,7 @@ class Query
     }
 
     /**
-     * @return Result
+     * @return TableResult
      */
     public function getResult()
     {
@@ -1392,12 +1392,12 @@ class Query
     }
 
     /**
-     * @return Result
+     * @return TableResult
      * @throws Exception
      */
     public function run()
     {
-        if ($this->result instanceof Result) {
+        if ($this->result instanceof TableResult) {
             return $this->result;
         }
 
@@ -1412,7 +1412,7 @@ class Query
                 $endTime     = microtime(true);
                 $executeTime = $endTime - $startTime;
 
-                return $this->result = new Result(
+                return $this->result = new TableResult(
                     array_merge($this->selectedColumns, $select->getColumns()),
                     $rows,
                     $executeTime,
@@ -1424,21 +1424,21 @@ class Query
                 $endTime      = microtime(true);
                 $executeTime  = $endTime - $startTime;
 
-                return $this->result = new Result([], [], $executeTime, $insert, $affectedRows);
+                return $this->result = new TableResult([], [], $executeTime, $insert, $affectedRows);
             case self::UPDATE:
                 $update       = new Update($this);
                 $affectedRows = $update->run();
                 $endTime      = microtime(true);
                 $executeTime  = $endTime - $startTime;
 
-                return $this->result = new Result([], [], $executeTime, $update, $affectedRows);
+                return $this->result = new TableResult([], [], $executeTime, $update, $affectedRows);
             case self::DELETE:
                 $delete       = new Delete($this);
                 $affectedRows = $delete->run();
                 $endTime      = microtime(true);
                 $executeTime  = $endTime - $startTime;
 
-                return $this->result = new Result([], [], $executeTime, $delete, $affectedRows);
+                return $this->result = new TableResult([], [], $executeTime, $delete, $affectedRows);
             case self::EXPLAIN:
                 $explain = new Explain($this);
 
@@ -1449,14 +1449,14 @@ class Query
                 $endTime = microtime(true);
                 $executeTime  = $endTime - $startTime;
 
-                return $this->result = new Result($columns, $rows, $executeTime, $explain, 0);
+                return $this->result = new TableResult($columns, $rows, $executeTime, $explain, 0);
             case self::INSERT_SELECT:
                 $insertSelect = new InsertSelect($this);
                 $affectedRows = $insertSelect->run();
                 $endTime      = microtime(true);
                 $executeTime  = $endTime - $startTime;
 
-                return $this->result = new Result([], [], $executeTime, $insertSelect, $affectedRows);
+                return $this->result = new TableResult([], [], $executeTime, $insertSelect, $affectedRows);
             default:
                 $message = sprintf('Unknown query type "%s".', $this->type);
 

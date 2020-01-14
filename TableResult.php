@@ -11,12 +11,12 @@ namespace pql;
 use pql\QueryExecute\BaseQuery;
 
 /**
- * Class Result
+ * Class TableResult
  *
  * @author rendix2 <rendix2@seznam.cz>
  * @package pql
  */
-final class Result implements ITable
+final class TableResult implements ITable
 {
     /**
      * @var float $executeTime
@@ -59,7 +59,7 @@ final class Result implements ITable
     private $query;
 
     /**
-     * Result constructor.
+     * TableResult constructor.
      *
      * @param SelectedColumn[] $columns
      * @param array            $rows
@@ -80,7 +80,7 @@ final class Result implements ITable
     }
 
     /**
-     * Result destructor.
+     * TableResult destructor.
      */
     public function __destruct()
     {

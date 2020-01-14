@@ -19,7 +19,7 @@ class SubQueryHelper
      *
      * @param Query $subQuery
      *
-     * @return Result SubQuery
+     * @return TableResult SubQuery
      * @throws Exception
      */
     public static function runAndCheckOneRowOneColumn(Query $subQuery)
@@ -40,14 +40,14 @@ class SubQueryHelper
      *
      * @param Query $subQuery
      *
-     * @return Result SubQuery
+     * @return TableResult SubQuery
      * @throws Exception
      */
     public static function runAndCheckOneColumn(Query $subQuery)
     {
         $subQueryResult = $subQuery->run();
 
-        if (!($subQueryResult instanceof Result)) {
+        if (!($subQueryResult instanceof TableResult)) {
             throw new Exception('SubQuery has no result.');
         }
 
