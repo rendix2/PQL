@@ -13,8 +13,8 @@ use pql\Condition;
 /**
  * Class SortMergeJoin
  *
- * @package QueryExecute\Join
  * @author  rendix2 <rendix2@seznam.cz>
+ * @package pql\QueryExecute\Joins
  */
 class SortMergeJoin implements IJoin
 {

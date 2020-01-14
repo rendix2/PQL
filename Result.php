@@ -14,6 +14,7 @@ use pql\QueryExecute\BaseQuery;
  * Class Result
  *
  * @author rendix2 <rendix2@seznam.cz>
+ * @package pql
  */
 final class Result implements ITable
 {

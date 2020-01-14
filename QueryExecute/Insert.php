@@ -11,7 +11,7 @@ use SplFileObject;
  * Class Insert
  *
  * @author  rendix2 <rendix2@seznam.cz>
- * @package QueryExecute
+ * @package pql\QueryExecute
  */
 class Insert extends BaseQuery
 {

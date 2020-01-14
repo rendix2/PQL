@@ -9,6 +9,7 @@ use pql\Query;
  * Class QueryPrinter
  *
  * @author rendix2 <rendix2@seznam.cz>
+ * @package pql\QueryPrinter
  */
 class QueryPrinter
 {

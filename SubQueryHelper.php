@@ -8,6 +8,7 @@ use Exception;
  * Class SubQueryHelper
  *
  * @author rendix2 <rendix2@seznam.cz>
+ * @package pql
  */
 class SubQueryHelper
 {

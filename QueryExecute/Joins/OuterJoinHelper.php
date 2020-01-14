@@ -12,7 +12,7 @@ namespace pql\QueryExecute\Joins;
  * Class OuterJoinHelper
  *
  * @author  rendix2 <rendix2@seznam.cz>
- * @package QueryExecute\Join
+ * @package pql\QueryExecute\Joins
  */
 class OuterJoinHelper
 {

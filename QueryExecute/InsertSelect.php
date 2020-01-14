@@ -10,7 +10,7 @@ use pql\Query;
  * Class InsertSelect
  *
  * @author  rendix2 <rendix2@seznam.cz>
- * @package QueryExecute
+ * @package pql\QueryExecute
  */
 class InsertSelect extends BaseQuery
 {

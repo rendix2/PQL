@@ -12,7 +12,7 @@ namespace pql\QueryExecute;
  * Class Functions
  *
  * @author  rendix2 <rendix2@seznam.cz>
- * @package QueryExecute
+ * @package pql\QueryExecute
  */
 class Functions
 {

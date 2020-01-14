@@ -6,7 +6,7 @@ namespace pql;
  * Class ConditionHelper
  *
  * @author  rendix2 <rendix2@seznam.cz>
- * @package QueryExecute
+ * @package pql
  */
 class ConditionHelper
 {

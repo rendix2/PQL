@@ -11,7 +11,7 @@ use pql\ConditionHelper;
  * Simplest algorithm for joining two tables
  *
  * @author  rendix2 <rendix2@seznam.cz>
- * @package QueryExecute\Join
+ * @package pql\QueryExecute\Joins
  */
 class NestedLoopJoin implements IJoin
 {

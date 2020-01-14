@@ -15,7 +15,7 @@ use pql\Row;
  * Class Query
  *
  * @author  rendix2 <rendix2@seznam.cz>
- * @package QueryExecute
+ * @package pql\QueryExecute
  */
 abstract class BaseQuery
 {

@@ -10,7 +10,7 @@ use pql\Condition;
  * HashJoin is used for joins if Condition Operator is EQUAL ("=") which is used
  *
  * @author  rendix2 <rendix2@seznam.cz>
- * @package QueryExecute\Join
+ * @package pql\QueryExecute\Joins
  */
 class HashJoin implements IJoin
 {

@@ -12,7 +12,7 @@ use SplFileObject;
  * Class Update
  *
  * @author  rendix2 <rendix2@seznam.cz>
- * @package QueryExecute
+ * @package pql\QueryExecute
  */
 class Update extends BaseQuery
 {

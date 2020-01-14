@@ -6,6 +6,7 @@ namespace pql;
  * Class Operator
  *
  * @author rendix2 <rendix2@seznam.cz>
+ * @package pql
  */
 class Operator
 {

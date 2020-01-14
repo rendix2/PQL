@@ -13,7 +13,7 @@ use SplFileObject;
  * Class Delete
  *
  * @author rendix2 <rendix2@seznam.cz>
- * @package QueryExecute
+ * @package pql\QueryExecute
  */
 class Delete extends BaseQuery
 {

@@ -22,7 +22,7 @@ use pql\Table;
  * Class Select
  *
  * @author  rendix2 <rendix2@seznam.cz>
- * @package QueryExecute
+ * @package pql\QueryExecute
  */
 class Select extends BaseQuery
 {

@@ -11,8 +11,8 @@ namespace pql\BTree;
 /**
  * Class BtreeJ
  *
- * @package BTree
  * @author  rendix2 <rendix2@seznam.cz>
+ * @package pql\Btree
  */
 class BtreeJ
 {

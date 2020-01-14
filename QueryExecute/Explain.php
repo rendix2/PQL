@@ -11,8 +11,7 @@ use pql\Table;
  * Class Explain
  *
  * @author rendix2 <rendix2@seznam.cz>
-
- * @package QueryExecute
+ * @package pql\QueryExecute
  */
 class Explain extends BaseQuery
 {

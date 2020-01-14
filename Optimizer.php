@@ -6,6 +6,7 @@ namespace pql;
  * Class Optimizer
  *
  * @author rendix2 <rendix2@seznam.cz>
+ * @package pql
  */
 class Optimizer
 {

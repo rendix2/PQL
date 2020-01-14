@@ -6,6 +6,7 @@ namespace pql;
  * Interface ITable
  *
  * @author rendix2 <rendix2@seznam.cz>
+ * @package pql
  */
 interface ITable
 {

@@ -18,7 +18,7 @@ use SplFileInfo;
  * Class Database
  *
  * @author rendix2 <rendix2@seznam.cz>
-
+ * @package pql
  */
 class Database
 {

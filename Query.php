@@ -22,6 +22,7 @@ use pql\QueryPrinter\QueryPrinter;
  * Class Query
  *
  * @author rendix2 <rendix2@seznam.cz>
+ * @package pql
  */
 class Query
 {
