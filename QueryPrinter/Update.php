@@ -13,8 +13,8 @@ use pql\Query;
 /**
  * Class Update
  *
- * @package pql\QueryPrinter
  * @author  rendix2 <rendix2@seznam.cz>
+ * @package pql\QueryPrinter
  * @internal
  */
 class Update implements IQueryPrinter

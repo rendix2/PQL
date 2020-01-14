@@ -13,8 +13,8 @@ use pql\Query;
 /**
  * Class Delete
  *
- * @package pql\QueryPrinter
  * @author  rendix2 <rendix2@seznam.cz>
+ * @package pql\QueryPrinter
  * @internal
  */
 class Delete implements IQueryPrinter

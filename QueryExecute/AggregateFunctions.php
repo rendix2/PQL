@@ -11,8 +11,8 @@ namespace pql\QueryExecute;
 /**
  * Class AggregateFunctions
  *
- * @package pql\QueryExecute
  * @author  Tomáš Babický tomas.babicky@websta.de
+ * @package pql\QueryExecute
  */
 class AggregateFunctions
 {

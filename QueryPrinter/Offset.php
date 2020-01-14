@@ -9,10 +9,10 @@
 namespace pql\QueryPrinter;
 
 /**
- * Class Offset
+ * Trait Offset
  *
- * @package pql\QueryPrinter
  * @author  rendix2 <rendix2@seznam.cz>
+ * @package pql\QueryPrinter
  */
 trait Offset
 {

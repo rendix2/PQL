@@ -9,10 +9,10 @@
 namespace pql\QueryPrinter;
 
 /**
- * Class Limit
+ * Trait Limit
  *
- * @package pql\QueryPrinter
  * @author  rendix2 <rendix2@seznam.cz>
+ * @package pql\QueryPrinter
  */
 trait Limit
 {

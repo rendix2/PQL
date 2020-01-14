@@ -16,8 +16,8 @@ use pql\Table;
 /**
  * Class Select
  *
- * @package pql\QueryPrinter
  * @author  rendix2 <rendix2@seznam.cz>
+ * @package pql\QueryPrinter
  * @internal
  */
 class Select implements IQueryPrinter

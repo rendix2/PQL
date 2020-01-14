@@ -11,8 +11,8 @@ namespace pql\QueryPrinter;
 /**
  * Interface IQueryPrinter
  *
- * @package pql\QueryPrinter
  * @author  rendix2 <rendix2@seznam.cz>
+ * @package pql\QueryPrinter
  */
 interface IQueryPrinter
 {
