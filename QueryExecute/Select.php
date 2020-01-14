@@ -303,6 +303,8 @@ class Select extends BaseQuery
      */
     public function addGroupedFunctionDataIntoResult($column, array $groupedByResult, $functionColumnName)
     {
+        $this->columns[] = new SelectedColumn($functionColumnName);
+
         foreach ($this->result as &$row) {
             $row[$functionColumnName] = $groupedByResult[$column][$row[$column]];
         }
@@ -326,8 +328,6 @@ class Select extends BaseQuery
             switch ($functionName) {
                 case AggregateFunction::SUM:
                     if ($this->groupedByDataCount) {
-                        $this->columns[] = new SelectedColumn($functionColumnName);
-
                         $aggregateFunctions = new AggregateFunctions($this);
                         $aggregateFunctions->sum($column, $functionColumnName);
                     } else {
@@ -338,8 +338,6 @@ class Select extends BaseQuery
 
                 case AggregateFunction::COUNT:
                     if ($this->groupedByDataCount) {
-                        $this->columns[] = new SelectedColumn($functionColumnName);
-
                         $aggregateFunctions = new AggregateFunctions($this);
                         $aggregateFunctions->count($functionColumnName);
                     } else {
@@ -350,8 +348,6 @@ class Select extends BaseQuery
 
                 case AggregateFunction::AVERAGE:
                     if ($this->groupedByDataCount) {
-                        $this->columns[] = new SelectedColumn($functionColumnName);
-
                         $aggregateFunctions = new AggregateFunctions($this);
                         $aggregateFunctions->average($column, $functionColumnName);
                     } else {
@@ -362,8 +358,6 @@ class Select extends BaseQuery
 
                 case AggregateFunction::MIN:
                     if ($this->groupedByDataCount) {
-                        $this->columns[] = new SelectedColumn($functionColumnName);
-
                         $aggregateFunctions = new AggregateFunctions($this);
                         $aggregateFunctions->min($column, $functionColumnName);
                     } else {
@@ -374,8 +368,6 @@ class Select extends BaseQuery
 
                 case AggregateFunction::MAX:
                     if ($this->groupedByDataCount) {
-                        $this->columns[] = new SelectedColumn($functionColumnName);
-
                         $aggregateFunctions = new AggregateFunctions($this);
                         $aggregateFunctions->max($column, $functionColumnName);
                     } else {
@@ -385,8 +377,6 @@ class Select extends BaseQuery
 
                 case AggregateFunction::MEDIAN:
                     if ($this->groupedByDataCount) {
-                        $this->columns[] = new SelectedColumn($functionColumnName);
-
                         $aggregateFunctions = new AggregateFunctions($this);
                         $aggregateFunctions->median($column, $functionColumnName);
                     } else {
@@ -795,7 +785,7 @@ class Select extends BaseQuery
                             if (ConditionHelper::havingCondition($condition, $avg)) {
                                 foreach ($groupedRows as $groupedRow) {
                                     if (ConditionHelper::havingCondition($condition, $groupedRow[$functionParameter])) {
-                                        $havingResult[] = $groupedRows;
+                                        $havingResult[] = $groupedRows[0];
                                     }
                                 }
                             }

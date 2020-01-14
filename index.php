@@ -193,7 +193,7 @@ $query2->select(['id'])
     ->sum('score')
     ->from('students')
     ->groupBy('id')
-    ->having(new AggregateFunction(AggregateFunction::AVERAGE, ['score']), '>', 80);
+    ->having(new AggregateFunction(AggregateFunction::AVERAGE, ['score']), '<', 80);
     //->having(new AggregateFunctions(AggregateFunctions::MEDIAN, ['score']), '<', 91);
     //->having(new AggregateFunctions(AggregateFunctions::COUNT, ['score']), '=', 2);
 
