@@ -561,6 +561,13 @@ class Table implements ITable
      */
     public function truncate()
     {
+        $firstRow = $this->columnsString . $this->lineEnds;
+
+        $file = new SplFileObject($this->filePath, 'wb');
+
+        $file->fwrite($firstRow);
+        $file = null;
+
         return $this;
     }
 
