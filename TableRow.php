@@ -11,12 +11,12 @@ namespace pql;
 use stdClass;
 
 /**
- * Class Row
+ * Class TaleRow
  *
  * @author rendix2 <rendix2@seznam.cz>
  * @package pql
  */
-class Row
+class TableRow
 {
     /**
      * @var stdClass $row
@@ -39,7 +39,7 @@ class Row
     private $columnsCount;
 
     /**
-     * Row constructor.
+     * TableRow constructor.
      *
      * @param $data
      */

@@ -2,9 +2,10 @@
 
 namespace pql\QueryExecute;
 
+use pql\ExplainRow;
+use pql\JoinedTable;
 use pql\Optimizer;
 use pql\Query;
-use pql\Row;
 use pql\Table;
 
 /**
@@ -53,335 +54,415 @@ class Explain extends BaseQuery
 
     /**
      * @param Query $query
-     *
      * @return array
      */
-    private function explainHelper(Query $query)
+    private function from(Query $query)
     {
         $tables = [];
 
         if ($query->getTable() instanceof Table) {
-            $row = [
-                'table' => $query->getTable()->getName(),
-                'rows' => $query->getTable()->getRowsCount(),
-                'type' => 'FROM CLAUSE',
-                'condition' => null,
-                'algorithm' => null,
-            ];
-
-            $tables[] = new Row($row);
+            $tables[] = new ExplainRow(
+                $query->getTable()->getName(),
+                $query->getTable()->getRowsCount(),
+                'FROM CLAUSE',
+                null,
+                null,
+                null
+            );
         } elseif ($query->getTable() instanceof Query) {
-            $row = [
-                'table' => 'sub query',
-                'rows' => '---',
-                'type' => 'FROM CLAUSE',
-                'condition' => null,
-                'algorithm' => null,
-            ];
+            $explain = new Explain($query->getTable());
 
-            $tables[] = new Row($row);
-            $tables   = array_merge($tables, $this->explainHelper($query->getTable()));
+            $tables[] = new ExplainRow(
+                'FROM CLAUSE',
+                '---',
+                'SUB QUERY',
+                null,
+                null,
+                $explain->run()
+            );
         }
+
+        return $tables;
+    }
+
+    /**
+     * @param Query $query
+     * @return array
+     */
+    private function innerJoin(Query $query)
+    {
+        $tables = [];
 
         foreach ($query->getInnerJoinedTables() as $innerJoinedTable) {
             if ($innerJoinedTable->getTable() instanceof Table) {
-                $tables[] = new Row(
-                    [
-                        'table'     => $innerJoinedTable->getTable()->getName(),
-                        'rows'      => $innerJoinedTable->getTable()->getRowsCount(),
-                        'type'      => 'INNER JOIN',
-                        'condition' => null,
-                        'algorithm' => null,
-                    ]
+                $tables[] = new ExplainRow(
+                    $innerJoinedTable->getTable()->getName(),
+                    $innerJoinedTable->getTable()->getRowsCount(),
+                    'INNER JOIN',
+                    null,
+                    null,
+                    null
                 );
 
-                foreach ($innerJoinedTable->getOnConditions() as $condition) {
-                    $tables[] = new Row(
-                        [
-                            'table'     => '---',
-                            'rows'      => '---',
-                            'type'      => '---',
-                            'condition' => (string)$condition,
-                            'algorithm' => self::JOIN_ALGORITHMS[$this->optimizer->sayJoinAlgorithm($condition)]
-                        ]
-                    );
-                }
+                $tables = array_merge($tables, $this->onConditions($innerJoinedTable));
             } elseif ($innerJoinedTable->getTable() instanceof Query) {
-                $row = [
-                    'table'     => 'sub query',
-                    'rows'      => '---',
-                    'type'      => 'INNER JOIN',
-                    'condition' => null,
-                    'algorithm' => null,
-                ];
+                $explain = new Explain($innerJoinedTable->getTable());
 
-                $tables[] = new Row($row);
-                $tables   = array_merge($tables, $this->explainHelper($innerJoinedTable->getTable()));
-            }
-        }
-
-        foreach ($query->getCrossJoinedTables() as $crossJoinedTable) {
-            if ($crossJoinedTable->getTable() instanceof Table) {
-                $tables[] = new Row(
-                    [
-                        'table'     => $crossJoinedTable->getTable()->getName(),
-                        'rows'      => $crossJoinedTable->getTable()->getRowsCount(),
-                        'type'      => 'CROSS JOIN',
-                        'condition' => null,
-                        'algorithm' => self::JOIN_ALGORITHMS[Optimizer::NESTED_LOOP],
-                    ]
+                $tables[] = new ExplainRow(
+                    $innerJoinedTable->getTable()->getName(),
+                    $innerJoinedTable->getTable()->getRowsCount(),
+                    'INNER JOIN',
+                    null,
+                    null,
+                    $explain->run()
                 );
-            } elseif ($crossJoinedTable->getTable() instanceof Query) {
-                $row = [
-                    'table'     => 'sub query',
-                    'rows'      => '---',
-                    'type'      => 'CROSS JOIN',
-                    'condition' => null,
-                    'algorithm' => null,
-                ];
-
-                $tables[] = new Row($row);
-                $tables   = array_merge($tables, $this->explainHelper($crossJoinedTable->getTable()));
-            }
-        }
-
-        foreach ($query->getLeftJoinedTables() as $leftJoinedTable) {
-            if ($leftJoinedTable->getTable() instanceof Table) {
-                $tables[] = new Row(
-                    [
-                        'table'     => $leftJoinedTable->getTable()->getName(),
-                        'rows'      => $leftJoinedTable->getTable()->getRowsCount(),
-                        'type'      => 'LEFT JOIN',
-                        'condition' => null,
-                        'algorithm' => null,
-                    ]
-                );
-
-                foreach ($leftJoinedTable->getOnConditions() as $condition) {
-                    $tables[] = new Row(
-                        [
-                            'table'     => '---',
-                            'rows'      => '---',
-                            'type'      => '---',
-                            'condition' => (string)$condition,
-                            'algorithm' => self::JOIN_ALGORITHMS[$this->optimizer->sayJoinAlgorithm($condition)]
-                        ]
-                    );
-                }
-            } elseif ($leftJoinedTable->getTable() instanceof Query) {
-                $row = [
-                    'table'     => 'sub query',
-                    'rows'      => '---',
-                    'type'      => 'LEFT JOIN',
-                    'condition' => null,
-                    'algorithm' => null,
-                ];
-
-                $tables[] = new Row($row);
-                $tables   = array_merge($tables, $this->explainHelper($leftJoinedTable->getTable()));
-            }
-        }
-
-        foreach ($query->getRightJoinedTables() as $rightJoinedTable) {
-            if ($rightJoinedTable->getTable() instanceof Table) {
-                $tables[] = new Row(
-                    [
-                        'table'     => $rightJoinedTable->getTable()->getName(),
-                        'rows'      => $rightJoinedTable->getTable()->getRowsCount(),
-                        'type'      => 'RIGHT JOIN',
-                        'condition' => null,
-                        'algorithm' => null,
-                    ]
-                );
-
-                foreach ($rightJoinedTable->getOnConditions() as $condition) {
-                    $tables[] = new Row(
-                        [
-                            'table'     => '---',
-                            'rows'      => '---',
-                            'type'      => '---',
-                            'condition' => (string)$condition,
-                            'algorithm' => self::JOIN_ALGORITHMS[$this->optimizer->sayJoinAlgorithm($condition)]
-                        ]
-                    );
-                }
-            } elseif ($rightJoinedTable->getTable() instanceof Query) {
-                $row = [
-                    'table'     => 'sub query',
-                    'rows'      => '---',
-                    'type'      => 'RIGHT JOIN',
-                    'condition' => null,
-                    'algorithm' => null,
-                ];
-
-                $tables[] = new Row($row);
-                $tables   = array_merge($tables, $this->explainHelper($rightJoinedTable->getTable()));
-            }
-        }
-
-        foreach ($query->getFullJoinedTables() as $fullJoinedTable) {
-            if ($fullJoinedTable instanceof Table) {
-                $tables[] = new Row(
-                    [
-                        'table'     => $fullJoinedTable->getTable()->getName(),
-                        'rows'      => $fullJoinedTable->getTable()->getRowsCount(),
-                        'type'      => 'FULL JOIN',
-                        'condition' => null,
-                        'algorithm' => null,
-                    ]
-                );
-
-                foreach ($fullJoinedTable->getOnConditions() as $condition) {
-                    $tables[] = new Row(
-                        [
-                            'table'     => '---',
-                            'rows'      => '---',
-                            'type'      => '---',
-                            'condition' => (string)$condition,
-                            'algorithm' => self::JOIN_ALGORITHMS[$this->optimizer->sayJoinAlgorithm($condition)]
-                        ]
-                    );
-                }
-            } elseif ($fullJoinedTable->getTable() instanceof Query) {
-                $row = [
-                    'table'     => 'sub query',
-                    'rows'      => '---',
-                    'type'      => 'FULL JOIN',
-                    'condition' => null,
-                    'algorithm' => null,
-                ];
-
-                $tables[] = new Row($row);
-                $tables   = array_merge($tables, $this->explainHelper($fullJoinedTable->getTable()));
-            }
-        }
-
-        foreach ($this->query->getWhereConditions() as $whereCondition) {
-            if ($whereCondition->getColumn() instanceof Query) {
-                $row = [
-                    'table'     => 'sub query',
-                    'rows'      => '---',
-                    'type'      => 'WHERE COLUMN CONDITION',
-                    'condition' => null,
-                    'algorithm' => null,
-                ];
-
-                $tables[] = new Row($row);
-                $tables   = array_merge($tables, $this->explainHelper($whereCondition->getColumn()));
-            }
-
-            if ($whereCondition->getColumn() instanceof Query) {
-                $row = [
-                    'table'     => 'sub query',
-                    'rows'      => '---',
-                    'type'      => 'WHERE VALUE CONDITION',
-                    'condition' => null,
-                    'algorithm' => null,
-                ];
-
-                $tables[] = new Row($row);
-                $tables   = array_merge($tables, $this->explainHelper($whereCondition->getColumn()));
-            }
-        }
-
-        foreach ($this->query->getHavingConditions() as $havingCondition) {
-            if ($havingCondition->getColumn() instanceof Query) {
-                $row = [
-                    'table'     => 'sub query',
-                    'rows'      => '---',
-                    'type'      => 'HAVING COLUMN CONDITION',
-                    'condition' => null,
-                    'algorithm' => null,
-                ];
-
-                $tables[] = new Row($row);
-                $tables   = array_merge($tables, $this->explainHelper($havingCondition->getColumn()));
-            }
-
-            if ($havingCondition->getColumn() instanceof Query) {
-                $row = [
-                    'table'     => 'sub query',
-                    'rows'      => '---',
-                    'type'      => 'HAVING VALUE CONDITION',
-                    'condition' => null,
-                    'algorithm' => null,
-                ];
-
-                $tables[] = new Row($row);
-                $tables   = array_merge($tables, $this->explainHelper($havingCondition->getColumn()));
             }
         }
 
         return $tables;
     }
 
+    /**
+     * @param Query $query
+     * @return array
+     */
+    private function crossJoin(Query $query)
+    {
+        $tables = [];
+
+        foreach ($query->getCrossJoinedTables() as $crossJoinedTable) {
+            if ($crossJoinedTable->getTable() instanceof Table) {
+                $tables[] = new ExplainRow(
+                    $crossJoinedTable->getTable()->getName(),
+                    $crossJoinedTable->getTable()->getRowsCount(),
+                    'CROSS JOIN',
+                    null,
+                    null,
+                    null
+                );
+            } elseif ($crossJoinedTable->getTable() instanceof Query) {
+                $explain = new Explain($crossJoinedTable->getTable());
+
+                $tables[] = new ExplainRow(
+                    $crossJoinedTable->getTable()->getName(),
+                    $crossJoinedTable->getTable()->getRowsCount(),
+                    'CROSS JOIN',
+                    null,
+                    null,
+                    $explain->run()
+                );
+            }
+        }
+
+        return $tables;
+    }
+
+    /**
+     * @param Query $query
+     * @return array
+     */
+    private function leftJoin(Query $query)
+    {
+        $tables = [];
+
+        foreach ($query->getLeftJoinedTables() as $leftJoinedTable) {
+            if ($leftJoinedTable->getTable() instanceof Table) {
+                $tables[] = new ExplainRow(
+                    $leftJoinedTable->getTable()->getName(),
+                    $leftJoinedTable->getTable()->getRowsCount(),
+                    'LEFT JOIN',
+                    null,
+                    null,
+                    null
+                );
+
+                $tables = array_merge($tables, $this->onConditions($leftJoinedTable));
+            } elseif ($leftJoinedTable->getTable() instanceof Query) {
+                $explain = new Explain($leftJoinedTable->getTable());
+
+                $tables[] = new ExplainRow(
+                    $leftJoinedTable->getTable()->getName(),
+                    $leftJoinedTable->getTable()->getRowsCount(),
+                    'LEFT JOIN',
+                    null,
+                    null,
+                    $explain->run()
+                );
+            }
+        }
+
+        return $tables;
+    }
+
+    /**
+     * @param Query $query
+     * @return array
+     */
+    private function rightJoin(Query $query)
+    {
+        $tables = [];
+
+        foreach ($query->getRightJoinedTables() as $rightJoinedTable) {
+            if ($rightJoinedTable->getTable() instanceof Table) {
+                $tables[] = new ExplainRow(
+                    $rightJoinedTable->getTable()->getName(),
+                    $rightJoinedTable->getTable()->getRowsCount(),
+                    'RIGHT JOIN',
+                    null,
+                    null,
+                    null
+                );
+
+                $tables = array_merge($tables, $this->onConditions($rightJoinedTable));
+            } elseif ($rightJoinedTable->getTable() instanceof Query) {
+                $explain = new Explain($rightJoinedTable->getTable());
+
+                $tables[] = new ExplainRow(
+                    $rightJoinedTable->getTable()->getName(),
+                    $rightJoinedTable->getTable()->getRowsCount(),
+                    'RIGHT JOIN',
+                    null,
+                    null,
+                    $explain->run()
+                );
+            }
+        }
+
+        return $tables;
+    }
+
+    /**
+     * @param Query $query
+     * @return array
+     */
+    private function fullJoin(Query $query)
+    {
+        $tables = [];
+
+        foreach ($query->getFullJoinedTables() as $fullJoinedTable) {
+            if ($fullJoinedTable instanceof Table) {
+                $tables[] = new ExplainRow(
+                    $fullJoinedTable->getTable()->getName(),
+                    $fullJoinedTable->getTable()->getRowsCount(),
+                    'FULL JOIN',
+                    null,
+                    null,
+                    null
+                );
+
+                $tables = array_merge($tables, $this->onConditions($fullJoinedTable));
+            } elseif ($fullJoinedTable->getTable() instanceof Query) {
+                $explain = new Explain($fullJoinedTable->getTable());
+
+                $tables[] = new ExplainRow(
+                    $fullJoinedTable->getTable()->getName(),
+                    $fullJoinedTable->getTable()->getRowsCount(),
+                    'FULL JOIN',
+                    null,
+                    null,
+                    $explain->run()
+                );
+            }
+        }
+
+        return $tables;
+    }
+
+    /**
+     * @param Query $query
+     * @return array
+     */
+    private function where(Query $query)
+    {
+        $tables = [];
+
+        foreach ($query->getWhereConditions() as $whereCondition) {
+            if ($whereCondition->getColumn() instanceof Query) {
+                $explain = new Explain($whereCondition->getColumn());
+                $tables[] = $explain->run();
+            }
+
+            if ($whereCondition->getValue() instanceof Query) {
+                $explain = new Explain($whereCondition->getValue());
+                $tables[] = $explain->run();
+            }
+        }
+
+        return $tables;
+    }
+
+    /**
+     * @param Query $query
+     * @return array
+     */
+    private function having(Query $query)
+    {
+        $tables = [];
+
+        foreach ($query->getHavingConditions() as $havingCondition) {
+            if ($havingCondition->getValue() instanceof Query) {
+                $explain = new Explain($havingCondition->getValue());
+                $tables[] = $explain->run();
+            }
+
+            if ($havingCondition->getColumn() instanceof Query) {
+                $explain = new Explain($havingCondition->getColumn());
+                $tables[] = $explain->run();
+            }
+        }
+
+        return $tables;
+    }
+
+    /**
+     * @param Query $query
+     * @return array
+     */
+    private function union(Query $query)
+    {
+        $tables = [];
+
+        foreach ($query->getUnionQueries() as $i => $unionQuery) {
+            $explain = new Explain($unionQuery);
+
+            $tables[] = new ExplainRow(
+                '',
+                '',
+                'UNION #' . $i,
+                null,
+                null,
+                $explain->run()
+            );
+        }
+
+        return $tables;
+    }
+
+    /**
+     * @param Query $query
+     * @return array
+     */
+    private function unionAll(Query $query)
+    {
+        $tables = [];
+
+        foreach ($query->getUnionAllQueries() as $i => $unionAllQuery) {
+            $explain = new Explain($unionAllQuery);
+
+            $tables[] = new ExplainRow(
+                '',
+                '',
+                'UNION ALL #' . $i,
+                null,
+                null,
+                $explain->run()
+            );
+        }
+
+        return $tables;
+    }
+
+    /**
+     * @param Query $query
+     * @return array
+     */
+    private function except(Query $query)
+    {
+        $tables = [];
+
+        foreach ($query->getExceptQueries() as $i => $exceptQuery) {
+            $explain = new Explain($exceptQuery);
+
+            $tables[] = new ExplainRow(
+                '',
+                '',
+                'EXCEPT #' . $i,
+                null,
+                null,
+                $explain->run()
+            );
+        }
+
+        return $tables;
+    }
+
+    /**
+     * @param Query $query
+     * @return array
+     */
+    private function intersect(Query $query)
+    {
+        $tables = [];
+
+        foreach ($query->getIntersectQueries() as $i => $intersectQuery) {
+            $explain = new Explain($intersectQuery);
+
+            $tables[] = new ExplainRow(
+                '',
+                '',
+                'INTERSECT #' . $i,
+                null,
+                null,
+                $explain->run()
+            );
+        }
+
+        return $tables;
+    }
+
+    /**
+     * @param Query $query
+     *
+     * @return array
+     */
+    private function explainHelper(Query $query)
+    {
+        return array_merge(
+            $this->from($query),
+            $this->innerJoin($query),
+            $this->crossJoin($query),
+            $this->leftJoin($query),
+            $this->rightJoin($query),
+            $this->fullJoin($query),
+            $this->where($query),
+            $this->having($query)
+        );
+    }
+
+    /**
+     * @param JoinedTable $joinedTable
+     * @return array
+     */
+    private function onConditions(JoinedTable $joinedTable)
+    {
+        $tables = [];
+
+        foreach ($joinedTable->getOnConditions() as $condition) {
+            $tables[] = new ExplainRow(
+                '---',
+                '---',
+                '---',
+                (string)$condition,
+                self::JOIN_ALGORITHMS[$this->optimizer->sayJoinAlgorithm($condition)],
+                null
+            );
+        }
+
+        return $tables;
+    }
 
     /**
      * @inheritDoc
      */
     public function run()
     {
-        $tables = $this->explainHelper($this->query);
-
-        foreach ($this->query->getUnionQueries() as $i => $unionQuery) {
-            $result = $this->explainHelper($unionQuery);
-            $tables[] = new Row(
-                [
-                    'table' => '',
-                    'rows' => '',
-                    'type' => 'UNION #' . $i,
-                    'condition' => '',
-                    'algorithm' => '',
-                ]
-            );
-
-            $tables = array_merge($tables, $result);
-        }
-
-        foreach ($this->query->getUnionAllQueries() as $i => $unionAllQuery) {
-            $result = $this->explainHelper($unionAllQuery);
-            $tables[] = new Row(
-                [
-                    'table' => '',
-                    'rows' => '',
-                    'type' => 'UNION ALL #' . $i,
-                    'condition' => '',
-                    'algorithm' => '',
-                ]
-            );
-
-            $tables = array_merge($tables, $result);
-        }
-
-        foreach ($this->query->getIntersectQueries() as $i => $intersectQuery) {
-            $result = $this->explainHelper($intersectQuery);
-            $tables[] = new Row(
-                [
-                    'table' => '',
-                    'rows' => '',
-                    'type' => 'INTERSECT #' . $i,
-                    'condition' => '',
-                    'algorithm' => '',
-                ]
-            );
-
-            $tables = array_merge($tables, $result);
-        }
-
-        foreach ($this->query->getExceptQueries() as $i => $exceptQuery) {
-            $result = $this->explainHelper($exceptQuery);
-            $tables[] = new Row(
-                [
-                    'table' => '',
-                    'rows' => '',
-                    'type' => 'EXCEPT #' . $i,
-                    'condition' => '',
-                    'algorithm' => '',
-                ]
-            );
-
-            $tables = array_merge($tables, $result);
-        }
+        $tables = array_merge(
+            $this->explainHelper($this->query),
+            $this->union($this->query),
+            $this->unionAll($this->query),
+            $this->intersect($this->query),
+            $this->except($this->query)
+        );
 
         return $this->result = $tables;
     }

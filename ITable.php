@@ -18,7 +18,7 @@ interface ITable
     /**
      * @param bool $object
      *
-     * @return Row[]|array
+     * @return TableRow[]|array
      */
     public function getRows($object = false);
 }

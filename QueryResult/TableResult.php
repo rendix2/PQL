@@ -6,17 +6,20 @@
  * Time: 15:15
  */
 
-namespace pql;
+namespace pql\QueryResult;
 
+use pql\ITable;
 use pql\QueryExecute\BaseQuery;
+use pql\TableRow;
+use pql\SelectedColumn;
 
 /**
  * Class TableResult
  *
  * @author rendix2 <rendix2@seznam.cz>
- * @package pql
+ * @package pql\QueryResult
  */
-final class TableResult implements ITable
+final class TableResult implements ITable, IResult
 {
     /**
      * @var float $executeTime
@@ -34,7 +37,7 @@ final class TableResult implements ITable
     private $affectedRows;
 
     /**
-     * @var Row[] $rows
+     * @var TableRow[] $rows
      */
     private $rows;
 
@@ -160,7 +163,7 @@ final class TableResult implements ITable
     /**
      * @param bool $object
      *
-     * @return array|Row[]
+     * @return array|TableRow[]
      */
     public function getRows($object = false)
     {

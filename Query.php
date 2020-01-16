@@ -17,6 +17,9 @@ use pql\QueryExecute\InsertSelect;
 use pql\QueryExecute\Select;
 use pql\QueryExecute\Update;
 use pql\QueryPrinter\QueryPrinter;
+use pql\QueryResult\IResult;
+use pql\QueryResult\ListResult;
+use pql\QueryResult\TableResult;
 
 /**
  * Class Query
@@ -207,7 +210,7 @@ class Query
     private $insertData;
 
     /**
-     * @var TableResult $result
+     * @var IResult $result
      */
     private $result;
 
@@ -648,7 +651,7 @@ class Query
     }
 
     /**
-     * @return TableResult
+     * @return IResult
      */
     public function getResult()
     {
@@ -822,7 +825,7 @@ class Query
     {
         $this->functions[] = new AggregateFunction(AggregateFunction::SUM, [$column]);
 
-        $this->type = self::SELECT;
+        //$this->type = self::SELECT;
 
         return $this;
     }
@@ -1124,7 +1127,7 @@ class Query
                 throw new Exception('It is not a SELECT query.');
             }
 
-            if (!$this->database->tableExists($table->getTable())) {
+            if (!$table->database->tableExists($table->getTable())) {
                 $message = sprintf(
                     'Selected table "%s" is not from selected database "%s".',
                     $table->getTable(),
@@ -1445,11 +1448,13 @@ class Query
                 $columns = ['table', 'rows', 'type', 'condition', 'algorithm'];
 
                 $rows = $explain->run();
+                bdump($rows, '$rows');
 
                 $endTime = microtime(true);
                 $executeTime  = $endTime - $startTime;
 
-                return $this->result = new TableResult($columns, $rows, $executeTime, $explain, 0);
+//                return $this->result = new TableResult($columns, $rows, $executeTime, $explain, 0);
+                return $this->result = new ListResult($rows);
             case self::INSERT_SELECT:
                 $insertSelect = new InsertSelect($this);
                 $affectedRows = $insertSelect->run();

@@ -9,7 +9,7 @@
 namespace pql\QueryExecute;
 
 use pql\Query;
-use pql\Row;
+use pql\TableRow;
 
 /**
  * Class Query
@@ -55,7 +55,7 @@ abstract class BaseQuery
     abstract public function run();
 
     /**
-     * @return array|Row[]
+     * @return array|TableRow[]
      */
     protected function limit()
     {

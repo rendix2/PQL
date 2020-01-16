@@ -14,7 +14,8 @@ use pql\Query;
 use pql\QueryExecute\Joins\HashJoin;
 use pql\QueryExecute\Joins\NestedLoopJoin;
 use pql\QueryExecute\Joins\SortMergeJoin;
-use pql\Row;
+use pql\QueryResult\TableResult;
+use pql\TableRow;
 use pql\SelectedColumn;
 use pql\Table;
 
@@ -89,7 +90,7 @@ class Select extends BaseQuery
     }
 
     /**
-     * @return Row[]
+     * @return TableRow[]
      */
     public function run()
     {
@@ -261,8 +262,16 @@ class Select extends BaseQuery
                 $selectedColumns[] = $column->getColumn();
             }
 
-            foreach ($this->query->getTable()->getResult()->getQuery()->getColumns() as $column) {
-                $selectedColumns[] = $column->getColumn();
+            $result = $this->query->getTable()->getResult();
+
+            if ($result instanceof TableResult) {
+                $query = $result->getQuery();
+
+                if ($query instanceof self) {
+                    foreach ($query->getColumns() as $column) {
+                        $selectedColumns[] = $column->getColumn();
+                    }
+                }
             }
 
             $columns = array_merge($columns, $selectedColumns);
@@ -391,7 +400,7 @@ class Select extends BaseQuery
     }
 
     /**
-     * @return array|Row[]
+     * @return array|TableRow[]
      * @throws Exception
      */
     private function innerJoin()
@@ -442,7 +451,7 @@ class Select extends BaseQuery
     }
 
     /**
-     * @return array|Row[]
+     * @return array|TableRow[]
      * @throws Exception
      */
     private function leftJoin()
@@ -565,7 +574,7 @@ class Select extends BaseQuery
     }
 
     /**
-     * @return array|Row[]
+     * @return array|TableRow[]
      * @throws Exception
      */
     private function where()
@@ -695,7 +704,7 @@ class Select extends BaseQuery
     }
 
     /**
-     * @return array|Row[]
+     * @return array|TableRow[]
      */
     private function groupBy()
     {
@@ -846,7 +855,7 @@ class Select extends BaseQuery
     }
 
     /**
-     * @return array|Row[]
+     * @return array|TableRow[]
      */
     private function having()
     {
@@ -864,7 +873,7 @@ class Select extends BaseQuery
     }
 
     /**
-     * @return array|Row[]
+     * @return array|TableRow[]
      */
     private function orderBy()
     {
@@ -895,7 +904,7 @@ class Select extends BaseQuery
     }
 
     /**
-     * @return Row[]
+     * @return TableRow[]
      */
     private function createRows()
     {
@@ -917,7 +926,7 @@ class Select extends BaseQuery
         $rows = [];
 
         foreach ($this->result as $row) {
-            $rowObject = new Row([]);
+            $rowObject = new TableRow([]);
             
             foreach ($row as $column => $value) {
                 if (in_array($column, $columns, true)) {
@@ -964,7 +973,7 @@ class Select extends BaseQuery
     }
 
     /**
-     * @return array|Row[]
+     * @return array|TableRow[]
      * @throws Exception
      */
     private function fromTableAliases()

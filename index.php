@@ -187,12 +187,35 @@ $query->update('test', ['a' => '888'])->where('id', '=', '96')->run();
 
 
 Profiler::start('select');
+
+
+$query3 = new Query($database);
+
+
+$query3->select(['id'])
+    ->sum('score')
+    ->from('students')
+    ->innerJoin('test')
+    ->groupBy('id')
+    ->having(new AggregateFunction(AggregateFunction::AVERAGE, ['score']), '<', 80);
+
+$query4 = new Query($database);
+
+
+$query4->select(['id'])
+    ->sum('score')
+    ->from('students')
+    ->groupBy('id')
+    ->having(new AggregateFunction(AggregateFunction::AVERAGE, ['score']), '<', 80);
+
 $query2 = new Query($database);
 
 $query2->select(['id'])
     ->sum('score')
-    ->from('students')
+    ->from($query4)
+    ->innerJoin('students')
     ->groupBy('id')
+
     ->having(new AggregateFunction(AggregateFunction::AVERAGE, ['score']), '<', 80);
     //->having(new AggregateFunctions(AggregateFunctions::MEDIAN, ['score']), '<', 91);
     //->having(new AggregateFunctions(AggregateFunctions::COUNT, ['score']), '=', 2);

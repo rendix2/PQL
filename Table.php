@@ -84,7 +84,7 @@ class Table implements ITable
     private $size;
 
     /**
-     * @var Row[] $rows
+     * @var TableRow[] $rows
      */
     private $rows;
 
@@ -260,7 +260,7 @@ class Table implements ITable
      */
     public function getRowsCount()
     {
-        return $this->columnsCount;
+        return $this->rowsCount;
     }
 
     /**
@@ -600,7 +600,7 @@ class Table implements ITable
     /**
      * @param bool $object
      *
-     * @return Row[]|array
+     * @return TableRow[]|array
      * @throws Exception
      */
     public function getRows($object = false)
@@ -644,7 +644,7 @@ class Table implements ITable
             }
 
             if ($object) {
-                $resultRows[] = new Row($columnValuesArray);
+                $resultRows[] = new TableRow($columnValuesArray);
             } else {
                 $resultRows[] = $columnValuesArray;
             }

@@ -16,15 +16,35 @@ namespace pql;
  */
 class ExplainRow
 {
+    /**
+     * @var string $table
+     */
     private $table;
 
+    /**
+     * @var int|string $rows
+     */
     private $rows;
 
+    /**
+     * @var string $type
+     */
     private $type;
 
+    /**
+     * @var string $condition
+     */
     private $condition;
 
+    /**
+     * @var string $algorithm
+     */
     private $algorithm;
+
+    /**
+     * @var ExplainRow[] $sub
+     */
+    private $sub;
 
     /**
      * ExplainRow constructor.
@@ -34,14 +54,37 @@ class ExplainRow
      * @param $type
      * @param $condition
      * @param $algorithm
+     * @param $sub
      */
-    public function __construct($table, $rows, $type, $condition, $algorithm)
+    public function __construct($table, $rows, $type, $condition, $algorithm, $sub)
     {
         $this->table     = $table;
         $this->rows      = $rows;
         $this->type      = $type;
         $this->condition = $condition;
         $this->algorithm = $algorithm;
+        $this->sub       = $sub;
+    }
+
+    /**
+     * ExplainRow destructor.
+     */
+    public function __destruct()
+    {
+        $this->table     = null;
+        $this->rows      = null;
+        $this->type      = null;
+        $this->condition = null;
+        $this->algorithm = null;
+        $this->sub       = null;
+    }
+
+    /**
+     * @return string
+     */
+    public function __toString()
+    {
+        return 'Name: ' . $this->table . ', Type: ' . $this->type . ', Rows count: ' . $this->rows;
     }
 
     /**
@@ -79,20 +122,16 @@ class ExplainRow
     /**
      * @return mixed
      */
-    public function getAlgorithm()
+    public function getSub()
     {
-        return $this->algorithm;
+        return $this->sub;
     }
 
     /**
-     * ExplainRow destructor.
+     * @return mixed
      */
-    public function __destruct()
+    public function getAlgorithm()
     {
-        $this->table     = null;
-        $this->rows      = null;
-        $this->type      = null;
-        $this->condition = null;
-        $this->algorithm = null;
+        return $this->algorithm;
     }
 }
