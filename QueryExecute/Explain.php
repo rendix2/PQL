@@ -54,7 +54,35 @@ class Explain extends BaseQuery
 
     /**
      * @param Query $query
-     * @return array
+     *
+     * @return ExplainRow[]
+     */
+    private function columns(Query $query)
+    {
+        $tables = [];
+
+        foreach ($query->getSelectedColumns() as $selectedColumn) {
+            if ($selectedColumn instanceof Query) {
+                $explain = new Explain($selectedColumn);
+
+                $tables[] = new ExplainRow(
+                    'SELECTED COLUMN',
+                    '---',
+                    'SUB QUERY',
+                    null,
+                    null,
+                    $explain->run()
+                );
+            }
+        }
+
+        return $tables;
+    }
+
+    /**
+     * @param Query $query
+     *
+     * @return ExplainRow[]
      */
     private function from(Query $query)
     {
@@ -87,7 +115,8 @@ class Explain extends BaseQuery
 
     /**
      * @param Query $query
-     * @return array
+     *
+     * @return ExplainRow[]
      */
     private function innerJoin(Query $query)
     {
@@ -124,7 +153,8 @@ class Explain extends BaseQuery
 
     /**
      * @param Query $query
-     * @return array
+     *
+     * @return ExplainRow[]
      */
     private function crossJoin(Query $query)
     {
@@ -159,7 +189,8 @@ class Explain extends BaseQuery
 
     /**
      * @param Query $query
-     * @return array
+     *
+     * @return ExplainRow[]
      */
     private function leftJoin(Query $query)
     {
@@ -196,7 +227,8 @@ class Explain extends BaseQuery
 
     /**
      * @param Query $query
-     * @return array
+     *
+     * @return ExplainRow[]
      */
     private function rightJoin(Query $query)
     {
@@ -233,7 +265,8 @@ class Explain extends BaseQuery
 
     /**
      * @param Query $query
-     * @return array
+     *
+     * @return ExplainRow[]
      */
     private function fullJoin(Query $query)
     {
@@ -270,7 +303,8 @@ class Explain extends BaseQuery
 
     /**
      * @param Query $query
-     * @return array
+     *
+     * @return ExplainRow[]
      */
     private function where(Query $query)
     {
@@ -293,7 +327,8 @@ class Explain extends BaseQuery
 
     /**
      * @param Query $query
-     * @return array
+     *
+     * @return ExplainRow[]
      */
     private function having(Query $query)
     {
@@ -316,7 +351,8 @@ class Explain extends BaseQuery
 
     /**
      * @param Query $query
-     * @return array
+     *
+     * @return ExplainRow[]
      */
     private function union(Query $query)
     {
@@ -340,7 +376,8 @@ class Explain extends BaseQuery
 
     /**
      * @param Query $query
-     * @return array
+     *
+     * @return ExplainRow[]
      */
     private function unionAll(Query $query)
     {
@@ -364,7 +401,8 @@ class Explain extends BaseQuery
 
     /**
      * @param Query $query
-     * @return array
+     *
+     * @return ExplainRow[]
      */
     private function except(Query $query)
     {
@@ -388,7 +426,8 @@ class Explain extends BaseQuery
 
     /**
      * @param Query $query
-     * @return array
+     *
+     * @return ExplainRow[]
      */
     private function intersect(Query $query)
     {
@@ -413,11 +452,12 @@ class Explain extends BaseQuery
     /**
      * @param Query $query
      *
-     * @return array
+     * @return ExplainRow[]
      */
     private function explainHelper(Query $query)
     {
         return array_merge(
+            $this->columns($query),
             $this->from($query),
             $this->innerJoin($query),
             $this->crossJoin($query),
@@ -431,7 +471,8 @@ class Explain extends BaseQuery
 
     /**
      * @param JoinedTable $joinedTable
-     * @return array
+     *
+     * @return ExplainRow[]
      */
     private function onConditions(JoinedTable $joinedTable)
     {
