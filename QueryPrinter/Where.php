@@ -35,7 +35,7 @@ trait Where
                 if ($whereCondition->getValue() instanceof Query) {
                     $value = '(' . (string)$whereCondition->getValue() . ')';
                 } elseif (is_array($whereCondition->getValue())) {
-                    $value =  '(' . implode(',', $whereCondition->getValue()) . ')';
+                    $value =  '(' . implode(self::IN_SEPARATOR, $whereCondition->getValue()) . ')';
                 } else {
                     $value = $whereCondition->getValue();
                 }
@@ -43,7 +43,7 @@ trait Where
                 if ($whereCondition->getColumn() instanceof Query) {
                     $column = '(' . (string)$whereCondition->getColumn() . ')';
                 } elseif (is_array($whereCondition->getColumn())) {
-                    $column = implode(',', $whereCondition->getColumn());
+                    $column = '(' . implode(self::IN_SEPARATOR, $whereCondition->getColumn()) . ')';
                 } else {
                     $column = $whereCondition->getColumn();
                 }

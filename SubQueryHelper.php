@@ -3,6 +3,7 @@
 namespace pql;
 
 use Exception;
+use pql\QueryResult\TableResult;
 
 /**
  * Class SubQueryHelper

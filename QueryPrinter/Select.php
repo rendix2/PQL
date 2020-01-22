@@ -27,6 +27,11 @@ class Select implements IQueryPrinter
     use Offset;
 
     /**
+     * @var string
+     */
+    const IN_SEPARATOR = ', ';
+
+    /**
      * @var Query $query
      */
     private $query;
