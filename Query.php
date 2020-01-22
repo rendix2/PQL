@@ -951,13 +951,17 @@ class Query
     }
 
     /**
-     * @param Condition $condition
+     * @param string|int|AggregateFunction|Query $column
+     * @param string $operator
+     * @param string|int|AggregateFunction|Query $value
      *
      * @return Query
      * @throws Exception
      */
-    public function where(Condition $condition)
+    public function where($column, $operator, $value)
     {
+        $condition = new Condition($column, $operator, $value);
+
         if ($condition->getOperator() === Operator::BETWEEN ||
             $condition->getOperator() === Operator::BETWEEN_INCLUSIVE
         ) {
