@@ -256,6 +256,14 @@ class Table implements ITable
     }
 
     /**
+     * @return Database
+     */
+    public function getDatabase()
+    {
+        return $this->database;
+    }
+
+    /**
      * @return int
      */
     public function getRowsCount()

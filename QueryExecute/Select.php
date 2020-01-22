@@ -265,7 +265,8 @@ class Select extends BaseQuery
         } elseif ($this->query->getTable() instanceof Query) {
             $selectedColumns = [];
 
-            foreach ($this->query->getTable()->getSelectedColumns() as $column) {
+            // get columns from this query
+            foreach ($this->query->getSelectedColumns() as $column) {
                 $selectedColumns[] = $column->getColumn();
             }
 

@@ -366,8 +366,6 @@ echo $query->run();
 
 */
 
-$query = new Query($database);
-
 /*
 $subRes2 = $query->select(['pocet'])
     ->from('test')
@@ -378,9 +376,22 @@ $subRes2 = $query->select(['pocet'])
 */
 
 //$query = new Query($database);
-
-$res = $query->distinct('pocet')
+$query1 = new Query($database);
+$query1->select(['pocet'])
 ->from('test');
+
+$query2 = new Query($database);
+$query2->select(['pocet'])
+    ->from($query1);
+
+$query3 = new Query($database);
+$query3->select(['pocet'])
+    ->from($query2);
+
+$query4 = new Query($database);
+$query4->select(['pocet', 'datum'])
+    ->from($query3);
+
 //->where('pocet', 'in', [1, 3, 5])
 //->where([1, 3, 5], 'in', 'pocet')
 //->where([1, 3], 'between_in', 'pocet')
@@ -400,10 +411,12 @@ $res = $query2->select(['id', 'datum', 'pocet'])
     ->limit(5);
 */
 
-echo $res;
-    $res = $res->run();
+bdump($query4, '$query2');
 
-echo $res;
+echo $query4;
+    $res4 = $query4->run();
+
+echo $res4;
 
 Profiler::finish('select');
 

@@ -1167,7 +1167,15 @@ class Query
                 throw new Exception('It is not a SELECT query.');
             }
 
-            if (!$table->database->tableExists($table->getTable())) {
+            $originTable   = $table;
+            $iteratedTable = $table;
+
+            // find Table
+            while ($iteratedTable instanceof self) {
+                $iteratedTable = $iteratedTable->getTable();
+            }
+
+            if (!$iteratedTable->getDatabase()->tableExists($iteratedTable)) {
                 $message = sprintf(
                     'Selected table "%s" is not from selected database "%s".',
                     $table->getTable(),
@@ -1177,7 +1185,7 @@ class Query
                 throw new Exception($message);
             }
 
-            $joinedTable = $table;
+            $joinedTable = $originTable;
         } else {
             throw new Exception('Unsupported input.');
         }
