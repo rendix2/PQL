@@ -1449,10 +1449,7 @@ class Query
             case self::EXPLAIN:
                 $explain = new Explain($this);
 
-                $columns = ['table', 'rows', 'type', 'condition', 'algorithm'];
-
                 $rows = $explain->run();
-                bdump($rows, '$rows');
 
                 $endTime = microtime(true);
                 $executeTime  = $endTime - $startTime;
