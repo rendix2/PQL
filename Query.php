@@ -70,6 +70,11 @@ class Query
     private $selectedColumns;
 
     /**
+     * @var SelectedColumn $distinctColumn
+     */
+    private $distinctColumn;
+
+    /**
      * @var int $selectedColumnsCount
      */
     private $selectedColumnsCount;
@@ -611,6 +616,14 @@ class Query
     }
 
     /**
+     * @return SelectedColumn
+     */
+    public function getDistinctColumn()
+    {
+        return $this->distinctColumn;
+    }
+
+    /**
      * @return Condition[]
      */
     public function getHavingConditions()
@@ -927,6 +940,21 @@ class Query
 
         $this->type = self::SELECT;
         $this->selectedColumnsCount = count($this->selectedColumns);
+
+        return $this;
+    }
+
+    /**
+     * @param string $column
+     *
+     * @return Query
+     */
+    public function distinct($column)
+    {
+        $this->distinctColumn  = new SelectedColumn($column);
+        $this->selectedColumns = [$this->distinctColumn];
+
+        $this->type = self::SELECT;
 
         return $this;
     }

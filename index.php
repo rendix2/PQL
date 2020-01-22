@@ -188,7 +188,7 @@ $query->update('test', ['a' => '888'])->where('id', '=', '96')->run();
 
 Profiler::start('select');
 
-
+/*
 $query3 = new Query($database);
 
 
@@ -224,6 +224,7 @@ bdump($query2);
 echo $query2->run();
 bdump($query2);
 echo $query2;
+*/
 
 
 /*
@@ -363,19 +364,33 @@ echo $query;
 
 echo $query->run();
 
+*/
 
-//$subRes = $query->select(['pocet'])
-    //->sum('pocet')
-    //->from('test')
-    //->where('pocet', 'in', [1, 3, 5]);
-    //->where([1, 3, 5], 'in', 'pocet');
-    //->where([1, 3], 'between_in', 'pocet');
-    //->where('pocet', 'between_in', [1, 3]);
-
-//echo $subRes;
+$query = new Query($database);
 
 /*
-$res = $query->select(['id', 'datum', 'pocet'])
+$subRes2 = $query->select(['pocet'])
+    ->from('test')
+    ->where('pocet', 'in', [1, 3, 5])
+    ->where([1, 3, 5], 'in', 'pocet')
+    ->where([1, 3], 'between_in', 'pocet')
+    ->where('pocet', 'between_in', [1, 3]);
+*/
+
+//$query = new Query($database);
+
+$res = $query->distinct('pocet')
+->from('test');
+//->where('pocet', 'in', [1, 3, 5])
+//->where([1, 3, 5], 'in', 'pocet')
+//->where([1, 3], 'between_in', 'pocet')
+//->where('pocet', 'in', $subRes2)
+//->where('pocet', 'between_in', [1, 3]);
+
+/*
+$query2 = new Query($database);
+
+$res = $query2->select(['id', 'datum', 'pocet'])
     //->sum('pocet')
     ->from('test')
     ->where('pocet', 'in', $subRes)
@@ -383,13 +398,13 @@ $res = $query->select(['id', 'datum', 'pocet'])
     ->groupBy('datum')
     ->orderBy('pocet')
     ->limit(5);
+*/
 
 echo $res;
     $res = $res->run();
 
 echo $res;
-$res = null;
-*/
+
 Profiler::finish('select');
 
 

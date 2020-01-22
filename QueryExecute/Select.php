@@ -15,9 +15,9 @@ use pql\QueryExecute\Joins\HashJoin;
 use pql\QueryExecute\Joins\NestedLoopJoin;
 use pql\QueryExecute\Joins\SortMergeJoin;
 use pql\QueryResult\TableResult;
-use pql\TableRow;
 use pql\SelectedColumn;
 use pql\Table;
+use pql\TableRow;
 
 /**
  * Class Select
@@ -101,6 +101,13 @@ class Select extends BaseQuery
         Profiler::finish('getRows');
 
         //bdump($this->result, '$this->result SET');
+
+        Profiler::start('DISTINCT');
+        $this->result = $this->distinct();
+        Profiler::finish('DISTINCT');
+
+        //bdump($this->result, '$this->result DISTINCT');
+
 
         Profiler::start('innerJoin');
         $this->innerJoin();
@@ -319,6 +326,26 @@ class Select extends BaseQuery
         }
 
         unset($row);
+    }
+
+    /**
+     * @return array
+     */
+    private function distinct()
+    {
+        if ($this->query->getDistinctColumn() === null) {
+            return $this->result;
+        }
+
+        $resultTemp = [];
+
+        foreach ($this->result as $row) {
+            $column = $row[$this->query->getDistinctColumn()->getColumn()];
+
+            $resultTemp[$column] = $row;
+        }
+
+        return array_values($resultTemp);
     }
 
     /**
