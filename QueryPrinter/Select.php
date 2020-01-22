@@ -99,12 +99,14 @@ class Select implements IQueryPrinter
     {
         $select = 'SELECT ';
 
-        foreach ($this->query->getSelectedColumns() as $i => $selectedColumn) {
-            if ($i !== 0) {
-                $select .= ', ';
-            }
+        if (!$this->query->getDistinctColumn()) {
+            foreach ($this->query->getSelectedColumns() as $i => $selectedColumn) {
+                if ($i !== 0) {
+                    $select .= ', ';
+                }
 
-            $select .= (string) $selectedColumn;
+                $select .= (string) $selectedColumn;
+            }
         }
 
         return $select;
