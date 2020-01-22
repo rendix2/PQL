@@ -60,7 +60,6 @@ class Select implements IQueryPrinter
     public function printQuery()
     {
         $select    = $this->columns();
-        $distinct  = $this->distinct();
         $functions = $this->functions();
 
         $from = $this->from();
@@ -84,7 +83,7 @@ class Select implements IQueryPrinter
         $intersect = $this->intersect();
         $except = $this->except();
 
-        $selectClause = $select . $distinct . $functions;
+        $selectClause = $select . $functions;
         $joins = $innerJoin . $crossJoin . $leftJoin . $rightJoin . $fullJoin;
         $setOperations = $union . $unionAll . $intersect . $except;
         $limitOperations = $limit . $offset;
@@ -97,16 +96,14 @@ class Select implements IQueryPrinter
      */
     private function columns()
     {
-        $select = 'SELECT ';
+        $select = 'SELECT ' . $this->distinct();
 
-        if (!$this->query->getDistinctColumn()) {
-            foreach ($this->query->getSelectedColumns() as $i => $selectedColumn) {
-                if ($i !== 0) {
-                    $select .= ', ';
-                }
-
-                $select .= (string) $selectedColumn;
+        foreach ($this->query->getSelectedColumns() as $i => $selectedColumn) {
+            if ($i !== 0) {
+                $select .= ', ';
             }
+
+            $select .= (string)$selectedColumn;
         }
 
         return $select;
@@ -120,7 +117,7 @@ class Select implements IQueryPrinter
         $distinct = '';
 
         if ($this->query->getDistinctColumn()) {
-            $distinct = 'DISTINCT ' . $this->query->getDistinctColumn()->getColumn();
+            $distinct = 'DISTINCT ';
         }
 
         return $distinct;
