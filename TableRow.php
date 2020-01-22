@@ -16,7 +16,7 @@ use stdClass;
  * @author rendix2 <rendix2@seznam.cz>
  * @package pql
  */
-class TableRow
+class TableRow implements IRow
 {
     /**
      * @var stdClass $row
