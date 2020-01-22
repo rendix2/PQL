@@ -28,6 +28,7 @@ class Operator
         self::BETWEEN,
         self::BETWEEN_INCLUSIVE,
         self::REGULAR_EXPRESSION,
+        self::EXISTS
     ];
 
     /**
@@ -99,6 +100,11 @@ class Operator
      * @var string
      */
     const REGULAR_EXPRESSION = 'regexp';
+
+    /**
+     * @var string
+     */
+    const EXISTS = 'exists';
 
     /**
      * @param string $operator

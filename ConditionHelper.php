@@ -3,6 +3,7 @@
 namespace pql;
 
 use Exception;
+use pql\QueryResult\TableResult;
 
 /**
  * Class ConditionHelper
@@ -612,6 +613,27 @@ class ConditionHelper
                 // IS NOT NULL column
                 if ($issetRowAValue && $rowA[$condition->getValue()] !== 'null') {
                     return true;
+                }
+
+                break;
+
+            case Operator::EXISTS:
+                // WHERE EXISTS (SELECT id from table ....)
+                if ($hasSubQueryColumn) {
+                    $subQueryResult = SubQueryHelper::runAndCheckSubQuery($condition->getColumn());
+
+                    if ($subQueryResult->getRowsCount()) {
+                        return true;
+                    }
+                }
+
+                // WHERE (SELECT id from table ....) EXISTS
+                if ($hasSubQueryValue) {
+                    $subQueryResult = SubQueryHelper::runAndCheckSubQuery($condition->getValue());
+
+                    if ($subQueryResult->getRowsCount()) {
+                        return true;
+                    }
                 }
 
                 break;

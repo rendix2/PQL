@@ -974,6 +974,12 @@ class Query
             }
         }
 
+        if ($condition->getOperator() === Operator::EXISTS) {
+            if (!($condition->getColumn() instanceof self) && !$condition->getValue() instanceof self) {
+                throw new Exception('Parameter for between must be Query.');
+            }
+        }
+
         $this->whereConditions[] = $condition;
         $this->hasWhereCondition = true;
 
