@@ -342,6 +342,8 @@ class Query
         $this->selectedColumns      = null;
         $this->selectedColumnsCount = null;
 
+        $this->distinctColumn = null;
+
         $this->functions = null;
 
         $this->table = null;
