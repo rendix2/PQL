@@ -66,29 +66,34 @@ class Select implements IQueryPrinter
 
         $innerJoin = $this->innerJoin();
         $crossJoin = $this->crossJoin();
+
         $leftJoin  = $this->leftJoin();
         $rightJoin = $this->rightJoin();
+
         $fullJoin  = $this->fullJoin();
 
         $where = $this->where();
+
         $groupBy = $this->groupBy();
-        $having = $this->having();
+        $having  = $this->having();
+
         $orderBy = $this->orderBy();
 
         $limit = $this->limit();
         $offset = $this->offset();
 
-        $union = $this->union();
-        $unionAll = $this->unionAll();
+        $union     = $this->union();
+        $unionAll  = $this->unionAll();
         $intersect = $this->intersect();
-        $except = $this->except();
+        $except    = $this->except();
 
-        $selectClause = $select . $functions;
-        $joins = $innerJoin . $crossJoin . $leftJoin . $rightJoin . $fullJoin;
-        $setOperations = $union . $unionAll . $intersect . $except;
+        $selectClause    = $select . $functions;
+        $joins           = $innerJoin . $crossJoin . $leftJoin . $rightJoin . $fullJoin;
+        $groupOperations = $groupBy . $having;
+        $setOperations   = $union . $unionAll . $intersect . $except;
         $limitOperations = $limit . $offset;
 
-        return $selectClause . $from . $joins . $where . $groupBy . $having . $orderBy . $limitOperations . $setOperations;
+        return $selectClause . $from . $joins . $where . $groupOperations . $orderBy . $limitOperations . $setOperations;
     }
 
     /**
