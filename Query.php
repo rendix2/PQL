@@ -11,6 +11,7 @@ namespace pql;
 use Exception;
 use Netpromotion\Profiler\Profiler;
 use pql\QueryExecute\Delete;
+use pql\QueryExecute\DeleteSelect;
 use pql\QueryExecute\Explain;
 use pql\QueryExecute\Insert;
 use pql\QueryExecute\InsertSelect;
@@ -58,6 +59,11 @@ class Query
      * @var string
      */
     const EXPLAIN = 'explain';
+
+    /**
+     * @var string
+     */
+    const DELETE_SELECT = 'delete_select';
 
     /**
      * @var Database $database
@@ -213,6 +219,11 @@ class Query
      * @var array|Query $insertData
      */
     private $insertData;
+
+    /**
+     * @var Query $deleteData
+     */
+    private $deleteData;
 
     /**
      * @var IResult $result
@@ -647,6 +658,14 @@ class Query
     public function getUpdateData()
     {
         return $this->updateData;
+    }
+
+    /**
+     * @return Query
+     */
+    public function getDeleteData()
+    {
+        return $this->deleteData;
     }
 
     /**
@@ -1430,6 +1449,22 @@ class Query
     }
 
     /**
+     * @param Query  $select
+     * @param string $table
+     *
+     * @return Query
+     */
+    public function deleteSelect(Query $select, $table)
+    {
+        $this->type  = self::DELETE_SELECT;
+        $this->table = new Table($this->database, $table);
+
+        $this->deleteData = $select;
+
+        return $this;
+    }
+
+    /**
      * @param string $table
      *
      * @return Query
@@ -1443,7 +1478,7 @@ class Query
     }
 
     /**
-     * @return TableResult
+     * @return IResult
      * @throws Exception
      */
     public function run()
@@ -1498,7 +1533,6 @@ class Query
                 $endTime = microtime(true);
                 $executeTime  = $endTime - $startTime;
 
-//                return $this->result = new TableResult($columns, $rows, $executeTime, $explain, 0);
                 return $this->result = new ListResult($rows);
             case self::INSERT_SELECT:
                 $insertSelect = new InsertSelect($this);
@@ -1507,6 +1541,13 @@ class Query
                 $executeTime  = $endTime - $startTime;
 
                 return $this->result = new TableResult([], [], $executeTime, $insertSelect, $affectedRows);
+            case self::DELETE_SELECT:
+                $deleteSelect = new DeleteSelect($this);
+                $affectedRows = $deleteSelect->run();
+                $endTime      = microtime(true);
+                $executeTime  = $endTime - $startTime;
+
+                return $this->result = new TableResult([], [], $executeTime, $deleteSelect, $affectedRows);
             default:
                 $message = sprintf('Unknown query type "%s".', $this->type);
 

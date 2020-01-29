@@ -1,26 +1,31 @@
 <?php
+/**
+ * Created by PhpStorm.
+ * User: Tom
+ * Date: 29. 1. 2020
+ * Time: 16:34
+ */
 
 namespace pql\QueryExecute;
 
-use Exception;
 use pql\Alias;
+use pql\Operator;
 use pql\Query;
 
 /**
- * Class InsertSelect
+ * Class DeleteSelect
  *
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryExecute
  */
-class InsertSelect extends BaseQuery
+class DeleteSelect extends BaseQuery
 {
     /**
      * @inheritDoc
-     * @throws Exception
      */
     public function run()
     {
-        $selectQuery = new Select($this->query->getInsertData());
+        $selectQuery = new Select($this->query->getDeleteData());
         $selectQuery->run();
 
         $selectedColumns = [];
@@ -38,24 +43,17 @@ class InsertSelect extends BaseQuery
             }
         }
 
-        $queryResult = $selectQuery->result;
-        $result      = [];
-
-        foreach ($queryResult as $rowNumber => $row) {
-            foreach ($row as $columnName => $columnValue) {
-                if (in_array($columnName, $selectedColumns, true)) {
-                    $result[$rowNumber][$columnName] = $columnValue;
-                }
-            }
-        }
-
         $results = [];
 
-        foreach ($result as $insertData) {
-            $insertQuery = new Query($this->query->getDatabase());
-            $insertQuery->insert($this->query->getTable()->getName(), $insertData);
+        foreach ($selectQuery->result as $row) {
+            $deleteQuery = new Query($this->query->getDatabase());
+            $deleteQuery->delete($this->query->getTable()->getName());
 
-            $results[] = $insertQuery->run();
+            foreach ($selectedColumns as $selectedColumn) {
+                $deleteQuery = $deleteQuery->where($selectedColumn, Operator::EQUAL, $row[$selectedColumn]);
+            }
+
+            $results[] = $deleteQuery->run();
         }
 
         return $results;
