@@ -50,6 +50,9 @@ class QueryPrinter
             case Query::DELETE_SELECT:
                 $this->query = new DeleteSelect($query);
                 break;
+            case Query::UPDATE_SELECT:
+                $this->query = new UpdateSelect($query);
+                break;
             default:
                 $message = sprintf('Unknown query type "%s".', $query->getType());
 

@@ -17,6 +17,7 @@ use pql\QueryExecute\Insert;
 use pql\QueryExecute\InsertSelect;
 use pql\QueryExecute\Select;
 use pql\QueryExecute\Update;
+use pql\QueryExecute\UpdateSelect;
 use pql\QueryPrinter\QueryPrinter;
 use pql\QueryResult\IResult;
 use pql\QueryResult\ListResult;
@@ -64,6 +65,11 @@ class Query
      * @var string
      */
     const DELETE_SELECT = 'delete_select';
+
+    /**
+     * @var string
+     */
+    const UPDATE_SELECT = 'update_select';
 
     /**
      * @var Database $database
@@ -654,7 +660,7 @@ class Query
     }
     
     /**
-     * @return array
+     * @return array|Query
      */
     public function getUpdateData()
     {
@@ -1466,6 +1472,22 @@ class Query
     }
 
     /**
+     * @param Query  $select
+     * @param string $table
+     *
+     * @return Query
+     */
+    public function updateSelect(Query $select, $table)
+    {
+        $this->type  = self::UPDATE_SELECT;
+        $this->table = new Table($this->database, $table);
+
+        $this->updateData = $select;
+
+        return $this;
+    }
+
+    /**
      * @param string $table
      *
      * @return Query
@@ -1549,6 +1571,13 @@ class Query
                 $executeTime  = $endTime - $startTime;
 
                 return $this->result = new TableResult([], [], $executeTime, $deleteSelect, $affectedRows);
+            case self::UPDATE_SELECT:
+                $updateSelect = new UpdateSelect($this);
+                $affectedRows = $updateSelect->run();
+                $endTime      = microtime(true);
+                $executeTime  = $endTime - $startTime;
+
+                return $this->result = new TableResult([], [], $executeTime, $updateSelect, $affectedRows);
             default:
                 $message = sprintf('Unknown query type "%s".', $this->type);
 
