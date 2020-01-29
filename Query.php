@@ -435,6 +435,7 @@ class Query
 
         $this->insertData = null;
         $this->updateData = null;
+        $this->deleteData = null;
 
         $this->result = null;
 
