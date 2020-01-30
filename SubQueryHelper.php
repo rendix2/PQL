@@ -49,7 +49,7 @@ class SubQueryHelper
         $subQueryResult = self::runAndCheckSubQuery($subQuery);
 
         if (!$subQueryResult->getColumnsCount()) {
-            throw new Exception('Subquery has no column.');
+            throw new Exception('SubQuery has no column.');
         }
 
         if ($subQueryResult->getColumnsCount() > 1) {
