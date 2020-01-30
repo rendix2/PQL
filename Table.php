@@ -12,6 +12,7 @@ use Exception;
 use Nette\IOException;
 use Nette\Utils\FileSystem;
 use Nette\Utils\Finder;
+use pql\QueryRow\TableRow;
 use SplFileInfo;
 use SplFileObject;
 

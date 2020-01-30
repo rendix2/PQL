@@ -6,7 +6,7 @@
  * Time: 17:06
  */
 
-namespace pql;
+namespace pql\QueryRow;
 
 /**
  * Class IRow

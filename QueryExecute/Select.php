@@ -15,9 +15,9 @@ use pql\QueryExecute\Joins\HashJoin;
 use pql\QueryExecute\Joins\NestedLoopJoin;
 use pql\QueryExecute\Joins\SortMergeJoin;
 use pql\QueryResult\TableResult;
+use pql\QueryRow\TableRow;
 use pql\SelectedColumn;
 use pql\Table;
-use pql\TableRow;
 
 /**
  * Class Select

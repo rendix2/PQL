@@ -2,10 +2,10 @@
 
 namespace pql\QueryExecute;
 
-use pql\ExplainRow;
 use pql\JoinedTable;
 use pql\Optimizer;
 use pql\Query;
+use pql\QueryRow\ExplainRow;
 use pql\Table;
 
 /**

@@ -6,7 +6,7 @@
  * Time: 16:08
  */
 
-namespace pql;
+namespace pql\QueryRow;
 
 use stdClass;
 
