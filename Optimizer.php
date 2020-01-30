@@ -36,6 +36,16 @@ class Optimizer
     const TABLE_A_FIRST = 'a_first_b_bigger';
 
     /**
+     * @var string
+     */
+    const CONDITION_VALUE_VALUE = 'value';
+
+    /**
+     * @var string
+     */
+    const CONDITION_COLUMN_VALUE = 'column';
+
+    /**
      * @var Query $query
      */
     private $query;
@@ -116,5 +126,26 @@ class Optimizer
     public function sayIfOrderByIsNeed()
     {
         return $this->useOrderBy;
+    }
+
+    /**
+     * @param Condition $condition
+     * @param Table     $fromTable
+     * @param Table     $joinedTable
+     *
+     * @return bool|string
+     */
+    public function sayIfConditionContainsValue(Condition $condition, Table $fromTable, Table $joinedTable)
+    {
+        $column = $condition->getColumn();
+        $value  = $condition->getValue();
+
+        if (!$fromTable->columnExists($column) && !$joinedTable->columnExists($column)) {
+            return self::CONDITION_COLUMN_VALUE;
+        } elseif (!$fromTable->columnExists($value) && !$joinedTable->columnExists($value)) {
+            return self::CONDITION_VALUE_VALUE;
+        } else {
+            return false;
+        }
     }
 }
