@@ -21,6 +21,325 @@ class ConditionHelper
      * @return bool
      * @throws Exception
      */
+    public static function whereCondition(Condition $condition, array $rowA, array $rowB)
+    {
+        $issetRowAColumn = isset($rowA[$condition->getColumn()]);
+
+        $issetRowAColumnRowBValue = isset($rowA[$condition->getColumn()], $rowA[$condition->getValue()]);
+
+        $hasSubQueryColumn = $condition->getColumn() instanceof Query;
+        $columnIsFunction  = $condition->getColumn() instanceof AggregateFunction;
+
+        switch ($condition->getOperator()) {
+            case Operator::EQUAL:
+                // column = 5
+                if ($issetRowAColumn && $rowA[$condition->getColumn()] === $condition->getValue()) {
+                    return true;
+                }
+
+                // column1 = column2
+                if ($issetRowAColumnRowBValue && $rowA[$condition->getColumn()] === $rowB[$condition->getValue()]) {
+                    return true;
+                }
+
+                /**
+                 * (SELECT id from table ....) = column
+                 */
+                if ($hasSubQueryColumn) {
+                    $subQueryResult = SubQueryHelper::runAndCheckOneRowOneColumn($condition->getColumn());
+
+                    $firstRow    = $subQueryResult->getRows()[0];
+                    $firstColumn = $subQueryResult->getColumns()[0];
+
+                    if ($rowA[$condition->getValue()] === $firstRow->get()->{$firstColumn}) {
+                        return true;
+                    }
+                }
+
+                // COUNT(column_id) = 1
+                if ($columnIsFunction && $rowA[(string)$condition->getColumn()] === $condition->getValue()) {
+                    return true;
+                }
+                break;
+
+            case Operator::GREATER_THAN:
+                // column > 5
+                if ($issetRowAColumn && $rowA[$condition->getColumn()] > $condition->getValue()) {
+                    return true;
+                }
+
+                // column1 > column2
+                if ($issetRowAColumnRowBValue && $rowA[$condition->getColumn()] > $rowB[$condition->getValue()]) {
+                    return true;
+                }
+
+                /**
+                 * (SELECT id from table ....) > column
+                 */
+                if ($hasSubQueryColumn) {
+                    $subQueryResult = SubQueryHelper::runAndCheckOneRowOneColumn($condition->getColumn());
+
+                    $firstRow    = $subQueryResult->getRows()[0];
+                    $firstColumn = $subQueryResult->getColumns()[0];
+
+                    if ($rowA[$condition->getValue()] > $firstRow->get()->{$firstColumn}) {
+                        return true;
+                    }
+                }
+
+                // COUNT(column_id) > 1
+                if ($columnIsFunction && $rowA[(string)$condition->getColumn()] > $condition->getValue()) {
+                    return true;
+                }
+
+                break;
+
+            case Operator::GREATER_EQUAL_THAN:
+                // column >= 5
+                if ($issetRowAColumn && $rowA[$condition->getColumn()] >= $condition->getValue()) {
+                    return true;
+                }
+
+                // column1 >= column2
+                if ($issetRowAColumnRowBValue && $rowA[$condition->getColumn()] >= $rowB[$condition->getValue()]) {
+                    return true;
+                }
+
+                /**
+                 * (SELECT id from table ....) >= column
+                 */
+                if ($hasSubQueryColumn) {
+                    $subQueryResult = SubQueryHelper::runAndCheckOneRowOneColumn($condition->getColumn());
+
+                    $firstRow    = $subQueryResult->getRows()[0];
+                    $firstColumn = $subQueryResult->getColumns()[0];
+
+                    if ($rowA[$condition->getValue()] >= $firstRow->get()->{$firstColumn}) {
+                        return true;
+                    }
+                }
+
+                // COUNT(column_id) >= 1
+                if ($columnIsFunction && $rowA[(string)$condition->getColumn()] >= $condition->getValue()) {
+                    return true;
+                }
+
+                break;
+
+            case Operator::LESS_THAN:
+                // column < 5
+                if ($issetRowAColumn && $rowA[$condition->getColumn()] < $condition->getValue()) {
+                    return true;
+                }
+
+                // column1 < column2
+                if ($issetRowAColumnRowBValue && $rowA[$condition->getColumn()] < $rowB[$condition->getValue()]) {
+                    return true;
+                }
+
+                /**
+                 * (SELECT id from table ....) < column
+                 */
+                if ($hasSubQueryColumn) {
+                    $subQueryResult = SubQueryHelper::runAndCheckOneRowOneColumn($condition->getColumn());
+
+                    $firstRow    = $subQueryResult->getRows()[0];
+                    $firstColumn = $subQueryResult->getColumns()[0];
+
+                    if ($rowA[$condition->getValue()] < $firstRow->get()->{$firstColumn}) {
+                        return true;
+                    }
+                }
+
+                // COUNT(column_id) < 1
+                if ($columnIsFunction && $rowA[(string)$condition->getColumn()] < $condition->getValue()) {
+                    return true;
+                }
+
+                break;
+
+            case Operator::LESS_EQUAL_THAN:
+                // column <= 5
+                if ($issetRowAColumn && $rowA[$condition->getColumn()] <= $condition->getValue()) {
+                    return true;
+                }
+
+                // column1 <= column2
+                if ($issetRowAColumnRowBValue && $rowA[$condition->getColumn()] <= $rowB[$condition->getValue()]) {
+                    return true;
+                }
+
+                /**
+                 * (SELECT id from table ....) <= column
+                 */
+                if ($hasSubQueryColumn) {
+                    $subQueryResult = SubQueryHelper::runAndCheckOneRowOneColumn($condition->getColumn());
+
+                    $firstRow    = $subQueryResult->getRows()[0];
+                    $firstColumn = $subQueryResult->getColumns()[0];
+
+                    if ($rowA[$condition->getValue()] <= $firstRow->get()->{$firstColumn}) {
+                        return true;
+                    }
+                }
+
+                // COUNT(column_id) <= 1
+                if ($columnIsFunction && $rowA[(string)$condition->getColumn()] <= $condition->getValue()) {
+                    return true;
+                }
+
+                break;
+
+            case Operator::IN:
+                // column IN (5)
+                if ($issetRowAColumn && in_array($rowA[$condition->getColumn()], $condition->getValue(), true)) {
+                    return true;
+                }
+
+                /**
+                 * (SELECT id from table ....) IN column
+                 */
+                if ($hasSubQueryColumn) {
+                    $subQueryResult = SubQueryHelper::runAndCheckOneColumn($condition->getColumn());
+                    $firstColumn    = $subQueryResult->getColumns()[0];
+
+                    foreach ($subQueryResult->getRows() as $subRows) {
+                        if ($rowA[$condition->getColumn()] === $subRows->get()->{$firstColumn}) {
+                            return true;
+                        }
+                    }
+                }
+
+                break;
+
+            case Operator::NOT_IN:
+                // column NOT IN (5)
+                if ($issetRowAColumn && !in_array($rowA[$condition->getColumn()], $condition->getValue(), true)) {
+                    return true;
+                }
+
+                /**
+                 * (SELECT id from table ....) NOT IN column
+                 */
+                if ($hasSubQueryColumn) {
+                    $subQueryResult = SubQueryHelper::runAndCheckOneColumn($condition->getColumn());
+                    $firstColumn    = $subQueryResult->getColumns()[0];
+
+                    foreach ($subQueryResult->getRows() as $subRows) {
+                        if ($rowA[$condition->getColumn()] !== $subRows->get()->{$firstColumn}) {
+                            return true;
+                        }
+                    }
+                }
+
+                break;
+
+            case Operator::BETWEEN:
+                if (!$issetRowAColumn &&
+                    $rowA[$condition->getColumn()] > $condition->getValue()[0] &&
+                    $rowA[$condition->getColumn()] < $condition->getValue()[1]
+                ) {
+                    return true;
+                }
+
+                break;
+
+            case Operator::BETWEEN_INCLUSIVE:
+                if (!$issetRowAColumn &&
+                    $rowA[$condition->getColumn()] >= $condition->getValue()[0] &&
+                    $rowA[$condition->getColumn()] <= $condition->getValue()[1]
+                ) {
+                    return true;
+                }
+
+                break;
+
+            case Operator::NON_EQUAL:
+            case Operator::LESS_AND_GREATER_THAN:
+                // column != 5
+                if ($issetRowAColumn && $rowA[$condition->getColumn()] !== $condition->getValue()) {
+                    return true;
+                }
+
+                // column1 != column2
+                if ($issetRowAColumnRowBValue && $rowA[$condition->getColumn()] !== $rowB[$condition->getValue()]) {
+                    return true;
+                }
+
+                /**
+                 * (SELECT id from table ....) != column
+                 */
+                if ($hasSubQueryColumn) {
+                    $subQueryResult = SubQueryHelper::runAndCheckOneRowOneColumn($condition->getColumn());
+
+                    $firstRow    = $subQueryResult->getRows()[0];
+                    $firstColumn = $subQueryResult->getColumns()[0];
+
+                    if ($rowA[$condition->getValue()] !== $firstRow->get()->{$firstColumn}) {
+                        return true;
+                    }
+                }
+
+                // COUNT(column_id) != 1
+                if ($columnIsFunction && $rowA[(string)$condition->getColumn()] !== $condition->getValue()) {
+                    return true;
+                }
+
+                break;
+
+            case Operator::REGULAR_EXPRESSION:
+                $quotedValue  = preg_quote($condition->getValue(), '#');
+
+                // column regexp [a-z]
+                if ($issetRowAColumn && preg_match('#' . $quotedValue . '#', $rowA[$condition->getColumn()])) {
+                    return true;
+                }
+
+                break;
+
+            case Operator::IS_NULL:
+                // column IS NULL
+                if ($issetRowAColumn && $rowA[$condition->getColumn()] === 'null') {
+                    return true;
+                }
+
+                break;
+
+            case Operator::IS_NOT_NULL:
+                // column IS NOT NULL
+                if ($issetRowAColumn && $rowA[$condition->getColumn()] !== 'null') {
+                    return true;
+                }
+
+                break;
+
+            case Operator::EXISTS:
+                // WHERE EXISTS (SELECT id from table ....)
+                if ($hasSubQueryColumn) {
+                    $subQueryResult = SubQueryHelper::runAndCheckSubQuery($condition->getColumn());
+
+                    if ($subQueryResult->getRowsCount()) {
+                        return true;
+                    }
+                }
+                break;
+
+            default:
+                $message = sprintf('Unknown "%s" operator.', $condition->getOperator());
+
+                throw new Exception($message);
+        }
+    }
+
+    /**
+     * @param Condition $condition
+     * @param array     $rowA
+     * @param array     $rowB
+     *
+     * @return bool
+     * @throws Exception
+     * @deprecated
+     */
     public static function condition(Condition $condition, array $rowA, array $rowB)
     {
         $hasSubQueryValue  = $condition->getValue() instanceof Query;
