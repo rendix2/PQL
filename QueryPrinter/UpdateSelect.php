@@ -8,27 +8,27 @@
 
 namespace pql\QueryPrinter;
 
-use pql\Query;
+use pql\QueryBuilder\UpdateSelect as UpdateSelectBuilder;
 
 /**
  * Class UpdateSelect
  *
+ * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryPrinter
- * @author  Tomáš Babický tomas.babicky@websta.de
  */
 class UpdateSelect implements IQueryPrinter
 {
     /**
-     * @var Query $query
+     * @var UpdateSelectBuilder $query
      */
     private $query;
 
     /**
      * UpdateSelect constructor.
      *
-     * @param Query $query
+     * @param UpdateSelectBuilder $query
      */
-    public function __construct(Query $query)
+    public function __construct(UpdateSelectBuilder $query)
     {
         $this->query = $query;
     }
@@ -48,7 +48,7 @@ class UpdateSelect implements IQueryPrinter
     {
         $update = 'UPDATE ' . $this->query->getTable()->getName();
 
-        $selectQueryPrinter = new Select($this->query->getUpdateData());
+        $selectQueryPrinter = new Select($this->query->getData());
 
         return $update . $selectQueryPrinter->printQuery();
     }

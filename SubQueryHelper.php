@@ -3,6 +3,7 @@
 namespace pql;
 
 use Exception;
+use pql\QueryBuilder\Query;
 use pql\QueryResult\TableResult;
 
 /**

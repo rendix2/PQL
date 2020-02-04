@@ -8,7 +8,7 @@
 
 namespace pql\QueryPrinter;
 
-use pql\Query;
+use pql\QueryBuilder\Insert as InsertBuilder;
 
 /**
  * Class Insert
@@ -20,16 +20,16 @@ use pql\Query;
 class Insert implements IQueryPrinter
 {
     /**
-     * @var Query $query
+     * @var InsertBuilder $query
      */
     private $query;
 
     /**
      * Insert constructor.
      *
-     * @param Query $query
+     * @param InsertBuilder $query
      */
-    public function __construct(Query $query)
+    public function __construct(InsertBuilder $query)
     {
         $this->query = $query;
     }
@@ -47,8 +47,8 @@ class Insert implements IQueryPrinter
      */
     public function printQuery()
     {
-        $columns   = array_keys($this->query->getInsertData());
-        $values    = array_values($this->query->getInsertData());
+        $columns   = array_keys($this->query->getData());
+        $values    = array_values($this->query->getData());
         $tableName = $this->query->getTable()->getName();
 
         $columns = '(' . implode(', ', $columns). ')';

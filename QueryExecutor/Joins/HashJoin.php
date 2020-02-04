@@ -1,6 +1,6 @@
 <?php
 
-namespace pql\QueryExecute\Joins;
+namespace pql\QueryExecutor\Joins;
 
 use pql\Condition;
 

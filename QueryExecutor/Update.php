@@ -1,10 +1,11 @@
 <?php
 
-namespace pql\QueryExecute;
+namespace pql\QueryExecutor;
 
 use Nette\Utils\FileSystem;
 use pql\Condition;
 use pql\ConditionHelper;
+use pql\QueryBuilder\Update as UpdateBuilder;
 use pql\Table;
 use SplFileObject;
 
@@ -14,8 +15,27 @@ use SplFileObject;
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryExecute
  */
-class Update extends BaseQuery
+class Update implements IQueryExecutor
 {
+    use Limit;
+
+    /**
+     * @var UpdateBuilder $query
+     */
+    private $query;
+
+    private $result;
+
+    /**
+     * Update constructor.
+     *
+     * @param UpdateBuilder $query
+     */
+    public function __construct(UpdateBuilder $query)
+    {
+        $this->query = $query;
+    }
+
     /**
      * run query
      */
@@ -68,7 +88,7 @@ class Update extends BaseQuery
      */
     private function where()
     {
-        $updateData = $this->query->getUpdateData();
+        $updateData = $this->query->getData();
         $rows = $this->query->getTable()->getRows();
 
         foreach ($this->query->getWhereConditions() as $whereCondition) {

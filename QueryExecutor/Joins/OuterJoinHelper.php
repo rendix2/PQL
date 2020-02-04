@@ -6,7 +6,7 @@
  * Time: 16:36
  */
 
-namespace pql\QueryExecute\Joins;
+namespace pql\QueryExecutor\Joins;
 
 /**
  * Class OuterJoinHelper

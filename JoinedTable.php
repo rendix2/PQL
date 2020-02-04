@@ -2,6 +2,8 @@
 
 namespace pql;
 
+use pql\QueryBuilder\Query;
+
 /**
  * Class JoinedTable
  *

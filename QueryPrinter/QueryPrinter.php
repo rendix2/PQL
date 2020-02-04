@@ -3,7 +3,6 @@
 namespace pql\QueryPrinter;
 
 use Exception;
-use pql\Query;
 
 /**
  * Class QueryPrinter
@@ -21,40 +20,41 @@ class QueryPrinter
     /**
      * QueryPrinter constructor.
      *
-     * @param Query $query
+     * @param \pql\QueryBuilder\Query $query
      *
      * @throws Exception
      */
-    public function __construct(Query $query)
+    public function __construct(\pql\QueryBuilder\Query $query)
     {
         // decide which Query type we have
-        switch ($query->getType()) {
-            case Query::SELECT:
-                $this->query = new Select($query);
+
+        switch (get_class($query->getQuery())) {
+            case \pql\QueryBuilder\Select::class:
+                $this->query = new Select($query->getQuery());
                 break;
-            case Query::INSERT:
-                $this->query = new Insert($query);
+            case \pql\QueryBuilder\Insert::class:
+                $this->query = new Insert($query->getQuery());
                 break;
-            case Query::DELETE:
-                $this->query = new Delete($query);
+            case \pql\QueryBuilder\Delete::class:
+                $this->query = new Delete($query->getQuery());
                 break;
-            case Query::UPDATE:
-                $this->query = new Update($query);
+            case \pql\QueryBuilder\Update::class:
+                $this->query = new Update($query->getQuery());
                 break;
-            case Query::EXPLAIN:
-                $this->query = new Explain($query);
+            case \pql\QueryBuilder\Explain::class:
+                $this->query = new Explain($query->getQuery());
                 break;
-            case Query::INSERT_SELECT:
-                $this->query = new InsertSelect($query);
+            case \pql\QueryBuilder\InsertSelect::class:
+                $this->query = new InsertSelect($query->getQuery());
                 break;
-            case Query::DELETE_SELECT:
-                $this->query = new DeleteSelect($query);
+            case \pql\QueryBuilder\DeleteSelect::class:
+                $this->query = new DeleteSelect($query->getQuery());
                 break;
-            case Query::UPDATE_SELECT:
-                $this->query = new UpdateSelect($query);
+            case \pql\QueryBuilder\UpdateSelect::class:
+                $this->query = new UpdateSelect($query->getQuery());
                 break;
             default:
-                $message = sprintf('Unknown query type "%s".', $query->getType());
+                $message = sprintf('Unknown query type "%s".', get_class($query->getQuery()));
 
                 throw new Exception($message);
         }

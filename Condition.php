@@ -3,6 +3,7 @@
 namespace pql;
 
 use Exception;
+use pql\QueryBuilder\Query;
 
 /**
  * Class Condition

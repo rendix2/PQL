@@ -6,11 +6,12 @@
  * Time: 16:34
  */
 
-namespace pql\QueryExecute;
+namespace pql\QueryExecutor;
 
 use pql\Alias;
 use pql\Operator;
-use pql\Query;
+use pql\QueryBuilder\DeleteSelect as DeleteSelectBuilder;
+use pql\QueryBuilder\Query;
 
 /**
  * Class DeleteSelect
@@ -18,19 +19,34 @@ use pql\Query;
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryExecute
  */
-class DeleteSelect extends BaseQuery
+class DeleteSelect implements IQueryExecutor
 {
+    /**
+     * @var DeleteSelectBuilder $query
+     */
+    private $query;
+
+    /**
+     * DeleteSelect constructor.
+     *
+     * @param DeleteSelectBuilder $query
+     */
+    public function __construct(DeleteSelectBuilder $query)
+    {
+        $this->query = $query;
+    }
+
     /**
      * @inheritDoc
      */
     public function run()
     {
-        $selectQuery = new Select($this->query->getDeleteData());
+        $selectQuery = new Select($this->query->getData());
         $selectQuery->run();
 
         $selectedColumns = [];
 
-        foreach ($selectQuery->query->getSelectedColumns() as $selectedColumn) {
+        foreach ($selectQuery->getQuery()->getSelectedColumns() as $selectedColumn) {
             if ($this->query->getTable()->columnExists($selectedColumn)) {
                 $selectedColumns[] = $selectedColumn;
             }
@@ -45,9 +61,9 @@ class DeleteSelect extends BaseQuery
 
         $results = [];
 
-        foreach ($selectQuery->result as $row) {
+        foreach ($selectQuery->getResult() as $row) {
             $deleteQuery = new Query($this->query->getDatabase());
-            $deleteQuery->delete($this->query->getTable()->getName());
+            $deleteQuery = $deleteQuery->delete()->delete($this->query->getTable()->getName());
 
             foreach ($selectedColumns as $selectedColumn) {
                 $deleteQuery = $deleteQuery->where($selectedColumn, Operator::EQUAL, $row[$selectedColumn]);

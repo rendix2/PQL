@@ -10,7 +10,8 @@ namespace pql\QueryPrinter;
 
 use pql\Condition;
 use pql\JoinedTable;
-use pql\Query;
+use pql\QueryBuilder\Query;
+use pql\QueryBuilder\Select as SelectBuilder;
 use pql\Table;
 
 /**
@@ -32,16 +33,16 @@ class Select implements IQueryPrinter
     const IN_SEPARATOR = ', ';
 
     /**
-     * @var Query $query
+     * @var SelectBuilder $query
      */
     private $query;
 
     /**
      * Select constructor.
      *
-     * @param Query $query
+     * @param SelectBuilder $query
      */
-    public function __construct(Query $query)
+    public function __construct(SelectBuilder $query)
     {
         $this->query = $query;
     }

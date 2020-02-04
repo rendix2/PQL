@@ -1,6 +1,6 @@
 <?php
 
-namespace pql\QueryExecute;
+namespace pql\QueryExecutor;
 
 use Exception;
 use Netpromotion\Profiler\Profiler;
@@ -9,11 +9,11 @@ use pql\Alias;
 use pql\Condition;
 use pql\ConditionHelper;
 use pql\JoinedTable;
-use pql\Optimizer;
-use pql\Query;
-use pql\QueryExecute\Joins\HashJoin;
-use pql\QueryExecute\Joins\NestedLoopJoin;
-use pql\QueryExecute\Joins\SortMergeJoin;
+use pql\QueryBuilder\Query;
+use pql\QueryBuilder\Select as SelectBuilder;
+use pql\QueryExecutor\Joins\HashJoin;
+use pql\QueryExecutor\Joins\NestedLoopJoin;
+use pql\QueryExecutor\Joins\SortMergeJoin;
 use pql\QueryResult\TableResult;
 use pql\QueryRow\TableRow;
 use pql\SelectedColumn;
@@ -25,8 +25,10 @@ use pql\Table;
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryExecute
  */
-class Select extends BaseQuery
+class Select implements IQueryExecutor
 {
+    use Limit;
+
     /**
      * @var array $groupedByData
      */
@@ -48,16 +50,23 @@ class Select extends BaseQuery
     private $columns;
 
     /**
+     * @var SelectBuilder $query
+     */
+    private $query;
+
+    private $result;
+
+    /**
      * Select constructor.
      *
-     * @param Query $query
+     * @param SelectBuilder $query
      */
-    public function __construct(Query $query)
+    public function __construct(SelectBuilder $query)
     {
-        parent::__construct($query);
-
         $this->optimizer = new Optimizer($query);
         $this->columns   = [];
+
+        $this->query = $query;
     }
 
     /**
@@ -70,7 +79,17 @@ class Select extends BaseQuery
         $this->groupedByDataCount = null;
         $this->columns            = null;
 
-        parent::__destruct();
+        $this->query = null;
+    }
+
+    public function getQuery()
+    {
+        return $this->query;
+    }
+
+    public function getResult()
+    {
+        return $this->result;
     }
 
     /**
@@ -611,8 +630,12 @@ class Select extends BaseQuery
             return $this->result;
         }
 
-        foreach ($this->query->getWhereConditions() as $whereCondition) {
-            $this->result = $this->doWhere($this->result, $whereCondition);
+        if ($this->optimizer->sayIfCanOptimizeWhere()) {
+            $this->result = $this->doWhere($this->result, $this->query->getWhereConditions()[0]);
+        } else {
+            foreach ($this->query->getWhereConditions() as $whereCondition) {
+                $this->result = $this->doWhere($this->result, $whereCondition);
+            }
         }
 
         return $this->result;

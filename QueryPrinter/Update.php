@@ -8,7 +8,7 @@
 
 namespace pql\QueryPrinter;
 
-use pql\Query;
+use pql\QueryBuilder\Update as UpdateBuilder;
 
 /**
  * Class Update
@@ -24,16 +24,16 @@ class Update implements IQueryPrinter
     use Offset;
 
     /**
-     * @var Query $query
+     * @var UpdateBuilder $query
      */
     private $query;
 
     /**
      * Update constructor.
      *
-     * @param Query $query
+     * @param UpdateBuilder $query
      */
-    public function __construct(Query $query)
+    public function __construct(UpdateBuilder $query)
     {
         $this->query = $query;
     }
@@ -56,9 +56,9 @@ class Update implements IQueryPrinter
         $set = ' SET ';
 
         $i = 0;
-        $count = count($this->query->getUpdateData());
+        $count = count($this->query->getData());
 
-        foreach ($this->query->getUpdateData() as $column => $value) {
+        foreach ($this->query->getData() as $column => $value) {
             $i++;
 
             $set .= $column . ' = ' . $value;

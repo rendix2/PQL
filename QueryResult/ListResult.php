@@ -2,7 +2,7 @@
 
 namespace pql\QueryResult;
 
-use pql\ExplainRow;
+use pql\QueryRow\ExplainRow;
 
 /**
  * Class ListResult

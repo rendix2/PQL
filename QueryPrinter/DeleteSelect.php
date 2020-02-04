@@ -8,29 +8,29 @@
 
 namespace pql\QueryPrinter;
 
-use pql\Query;
+use pql\QueryBuilder\DeleteSelect as DeleteSelectBuilder;
 
 /**
  * Class DeleteSelect
  *
+ * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryPrinter
- * @author  Tomáš Babický tomas.babicky@websta.de
  */
 class DeleteSelect implements IQueryPrinter
 {
     /**
-     * @var Query $query
+     * @var DeleteSelectBuilder $query
      */
     private $query;
 
     /**
      * DeleteSelect constructor.
      *
-     * @param Query $query
+     * @param DeleteSelectBuilder $query
      */
-    public function __construct(Query $query)
+    public function __construct(DeleteSelectBuilder $query)
     {
-        $this->query;
+        $this->query = $query;
     }
 
     /**
@@ -48,7 +48,7 @@ class DeleteSelect implements IQueryPrinter
     {
         $delete = 'DELETE FROM ' . $this->query->getTable()->getName();
 
-        $selectQueryPrinter = new Select($this->query->getDeleteData());
+        $selectQueryPrinter = new Select($this->query->getData());
 
         return $delete . $selectQueryPrinter->printQuery();
     }

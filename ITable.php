@@ -2,6 +2,8 @@
 
 namespace pql;
 
+use pql\QueryRow\TableRow;
+
 /**
  * Interface ITable
  *

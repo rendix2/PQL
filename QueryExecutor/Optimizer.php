@@ -1,6 +1,11 @@
 <?php
 
-namespace pql;
+namespace pql\QueryExecutor;
+
+use pql\Condition;
+use pql\Operator;
+use pql\QueryBuilder\Select as SelectBuilder;
+use pql\Table;
 
 /**
  * Class Optimizer
@@ -46,7 +51,7 @@ class Optimizer
     const CONDITION_COLUMN_VALUE = 'column';
 
     /**
-     * @var Query $query
+     * @var SelectBuilder $query
      */
     private $query;
 
@@ -58,9 +63,9 @@ class Optimizer
     /**
      * Optimizer constructor.
      *
-     * @param Query $query
+     * @param SelectBuilder $query
      */
-    public function __construct(Query $query)
+    public function __construct(SelectBuilder $query)
     {
         $this->query      = $query;
         $this->useOrderBy = $query->hasOrderBy();
@@ -147,5 +152,13 @@ class Optimizer
         } else {
             return false;
         }
+    }
+
+    /**
+     * @return bool
+     */
+    public function sayIfCanOptimizeWhere()
+    {
+        return count($this->query->getWhereConditions()) === 1;
     }
 }

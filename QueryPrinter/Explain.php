@@ -8,7 +8,7 @@
 
 namespace pql\QueryPrinter;
 
-use pql\Query;
+use pql\QueryBuilder\Explain as ExplainBuilder;
 
 /**
  * Class Explain
@@ -20,16 +20,16 @@ use pql\Query;
 class Explain implements IQueryPrinter
 {
     /**
-     * @var Query $query
+     * @var ExplainBuilder $query
      */
     private $query;
 
     /**
      * Explain constructor.
      *
-     * @param Query $query
+     * @param ExplainBuilder $query
      */
-    public function __construct(Query $query)
+    public function __construct(ExplainBuilder $query)
     {
         $this->query = $query;
     }
