@@ -1,11 +1,11 @@
 <?php
 
-namespace pql\QueryExecute;
+namespace pql\QueryExecutor;
 
-use pql\ExplainRow;
 use pql\JoinedTable;
-use pql\Optimizer;
-use pql\Query;
+use pql\QueryBuilder\Explain as ExplainBuilder;
+use pql\QueryBuilder\Query;
+use pql\QueryRow\ExplainRow;
 use pql\Table;
 
 /**
@@ -14,7 +14,7 @@ use pql\Table;
  * @author rendix2 <rendix2@seznam.cz>
  * @package pql\QueryExecute
  */
-class Explain extends BaseQuery
+class Explain implements IQueryExecutor
 {
     /**
      * @var array
@@ -31,14 +31,23 @@ class Explain extends BaseQuery
     private $optimizer;
 
     /**
+     * @var ExplainBuilder $query
+     */
+    private $query;
+
+    /**
+     * @var array $result
+     */
+    private $result;
+
+    /**
      * Explain constructor.
      *
-     * @param Query $query
+     * @param ExplainBuilder $query
      */
-    public function __construct(Query $query)
+    public function __construct(ExplainBuilder $query)
     {
-        parent::__construct($query);
-
+        $this->query     = $query;
         $this->optimizer = new Optimizer($query);
     }
 
@@ -48,16 +57,23 @@ class Explain extends BaseQuery
     public function __destruct()
     {
         $this->optimizer = null;
-
-        parent::__destruct();
+        $this->query     = null;
     }
 
     /**
-     * @param Query $query
+     * @return ExplainBuilder
+     */
+    private function getQuery()
+    {
+        return $this->query;
+    }
+
+    /**
+     * @param ExplainBuilder $query
      *
      * @return ExplainRow[]
      */
-    private function columns(Query $query)
+    private function columns(ExplainBuilder $query)
     {
         $tables = [];
 
@@ -80,11 +96,11 @@ class Explain extends BaseQuery
     }
 
     /**
-     * @param Query $query
+     * @param ExplainBuilder $query
      *
      * @return ExplainRow[]
      */
-    private function from(Query $query)
+    private function from(ExplainBuilder $query)
     {
         $tables = [];
 
@@ -114,11 +130,11 @@ class Explain extends BaseQuery
     }
 
     /**
-     * @param Query $query
+     * @param ExplainBuilder $query
      *
      * @return ExplainRow[]
      */
-    private function innerJoin(Query $query)
+    private function innerJoin(ExplainBuilder $query)
     {
         $tables = [];
 
@@ -152,11 +168,11 @@ class Explain extends BaseQuery
     }
 
     /**
-     * @param Query $query
+     * @param ExplainBuilder $query
      *
      * @return ExplainRow[]
      */
-    private function crossJoin(Query $query)
+    private function crossJoin(ExplainBuilder $query)
     {
         $tables = [];
 
@@ -188,11 +204,11 @@ class Explain extends BaseQuery
     }
 
     /**
-     * @param Query $query
+     * @param ExplainBuilder $query
      *
      * @return ExplainRow[]
      */
-    private function leftJoin(Query $query)
+    private function leftJoin(ExplainBuilder $query)
     {
         $tables = [];
 
@@ -226,11 +242,11 @@ class Explain extends BaseQuery
     }
 
     /**
-     * @param Query $query
+     * @param ExplainBuilder $query
      *
      * @return ExplainRow[]
      */
-    private function rightJoin(Query $query)
+    private function rightJoin(ExplainBuilder $query)
     {
         $tables = [];
 
@@ -264,11 +280,11 @@ class Explain extends BaseQuery
     }
 
     /**
-     * @param Query $query
+     * @param ExplainBuilder $query
      *
      * @return ExplainRow[]
      */
-    private function fullJoin(Query $query)
+    private function fullJoin(ExplainBuilder $query)
     {
         $tables = [];
 
@@ -302,11 +318,11 @@ class Explain extends BaseQuery
     }
 
     /**
-     * @param Query $query
+     * @param ExplainBuilder $query
      *
      * @return ExplainRow[]
      */
-    private function where(Query $query)
+    private function where(ExplainBuilder $query)
     {
         $tables = [];
 
@@ -326,11 +342,11 @@ class Explain extends BaseQuery
     }
 
     /**
-     * @param Query $query
+     * @param ExplainBuilder $query
      *
      * @return ExplainRow[]
      */
-    private function having(Query $query)
+    private function having(ExplainBuilder $query)
     {
         $tables = [];
 
@@ -350,11 +366,11 @@ class Explain extends BaseQuery
     }
 
     /**
-     * @param Query $query
+     * @param ExplainBuilder $query
      *
      * @return ExplainRow[]
      */
-    private function union(Query $query)
+    private function union(ExplainBuilder $query)
     {
         $tables = [];
 
@@ -375,11 +391,11 @@ class Explain extends BaseQuery
     }
 
     /**
-     * @param Query $query
+     * @param ExplainBuilder $query
      *
      * @return ExplainRow[]
      */
-    private function unionAll(Query $query)
+    private function unionAll(ExplainBuilder $query)
     {
         $tables = [];
 
@@ -400,11 +416,11 @@ class Explain extends BaseQuery
     }
 
     /**
-     * @param Query $query
+     * @param ExplainBuilder $query
      *
      * @return ExplainRow[]
      */
-    private function except(Query $query)
+    private function except(ExplainBuilder $query)
     {
         $tables = [];
 
@@ -425,11 +441,11 @@ class Explain extends BaseQuery
     }
 
     /**
-     * @param Query $query
+     * @param ExplainBuilder $query
      *
      * @return ExplainRow[]
      */
-    private function intersect(Query $query)
+    private function intersect(ExplainBuilder $query)
     {
         $tables = [];
 
@@ -450,11 +466,11 @@ class Explain extends BaseQuery
     }
 
     /**
-     * @param Query $query
+     * @param ExplainBuilder $query
      *
      * @return ExplainRow[]
      */
-    private function explainHelper(Query $query)
+    private function explainHelper(ExplainBuilder $query)
     {
         return array_merge(
             $this->columns($query),

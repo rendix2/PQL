@@ -8,8 +8,6 @@
 
 namespace pql\QueryPrinter;
 
-use pql\Query;
-
 /**
  * Trait Where
  *

@@ -15,7 +15,7 @@ class TableColumn
     /**
      * @var array
      */
-    const COLUMN_TYPES = ['int', 'string', 'float', 'bool'];
+    const COLUMN_TYPES = [self::INTEGER, self::STRING, self::FLOAT, self::BOOL];
 
     /**
      * @var string

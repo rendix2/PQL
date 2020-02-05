@@ -1,10 +1,11 @@
 <?php
 
-namespace pql\QueryExecute;
+namespace pql\QueryExecutor;
 
 use Exception;
 use pql\Alias;
-use pql\Query;
+use pql\QueryBuilder\InsertSelect as InsertSelectBuilder;
+use pql\QueryBuilder\Query;
 
 /**
  * Class InsertSelect
@@ -12,20 +13,45 @@ use pql\Query;
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryExecute
  */
-class InsertSelect extends BaseQuery
+class InsertSelect implements IQueryExecutor
 {
+    /**
+     * @var InsertSelectBuilder $query
+     */
+    private $query;
+
+    /**
+     * InsertSelect constructor.
+     *
+     * @param InsertSelectBuilder $query
+     */
+    public function __construct(InsertSelectBuilder $query)
+    {
+        $this->query = $query;
+    }
+
+    /**
+     * InsertSelect destructor.
+     *
+     *
+     */
+    public function __destruct()
+    {
+        $this->query = null;
+    }
+
     /**
      * @inheritDoc
      * @throws Exception
      */
     public function run()
     {
-        $select = new Select($this->query->getInsertData());
-        $select->run();
+        $selectQuery = new Select($this->query->getData());
+        $selectQuery->run();
 
         $selectedColumns = [];
 
-        foreach ($select->query->getSelectedColumns() as $selectedColumn) {
+        foreach ($selectQuery->getQuery()->getSelectedColumns() as $selectedColumn) {
             if ($this->query->getTable()->columnExists($selectedColumn)) {
                 $selectedColumns[] = $selectedColumn;
             }
@@ -38,7 +64,7 @@ class InsertSelect extends BaseQuery
             }
         }
 
-        $queryResult = $select->result;
+        $queryResult = $selectQuery->getResult();
         $result      = [];
 
         foreach ($queryResult as $rowNumber => $row) {
@@ -53,7 +79,7 @@ class InsertSelect extends BaseQuery
 
         foreach ($result as $insertData) {
             $insertQuery = new Query($this->query->getDatabase());
-            $insertQuery->insert($this->query->getTable()->getName(), $insertData);
+            $insertQuery->insert()->insert($this->query->getTable()->getName(), $insertData);
 
             $results[] = $insertQuery->run();
         }

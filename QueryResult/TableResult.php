@@ -9,8 +9,8 @@
 namespace pql\QueryResult;
 
 use pql\ITable;
-use pql\QueryExecute\BaseQuery;
-use pql\TableRow;
+use pql\QueryExecutor\IQueryExecutor;
+use pql\QueryRow\TableRow;
 use pql\SelectedColumn;
 
 /**
@@ -57,7 +57,7 @@ final class TableResult implements ITable, IResult
     private $columnsCount;
 
     /**
-     * @var BaseQuery $query
+     * @var IQueryExecutor $query
      */
     private $query;
 
@@ -67,10 +67,10 @@ final class TableResult implements ITable, IResult
      * @param SelectedColumn[] $columns
      * @param array            $rows
      * @param float            $executeTime
-     * @param BaseQuery        $query
+     * @param IQueryExecutor   $query
      * @param int              $affectedRows
      */
-    public function __construct(array $columns, array $rows, $executeTime, BaseQuery $query, $affectedRows = 0)
+    public function __construct(array $columns, array $rows, $executeTime, IQueryExecutor $query, $affectedRows = 0)
     {
         $this->rows          = $rows;
         $this->rowsCount     = count($rows);
@@ -171,7 +171,7 @@ final class TableResult implements ITable, IResult
     }
 
     /**
-     * @return BaseQuery
+     * @return IQueryExecutor
      */
     public function getQuery()
     {

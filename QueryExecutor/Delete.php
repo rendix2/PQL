@@ -1,11 +1,12 @@
 <?php
 
-namespace pql\QueryExecute;
+namespace pql\QueryExecutor;
 
 use Exception;
 use Nette\Utils\FileSystem;
 use pql\Condition;
 use pql\ConditionHelper;
+use pql\QueryBuilder\Delete as DeleteBuilder;
 use pql\Table;
 use SplFileObject;
 
@@ -15,8 +16,39 @@ use SplFileObject;
  * @author rendix2 <rendix2@seznam.cz>
  * @package pql\QueryExecute
  */
-class Delete extends BaseQuery
+class Delete implements IQueryExecutor
 {
+    use Limit;
+
+    /**
+     * @var DeleteBuilder $query
+     */
+    private $query;
+
+    /**
+     * @var array $result
+     */
+    private $result;
+
+    /**
+     * Delete constructor.
+     *
+     * @param DeleteBuilder $query
+     */
+    public function __construct(DeleteBuilder $query)
+    {
+        $this->query = $query;
+    }
+
+    /**
+     * Delete destructor.
+     */
+    public function __destruct()
+    {
+        $this->query = null;
+        $this->result = null;
+    }
+
     /**
      * @return int
      * @throws Exception

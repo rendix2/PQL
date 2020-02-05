@@ -1,8 +1,9 @@
 <?php
 
-namespace pql\QueryExecute;
+namespace pql\QueryExecutor;
 
 use pql\BTree\BtreeJ;
+use pql\QueryBuilder\Insert as InsertBuilder;
 use pql\Table;
 use pql\TableColumn;
 use SplFileObject;
@@ -13,8 +14,30 @@ use SplFileObject;
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryExecute
  */
-class Insert extends BaseQuery
+class Insert implements IQueryExecutor
 {
+    /**
+     * @var InsertBuilder $query
+     */
+    private $query;
+
+    /**
+     * Insert constructor.
+     *
+     * @param InsertBuilder $query
+     */
+    public function __construct(InsertBuilder $query)
+    {
+        $this->query = $query;
+    }
+
+    /**
+     * Insert destructor.
+     */
+    public function __destruct()
+    {
+        $this->query = null;
+    }
 
     /**
      *
@@ -32,7 +55,7 @@ class Insert extends BaseQuery
         $row = [];
 
         foreach ($this->query->getTable()->getColumns() as $column) {
-            foreach ($this->query->getInsertData() as $key => $data) {
+            foreach ($this->query->getData() as $key => $data) {
 
                 /**
                  * index maintenance

@@ -2,67 +2,50 @@
 /**
  * Created by PhpStorm.
  * User: Tom
- * Date: 1. 2. 2019
- * Time: 9:53
+ * Date: 4. 2. 2020
+ * Time: 11:47
  */
 
-namespace pql;
+namespace pql\QueryBuilder;
 
 use Exception;
 use Netpromotion\Profiler\Profiler;
-use pql\QueryExecute\Delete;
-use pql\QueryExecute\Explain;
-use pql\QueryExecute\Insert;
-use pql\QueryExecute\InsertSelect;
-use pql\QueryExecute\Select;
-use pql\QueryExecute\Update;
-use pql\QueryPrinter\QueryPrinter;
+use pql\AggregateFunction;
+use pql\Alias;
+use pql\Condition;
+use pql\Database;
+use pql\GroupByColumn;
+use pql\JoinedTable;
+use pql\OrderByColumn;
+use pql\QueryExecutor\Select as SelectExecutor;
 use pql\QueryResult\IResult;
-use pql\QueryResult\ListResult;
 use pql\QueryResult\TableResult;
+use pql\SelectedColumn;
+use pql\Table;
 
 /**
- * Class Query
+ * Class Select
  *
- * @author rendix2 <rendix2@seznam.cz>
- * @package pql
+ * @author  rendix2 <rendix2@seznam.cz>
+ * @package pql\QueryBuilder
+ * @method Select where($column, $operator, $value)
  */
-class Query
+class Select implements IQueryBuilder
 {
-    /**
-     * @var string
-     */
-    const SELECT = 'select';
-
-    /**
-     * @var string
-     */
-    const INSERT = 'insert';
-
-    /**
-     * @var string
-     */
-    const UPDATE = 'update';
-
-    /**
-     * @var string
-     */
-    const DELETE = 'delete';
-
-    /**
-     * @var string
-     */
-    const INSERT_SELECT = 'insert_select';
-
-    /**
-     * @var string
-     */
-    const EXPLAIN = 'explain';
+    use From;
+    use Where;
+    use Limit;
+    use Offset;
 
     /**
      * @var Database $database
      */
     private $database;
+
+    /**
+     * @var IResult $result
+     */
+    private $result;
 
     /**
      * @var SelectedColumn[] $selectedColumns
@@ -83,11 +66,6 @@ class Query
      * @var AggregateFunction[] $functions
      */
     private $functions;
-
-    /**
-     * @var Table|Query $table
-     */
-    private $table;
 
     /**
      * @var Alias|null $tableAlias
@@ -150,16 +128,6 @@ class Query
     private $hasCrossJoinedTable;
 
     /**
-     * @var Condition[] $condition
-     */
-    private $whereConditions;
-
-    /**
-     * @var bool $hasWhereCondition
-     */
-    private $hasWhereCondition;
-
-    /**
      * @var OrderByColumn[] $orderByColumns
      */
     private $orderByColumns;
@@ -190,41 +158,6 @@ class Query
     private $hasGroupBy;
 
     /**
-     * @var int $limit
-     */
-    private $limit;
-
-    /**
-     * @var int $offset
-     */
-    private $offset;
-
-    /**
-     * @var string $type
-     */
-    private $type;
-
-    /**
-     * @var array $updateData
-     */
-    private $updateData;
-
-    /**
-     * @var array|Query $insertData
-     */
-    private $insertData;
-
-    /**
-     * @var IResult $result
-     */
-    private $result;
-
-    /**
-     * @var string $timeLimit
-     */
-    private $timeLimit;
-
-    /**
      * @var Query[] $unionQueries
      */
     private $unionQueries;
@@ -250,7 +183,7 @@ class Query
     private $intersectQueries;
 
     /**
-     * @var bool
+     * @var bool $hasIntersectQuery
      */
     private $hasIntersectQuery;
 
@@ -264,8 +197,10 @@ class Query
      */
     private $hasExceptQuery;
 
+    private $timeLimit;
+
     /**
-     * Query constructor.
+     * Select constructor.
      *
      * @param Database $database
      */
@@ -307,9 +242,6 @@ class Query
 
         $this->offset = 0;
 
-        $this->updateData = [];
-        $this->insertData = [];
-
         $this->unionAllQueries  = [];
         $this->hasUnionAllQuery = false;
 
@@ -326,7 +258,7 @@ class Query
     }
 
     /**
-     * Query destructor.
+     * Select destructor.
      */
     public function __destruct()
     {
@@ -420,11 +352,6 @@ class Query
 
         $this->offset = null;
 
-        $this->type = null;
-
-        $this->insertData = null;
-        $this->updateData = null;
-
         $this->result = null;
 
         foreach ($this->unionQueries as &$unionQuery) {
@@ -475,27 +402,9 @@ class Query
         Profiler::finish('destruct');
     }
 
-    /**
-     * prints query in SQL
-     *
-     * @return string
-     */
-    public function __toString()
-    {
-        $queryPrinter = new QueryPrinter($this);
+    // getters
 
-        return $queryPrinter->printQuery();
-    }
-
-    /**
-     * @return Query
-     */
-    public function explain()
-    {
-        $this->type = self::EXPLAIN;
-
-        return $this;
-    }
+    // getters
 
     /**
      * @return Alias|null
@@ -514,14 +423,6 @@ class Query
     }
 
     /**
-     * @return Condition[]
-     */
-    public function getWhereConditions()
-    {
-        return $this->whereConditions;
-    }
-
-    /**
      * @return GroupByColumn[]
      */
     public function getGroupByColumns()
@@ -535,22 +436,6 @@ class Query
     public function getOrderByColumns()
     {
         return $this->orderByColumns;
-    }
-
-    /**
-     * @return int
-     */
-    public function getOffset()
-    {
-        return $this->offset;
-    }
-
-    /**
-     * @return int
-     */
-    public function getLimit()
-    {
-        return $this->limit;
     }
 
     /**
@@ -634,46 +519,6 @@ class Query
     }
 
     /**
-     * @return array|Query
-     */
-    public function getInsertData()
-    {
-        return $this->insertData;
-    }
-    
-    /**
-     * @return array
-     */
-    public function getUpdateData()
-    {
-        return $this->updateData;
-    }
-
-    /**
-     * @return string
-     */
-    public function getType()
-    {
-        return $this->type;
-    }
-
-    /**
-     * @return Database
-     */
-    public function getDatabase()
-    {
-        return $this->database;
-    }
-
-    /**
-     * @return IResult
-     */
-    public function getResult()
-    {
-        return $this->result;
-    }
-
-    /**
      * @return Query[]
      */
     public function getUnionQueries()
@@ -704,6 +549,11 @@ class Query
     {
         return $this->exceptQueries;
     }
+
+    // getters
+
+
+    // has*
 
     /**
      * @return bool
@@ -751,14 +601,6 @@ class Query
     public function hasCrossJoinedTable()
     {
         return $this->hasCrossJoinedTable;
-    }
-
-    /**
-     * @return bool
-     */
-    public function hasWhereCondition()
-    {
-        return $this->hasWhereCondition;
     }
 
     /**
@@ -817,94 +659,13 @@ class Query
         return $this->hasIntersectQuery;
     }
 
-    /**
-     * @param string $column
-     *
-     * @return Query
-     */
-    public function count($column)
-    {
-        $this->functions[] = new AggregateFunction(AggregateFunction::COUNT, [$column]);
-
-        $this->type = self::SELECT;
-
-        return $this;
-    }
-
-    /**
-     * @param string $column
-     *
-     * @return Query
-     */
-    public function sum($column)
-    {
-        $this->functions[] = new AggregateFunction(AggregateFunction::SUM, [$column]);
-
-        //$this->type = self::SELECT;
-
-        return $this;
-    }
-
-    /**
-     * @param string $column
-     *
-     * @return Query
-     */
-    public function avg($column)
-    {
-        $this->functions[] = new AggregateFunction(AggregateFunction::AVERAGE, [$column]);
-
-        $this->type = self::SELECT;
-
-        return $this;
-    }
-
-    /**
-     * @param string $column
-     *
-     * @return Query
-     */
-    public function min($column)
-    {
-        $this->functions[] = new AggregateFunction(AggregateFunction::MIN, [$column]);
-
-        $this->type = self::SELECT;
-
-        return $this;
-    }
-
-    /**
-     * @param string $column
-     *
-     * @return Query
-     */
-    public function max($column)
-    {
-        $this->functions[] = new AggregateFunction(AggregateFunction::MAX, [$column]);
-
-        $this->type = self::SELECT;
-
-        return $this;
-    }
-
-    /**
-     * @param string $column
-     *
-     * @return Query
-     */
-    public function median($column)
-    {
-        $this->functions[] = new AggregateFunction(AggregateFunction::MEDIAN, [$column]);
-
-        $this->type = self::SELECT;
-
-        return $this;
-    }
+    // has*
 
     /**
      * @param array|string $columns
      * @param string|null $alias
-     * @return Query
+     *
+     * @return Select
      * @throws Exception
      */
     public function select(array $columns = [], $alias = null)
@@ -940,7 +701,6 @@ class Query
             $this->selectedColumns = array_merge($this->selectedColumns, $selectedColumns);
         }
 
-        $this->type = self::SELECT;
         $this->selectedColumnsCount = count($this->selectedColumns);
 
         return $this;
@@ -949,69 +709,84 @@ class Query
     /**
      * @param string $column
      *
-     * @return Query
+     * @return Select
+     */
+    public function count($column)
+    {
+        $this->functions[] = new AggregateFunction(AggregateFunction::COUNT, [$column]);
+
+        return $this;
+    }
+
+    /**
+     * @param string $column
+     *
+     * @return Select
+     */
+    public function sum($column)
+    {
+        $this->functions[] = new AggregateFunction(AggregateFunction::SUM, [$column]);
+
+        return $this;
+    }
+
+    /**
+     * @param string $column
+     *
+     * @return Select
+     */
+    public function avg($column)
+    {
+        $this->functions[] = new AggregateFunction(AggregateFunction::AVERAGE, [$column]);
+
+        return $this;
+    }
+
+    /**
+     * @param string $column
+     *
+     * @return Select
+     */
+    public function min($column)
+    {
+        $this->functions[] = new AggregateFunction(AggregateFunction::MIN, [$column]);
+
+        return $this;
+    }
+
+    /**
+     * @param string $column
+     *
+     * @return Select
+     */
+    public function max($column)
+    {
+        $this->functions[] = new AggregateFunction(AggregateFunction::MAX, [$column]);
+
+        return $this;
+    }
+
+    /**
+     * @param string $column
+     *
+     * @return Select
+     */
+    public function median($column)
+    {
+        $this->functions[] = new AggregateFunction(AggregateFunction::MEDIAN, [$column]);
+
+        return $this;
+    }
+
+    /**
+     * @param string $column
+     *
+     * @return Select
      */
     public function distinct($column)
     {
         $this->distinctColumn  = new SelectedColumn($column);
         $this->selectedColumns = [$this->distinctColumn];
-
-        $this->type = self::SELECT;
-
-        return $this;
-    }
-
-    /**
-     * @param string $table
-     * @param string|null $alias
-     *
-     * @return Query
-     * @throws Exception
-     */
-    public function from($table, $alias = null)
-    {
-        $this->table = $this->checkTable($table);
-
-        if ($alias) {
-            $this->tableAlias = new Alias($this->table, $alias);
-            $this->hasTableAlias = true;
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param string|int|AggregateFunction|Query $column
-     * @param string $operator
-     * @param string|int|AggregateFunction|Query $value
-     *
-     * @return Query
-     * @throws Exception
-     */
-    public function where($column, $operator, $value)
-    {
-        $condition = new Condition($column, $operator, $value);
-
-        if ($condition->getOperator() === Operator::BETWEEN ||
-            $condition->getOperator() === Operator::BETWEEN_INCLUSIVE
-        ) {
-            if (!is_array($condition->getValue()) && !is_array($condition->getColumn())) {
-                throw new Exception('Parameter for between must be array.');
-            }
-
-            if (count($condition->getValue()) !== 2 && count($condition->getColumn()) !== 2) {
-                throw new Exception('I need two parameters.');
-            }
-        }
-
-        if ($condition->getOperator() === Operator::EXISTS) {
-            if (!($condition->getColumn() instanceof self) && !$condition->getValue() instanceof self) {
-                throw new Exception('Parameter for between must be Query.');
-            }
-        }
-
-        $this->whereConditions[] = $condition;
-        $this->hasWhereCondition = true;
 
         return $this;
     }
@@ -1020,7 +795,7 @@ class Query
      * @param string $column
      * @param bool   $asc
      *
-     * @return Query
+     * @return Select
      * @throws Exception
      */
     public function orderBy($column, $asc = true)
@@ -1034,7 +809,7 @@ class Query
     /**
      * @param string $column
      *
-     * @return Query
+     * @return Select
      * @throws Exception
      *
      */
@@ -1051,7 +826,7 @@ class Query
      * @param string $operator
      * @param mixed  $value
      *
-     * @return Query
+     * @return Select
      * @throws Exception
      */
     public function having($column, $operator, $value)
@@ -1070,56 +845,6 @@ class Query
 
         $this->havingConditions[] = new Condition($column, $operator, $value);
         $this->hasHavingCondition = true;
-
-        return $this;
-    }
-
-    /**
-     * @param int $limit
-     *
-     * @return Query
-     * @throws Exception
-     */
-    public function limit($limit)
-    {
-        if (!is_numeric($limit)) {
-            throw new Exception('Limit is not a number.');
-        }
-        
-        if ($limit === 0) {
-            throw new Exception('Zero limit does not make sense.');
-        }
-        
-        if ($limit < 0) {
-            throw new Exception('Negative limit does not make sense.');
-        }
-
-        $this->limit = $limit;
-
-        return $this;
-    }
-
-    /**
-     * @param int $offset
-     *
-     * @return Query
-     * @throws Exception
-     */
-    public function offset($offset)
-    {
-        if (!is_numeric($offset)) {
-            throw new Exception('Offset is not a number.');
-        }
-
-        if ($offset === 0) {
-            throw new Exception('Zero offset does not make sense.');
-        }
-
-        if ($offset < 0) {
-            throw new Exception('Negative offset does not make sense.');
-        }
-
-        $this->offset = $offset;
 
         return $this;
     }
@@ -1163,9 +888,11 @@ class Query
                 throw new Exception($message);
             }
         } elseif ($table instanceof self) {
+            /*
             if ($table->type !== self::SELECT) {
                 throw new Exception('It is not a SELECT query.');
             }
+            */
 
             $originTable   = $table;
             $iteratedTable = $table;
@@ -1198,7 +925,7 @@ class Query
      * @param array        $onConditions
      * @param string|null  $alias
      *
-     * @return Query
+     * @return Select
      * @throws Exception
      */
     public function leftJoin($table, array $onConditions, $alias = null)
@@ -1218,7 +945,7 @@ class Query
      * @param array        $onConditions
      * @param string|null  $alias
      *
-     * @return Query
+     * @return Select
      * @throws Exception
      */
     public function fullJoin($table, array $onConditions, $alias = null)
@@ -1238,7 +965,7 @@ class Query
      * @param array        $onConditions
      * @param string|null  $alias
      *
-     * @return Query
+     * @return Select
      * @throws Exception
      */
     public function rightJoin($table, array $onConditions, $alias = null)
@@ -1258,7 +985,7 @@ class Query
      * @param Condition[]  $onConditions
      * @param string|null  $alias
      *
-     * @return Query
+     * @return Select
      * @throws Exception
      */
     public function innerJoin($table, array $onConditions = [], $alias = null)
@@ -1272,7 +999,7 @@ class Query
             $this->crossJoinedTables[] = new JoinedTable($joinedTable, [], $alias);
             $this->hasCrossJoinedTable = true;
         }
-        
+
         return $this;
     }
 
@@ -1280,7 +1007,7 @@ class Query
      * @param Condition[] $onConditions
      * @param string|null $alias
      *
-     * @return Query
+     * @return Select
      * @throws Exception
      */
     public function selfJoin(array $onConditions = [], $alias = null)
@@ -1296,7 +1023,7 @@ class Query
      * @param string|Query $table
      * @param string|null  $alias
      *
-     * @return Query
+     * @return Select
      * @throws Exception
      */
     public function crossJoin($table, $alias = null)
@@ -1312,7 +1039,7 @@ class Query
     /**
      * @param Query $query
      *
-     * @return Query
+     * @return Select
      */
     public function except(Query $query)
     {
@@ -1325,24 +1052,25 @@ class Query
     /**
      * @param Query $query
      *
-     * @return Query
+     * @return Select
      */
     public function intersect(Query $query)
     {
         $this->intersectQueries[] = $query;
         $this->hasIntersectQuery  = true;
-        return $query;
+
+        return $this;
     }
 
     /**
      * @param Query $query
      *
-     * @return Query
+     * @return Select
      * @throws Exception
      */
     public function union(Query $query)
     {
-        if ($query->getType() !== self::SELECT) {
+        if (!($query instanceof self)) {
             throw new Exception('Unioned query is not select query.');
         }
 
@@ -1355,12 +1083,12 @@ class Query
     /**
      * @param Query $query
      *
-     * @return Query
+     * @return Select
      * @throws Exception
      */
     public function unionAll(Query $query)
     {
-        if ($query->getType() !== self::SELECT) {
+        if (!($query->getQuery() instanceof self)) {
             throw new Exception('Unioned query is not select query.');
         }
 
@@ -1370,82 +1098,6 @@ class Query
         return $this;
     }
 
-    /**
-     * @param string $table
-     * @param array  $data
-     *
-     * @return Query
-     *
-     */
-    public function update($table, array $data)
-    {
-        $this->type       = self::UPDATE;
-        $this->updateData = $data;
-        $this->table      = new Table($this->database, $table);
-
-        return $this;
-    }
-
-    /**
-     * @param string $table
-     * @param array  $data
-     *
-     * @return Query
-     * @throws Exception
-     */
-    public function insert($table, array $data)
-    {
-        $this->type  = self::INSERT;
-        $this->table = new Table($this->database, $table);
-
-        $this->insertData = $data;
-        
-        $columns = array_keys($data);
-        
-        foreach ($columns as $column) {
-            if (!$this->table->columnExists($column)) {
-                $message = sprintf('Column "%s" does not exist in "%s".', $column, $table);
-
-                throw new Exception($message);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param Query  $select
-     * @param string $table
-     *
-     * @return Query
-     */
-    public function insertSelect(Query $select, $table)
-    {
-        $this->type  = self::INSERT_SELECT;
-        $this->table = new Table($this->database, $table);
-
-        $this->insertData = $select;
-
-        return $this;
-    }
-
-    /**
-     * @param string $table
-     *
-     * @return Query
-     */
-    public function delete($table)
-    {
-        $this->type  = self::DELETE;
-        $this->table = new Table($this->database, $table);
-
-        return $this;
-    }
-
-    /**
-     * @return TableResult
-     * @throws Exception
-     */
     public function run()
     {
         if ($this->result instanceof TableResult) {
@@ -1456,61 +1108,16 @@ class Query
 
         $startTime = microtime(true);
 
-        switch ($this->type) {
-            case self::SELECT:
-                $select      = new Select($this);
-                $rows        = $select->run();
-                $endTime     = microtime(true);
-                $executeTime = $endTime - $startTime;
+        $select      = new SelectExecutor($this);
+        $rows        = $select->run();
+        $endTime     = microtime(true);
+        $executeTime = $endTime - $startTime;
 
-                return $this->result = new TableResult(
-                    array_merge($this->selectedColumns, $select->getColumns()),
-                    $rows,
-                    $executeTime,
-                    $select
-                );
-            case self::INSERT:
-                $insert       = new Insert($this);
-                $affectedRows = $insert->run();
-                $endTime      = microtime(true);
-                $executeTime  = $endTime - $startTime;
-
-                return $this->result = new TableResult([], [], $executeTime, $insert, $affectedRows);
-            case self::UPDATE:
-                $update       = new Update($this);
-                $affectedRows = $update->run();
-                $endTime      = microtime(true);
-                $executeTime  = $endTime - $startTime;
-
-                return $this->result = new TableResult([], [], $executeTime, $update, $affectedRows);
-            case self::DELETE:
-                $delete       = new Delete($this);
-                $affectedRows = $delete->run();
-                $endTime      = microtime(true);
-                $executeTime  = $endTime - $startTime;
-
-                return $this->result = new TableResult([], [], $executeTime, $delete, $affectedRows);
-            case self::EXPLAIN:
-                $explain = new Explain($this);
-
-                $rows = $explain->run();
-
-                $endTime = microtime(true);
-                $executeTime  = $endTime - $startTime;
-
-//                return $this->result = new TableResult($columns, $rows, $executeTime, $explain, 0);
-                return $this->result = new ListResult($rows);
-            case self::INSERT_SELECT:
-                $insertSelect = new InsertSelect($this);
-                $affectedRows = $insertSelect->run();
-                $endTime      = microtime(true);
-                $executeTime  = $endTime - $startTime;
-
-                return $this->result = new TableResult([], [], $executeTime, $insertSelect, $affectedRows);
-            default:
-                $message = sprintf('Unknown query type "%s".', $this->type);
-
-                throw new Exception($message);
-        }
+        return $this->result = new TableResult(
+            array_merge($this->selectedColumns, $select->getColumns()),
+            $rows,
+            $executeTime,
+            $select
+        );
     }
 }

@@ -6,7 +6,7 @@
  * Time: 13:26
  */
 
-namespace pql\QueryExecute\Joins;
+namespace pql\QueryExecutor\Joins;
 
 use pql\Condition;
 

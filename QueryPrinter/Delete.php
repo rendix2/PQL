@@ -8,7 +8,7 @@
 
 namespace pql\QueryPrinter;
 
-use pql\Query;
+use pql\QueryBuilder\Delete as DeleteBuilder;
 
 /**
  * Class Delete
@@ -24,16 +24,16 @@ class Delete implements IQueryPrinter
     use Offset;
 
     /**
-     * @var Query $query
+     * @var DeleteBuilder $query
      */
     private $query;
 
     /**
      * Delete constructor.
      *
-     * @param Query $query
+     * @param DeleteBuilder $query
      */
-    public function __construct(Query $query)
+    public function __construct(DeleteBuilder $query)
     {
         $this->query = $query;
     }

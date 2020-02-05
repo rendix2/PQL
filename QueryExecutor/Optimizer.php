@@ -1,6 +1,11 @@
 <?php
 
-namespace pql;
+namespace pql\QueryExecutor;
+
+use pql\Condition;
+use pql\Operator;
+use pql\QueryBuilder\Select as SelectBuilder;
+use pql\Table;
 
 /**
  * Class Optimizer
@@ -36,7 +41,17 @@ class Optimizer
     const TABLE_A_FIRST = 'a_first_b_bigger';
 
     /**
-     * @var Query $query
+     * @var string
+     */
+    const CONDITION_VALUE_VALUE = 'value';
+
+    /**
+     * @var string
+     */
+    const CONDITION_COLUMN_VALUE = 'column';
+
+    /**
+     * @var SelectBuilder $query
      */
     private $query;
 
@@ -48,9 +63,9 @@ class Optimizer
     /**
      * Optimizer constructor.
      *
-     * @param Query $query
+     * @param SelectBuilder $query
      */
-    public function __construct(Query $query)
+    public function __construct(SelectBuilder $query)
     {
         $this->query      = $query;
         $this->useOrderBy = $query->hasOrderBy();
@@ -121,5 +136,34 @@ class Optimizer
     public function sayIfOrderByIsNeed()
     {
         return $this->useOrderBy;
+    }
+
+    /**
+     * @param Condition $condition
+     * @param Table     $fromTable
+     * @param Table     $joinedTable
+     *
+     * @return bool|string
+     */
+    public function sayIfConditionContainsValue(Condition $condition, Table $fromTable, Table $joinedTable)
+    {
+        $column = $condition->getColumn();
+        $value  = $condition->getValue();
+
+        if (!$fromTable->columnExists($column) && !$joinedTable->columnExists($column)) {
+            return self::CONDITION_COLUMN_VALUE;
+        } elseif (!$fromTable->columnExists($value) && !$joinedTable->columnExists($value)) {
+            return self::CONDITION_VALUE_VALUE;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * @return bool
+     */
+    public function sayIfCanOptimizeWhere()
+    {
+        return count($this->query->getWhereConditions()) === 1;
     }
 }

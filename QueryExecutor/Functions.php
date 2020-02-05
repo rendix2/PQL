@@ -6,7 +6,7 @@
  * Time: 13:14
  */
 
-namespace pql\QueryExecute;
+namespace pql\QueryExecutor;
 
 /**
  * Class Functions

@@ -6,7 +6,7 @@
  * Time: 17:57
  */
 
-namespace pql\QueryExecute;
+namespace pql\QueryExecutor;
 
 /**
  * Class AggregateFunctions

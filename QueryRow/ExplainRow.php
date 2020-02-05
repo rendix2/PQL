@@ -6,7 +6,7 @@
  * Time: 16:44
  */
 
-namespace pql;
+namespace pql\QueryRow;
 
 /**
  * Class ExplainRow

@@ -3,7 +3,7 @@
 namespace pql;
 
 use Exception;
-use pql\QueryResult\TableResult;
+use pql\QueryBuilder\Query;
 
 /**
  * Class ConditionHelper
@@ -274,7 +274,6 @@ class ConditionHelper
                 break;
 
             case Operator::LESS_THAN:
-
                 // column < 5
                 if ($issetRowAColumn && $rowA[$condition->getColumn()] < $condition->getValue()) {
                     return true;
@@ -446,7 +445,6 @@ class ConditionHelper
                 break;
 
             case Operator::NOT_IN:
-
                 // column NOT IN (5)
                 if ($issetRowAColumn && !in_array($rowA[$condition->getColumn()], $condition->getValue(), true)) {
                     return true;

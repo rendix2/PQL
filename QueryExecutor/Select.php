@@ -1,6 +1,6 @@
 <?php
 
-namespace pql\QueryExecute;
+namespace pql\QueryExecutor;
 
 use Exception;
 use Netpromotion\Profiler\Profiler;
@@ -9,15 +9,15 @@ use pql\Alias;
 use pql\Condition;
 use pql\ConditionHelper;
 use pql\JoinedTable;
-use pql\Optimizer;
-use pql\Query;
-use pql\QueryExecute\Joins\HashJoin;
-use pql\QueryExecute\Joins\NestedLoopJoin;
-use pql\QueryExecute\Joins\SortMergeJoin;
+use pql\QueryBuilder\Query;
+use pql\QueryBuilder\Select as SelectBuilder;
+use pql\QueryExecutor\Joins\HashJoin;
+use pql\QueryExecutor\Joins\NestedLoopJoin;
+use pql\QueryExecutor\Joins\SortMergeJoin;
 use pql\QueryResult\TableResult;
+use pql\QueryRow\TableRow;
 use pql\SelectedColumn;
 use pql\Table;
-use pql\TableRow;
 
 /**
  * Class Select
@@ -25,8 +25,10 @@ use pql\TableRow;
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryExecute
  */
-class Select extends BaseQuery
+class Select implements IQueryExecutor
 {
+    use Limit;
+
     /**
      * @var array $groupedByData
      */
@@ -48,16 +50,26 @@ class Select extends BaseQuery
     private $columns;
 
     /**
+     * @var SelectBuilder $query
+     */
+    private $query;
+
+    /**
+     * @var array $result
+     */
+    private $result;
+
+    /**
      * Select constructor.
      *
-     * @param Query $query
+     * @param SelectBuilder $query
      */
-    public function __construct(Query $query)
+    public function __construct(SelectBuilder $query)
     {
-        parent::__construct($query);
-
         $this->optimizer = new Optimizer($query);
         $this->columns   = [];
+
+        $this->query = $query;
     }
 
     /**
@@ -70,7 +82,18 @@ class Select extends BaseQuery
         $this->groupedByDataCount = null;
         $this->columns            = null;
 
-        parent::__destruct();
+        $this->query = null;
+        $this->result = null;
+    }
+
+    public function getQuery()
+    {
+        return $this->query;
+    }
+
+    public function getResult()
+    {
+        return $this->result;
     }
 
     /**
@@ -668,8 +691,12 @@ class Select extends BaseQuery
             return $this->result;
         }
 
-        foreach ($this->query->getWhereConditions() as $whereCondition) {
-            $this->result = $this->doWhere($this->result, $whereCondition);
+        if ($this->optimizer->sayIfCanOptimizeWhere()) {
+            $this->result = $this->doWhere($this->result, $this->query->getWhereConditions()[0]);
+        } else {
+            foreach ($this->query->getWhereConditions() as $whereCondition) {
+                $this->result = $this->doWhere($this->result, $whereCondition);
+            }
         }
 
         return $this->result;
@@ -716,63 +743,62 @@ class Select extends BaseQuery
                             $functionResult = $functions->median($function->getParams()[0]);
                             break;
                         default:
-                            throw new Exception('Unknown agregate function.');
+                            $message = sprintf('Unknown agregate function "%s".', $function->getName());
+
+                            throw new Exception($message);
                     }
 
                     foreach ($groupedRows as &$groupedRow) {
                         $groupedRow[(string) $function] = $functionResult;
                     }
-
-                    unset($groupedRow);
                 }
-
-                unset($groupedRows);
             }
-
-            unset($groupByColumn);
         }
+
+        unset($groupByColumn, $groupedRows, $groupedRow, $function);
 
         // calculate needed functions
         foreach ($this->query->getHavingConditions() as $havingCondition) {
+            $smallFunctionName = mb_strtolower($havingCondition->getColumn()->getName());
+            $firstParam = $havingCondition->getColumn()->getParams()[0];
+
             if ($havingCondition->getColumn() instanceof AggregateFunction) {
                 foreach ($groupByTemp as &$groupByColumn) {
                     foreach ($groupByColumn as $value => &$groupedRows) {
                         $functions = new Functions($groupedRows);
 
-                        switch (mb_strtolower($havingCondition->getColumn()->getName())) {
+                        switch ($smallFunctionName) {
                             case AggregateFunction::SUM:
-                                $functionResult = $functions->sum($havingCondition->getColumn()->getParams()[0]);
+                                $functionResult = $functions->sum($firstParam);
                                 break;
                             case AggregateFunction::COUNT:
-                                $functionResult = $functions->count($havingCondition->getColumn()->getParams()[0]);
+                                $functionResult = $functions->count($firstParam);
                                 break;
                             case AggregateFunction::MAX:
-                                $functionResult = $functions->max($havingCondition->getColumn()->getParams()[0]);
+                                $functionResult = $functions->max($firstParam);
                                 break;
                             case AggregateFunction::MIN:
-                                $functionResult = $functions->min($havingCondition->getColumn()->getParams()[0]);
+                                $functionResult = $functions->min($firstParam);
                                 break;
                             case AggregateFunction::AVERAGE:
-                                $functionResult = $functions->avg($havingCondition->getColumn()->getParams()[0]);
+                                $functionResult = $functions->avg($firstParam);
                                 break;
                             case AggregateFunction::MEDIAN:
-                                $functionResult = $functions->median($havingCondition->getColumn()->getParams()[0]);
+                                $functionResult = $functions->median($firstParam);
                                 break;
                             default:
-                                throw new Exception('Unknponw agregate function.');
+                                $message = sprintf('Unknown aggregate function "%s".', $smallFunctionName);
+
+                                throw new Exception($message);
                         }
 
                         foreach ($groupedRows as &$groupedRow) {
                             $groupedRow[(string) $havingCondition->getColumn()] = $functionResult;
                         }
-
-                        unset($groupedRow);
                     }
-
-                    unset($groupedRows);
                 }
 
-                unset($groupByColumn);
+                unset($groupByColumn, $groupedRows, $groupedRow);
             }
         }
 
@@ -854,7 +880,9 @@ class Select extends BaseQuery
                 foreach ($groupByValues as $groupedRows) {
                     $functions = new Functions($groupedRows);
 
-                    switch (mb_strtolower($condition->getColumn()->getName())) {
+                    $smallFunctionName = mb_strtolower($condition->getColumn()->getName());
+
+                    switch ($smallFunctionName) {
                         case AggregateFunction::SUM:
                             $sum = $functions->sum($functionParameter);
 
@@ -926,7 +954,9 @@ class Select extends BaseQuery
                             $havingResult = $this->havingRowsHelper($rows, $havingResult, $condition);
                             break;
                         default:
-                            throw new Exception('Unknown Aggregate function.');
+                            $message = sprintf('Unknown aggregate function "%s".', $smallFunctionName);
+
+                            throw new Exception($message);
                     }
                 }
             }

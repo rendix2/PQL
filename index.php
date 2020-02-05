@@ -4,7 +4,7 @@ use Netpromotion\Profiler\Profiler;
 use Netpromotion\Profiler\Adapter\TracyBarAdapter;
 use pql\AggregateFunction;
 use pql\Database;
-use pql\Query;
+use pql\QueryBuilder\Query;
 use Tracy\Debugger;
 use Nette\Loaders\RobotLoader;
 
@@ -385,12 +385,15 @@ $query5->select(['datum'])
 
 //$query = new Query($database);
 $query1 = new Query($database);
-$query1->select(['pocet'])
-->from('test');
+$query1->select()->select(['pocet'])
+->from('test')
+->where('pocet', '<', 45)
+->limit(50);
 
 $query2 = new Query($database);
 $query2->select(['pocet'])
     ->from($query1);
+
 
 $query3 = new Query($database);
 $query3->select(['pocet'])
@@ -420,10 +423,10 @@ $res = $query2->select(['id', 'datum', 'pocet'])
     ->limit(5);
 */
 
-bdump($query4, '$query4');
+bdump($query1, '$query2');
 
-echo $query4;
-    $res4 = $query4->run();
+echo $query1;
+    $res4 = $query1->run();
 
 echo $res4;
 

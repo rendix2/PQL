@@ -8,7 +8,7 @@
 
 namespace pql\QueryPrinter;
 
-use pql\Query;
+use pql\QueryBuilder\InsertSelect as InsertSelectBuilder;
 
 /**
  * Class InsertSelect
@@ -20,16 +20,16 @@ use pql\Query;
 class InsertSelect implements IQueryPrinter
 {
     /**
-     * @var Query $query
+     * @var InsertSelectBuilder $query
      */
     private $query;
 
     /**
      * InsertSelect constructor.
      *
-     * @param Query $query
+     * @param InsertSelectBuilder $query
      */
-    public function __construct(Query $query)
+    public function __construct(InsertSelectBuilder $query)
     {
         $this->query = $query;
     }
@@ -49,7 +49,7 @@ class InsertSelect implements IQueryPrinter
     {
         $insert = 'INSERT INTO ' .  $this->query->getTable()->getName();
 
-        $selectQueryPrinter = new Select($this->query->getInsertData());
+        $selectQueryPrinter = new Select($this->query->getData());
 
         return $insert . $selectQueryPrinter->printQuery();
     }
