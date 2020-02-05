@@ -29,7 +29,7 @@ trait From
      * @param string      $table
      * @param string|null $alias
      *
-     * @return From
+     * @return From|Select
      * @throws Exception
      */
     public function from($table, $alias = null)

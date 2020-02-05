@@ -28,7 +28,6 @@ use pql\Table;
  *
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryBuilder
- * @method Select where($column, $operator, $value)
  */
 class Select implements IQueryBuilder
 {
@@ -887,7 +886,7 @@ class Select implements IQueryBuilder
 
                 throw new Exception($message);
             }
-        } elseif ($table instanceof self) {
+        } elseif ($table instanceof Query) {
             /*
             if ($table->type !== self::SELECT) {
                 throw new Exception('It is not a SELECT query.');
@@ -898,8 +897,8 @@ class Select implements IQueryBuilder
             $iteratedTable = $table;
 
             // find Table
-            while ($iteratedTable instanceof self) {
-                $iteratedTable = $iteratedTable->getTable();
+            while ($iteratedTable instanceof Query) {
+                $iteratedTable = $iteratedTable->getQuery()->getTable();
             }
 
             if (!$iteratedTable->getDatabase()->tableExists($iteratedTable)) {
@@ -1070,7 +1069,7 @@ class Select implements IQueryBuilder
      */
     public function union(Query $query)
     {
-        if (!($query instanceof self)) {
+        if (!($query->getQuery() instanceof self)) {
             throw new Exception('Unioned query is not select query.');
         }
 

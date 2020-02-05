@@ -3,6 +3,7 @@
 namespace pql\QueryExecutor;
 
 use pql\Condition;
+use pql\JoinedTable;
 use pql\Operator;
 use pql\QueryBuilder\Select as SelectBuilder;
 use pql\Table;

@@ -226,7 +226,7 @@ class Select implements IQueryPrinter
                 if ($leftJoinedTable->getTable() instanceof Table) {
                     $leftJoin .= $leftJoinedTable->getTable()->getName();
                 } elseif ($leftJoinedTable->getTable() instanceof Query) {
-                    $leftJoinedTable .= '(<br><br>' . (string)$this->query->getTable() . '<br<br><br>)';
+                    $leftJoin .= '(<br><br>' . (string)$leftJoinedTable->getTable() . '<br<br><br>)';
                 }
 
                 $leftJoin .= $this->printTableAlias($leftJoinedTable);

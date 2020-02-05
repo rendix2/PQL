@@ -188,247 +188,44 @@ $query->update('test', ['a' => '888'])->where('id', '=', '96')->run();
 
 Profiler::start('select');
 
-/*
-$query3 = new Query($database);
-
-
-$query3->select(['id'])
-    ->sum('score')
-    ->from('students')
-    ->innerJoin('test')
-    ->groupBy('id')
-    ->having(new AggregateFunction(AggregateFunction::AVERAGE, ['score']), '<', 80);
-
-$query4 = new Query($database);
-
-
-$query4->select(['id'])
-    ->sum('score')
-    ->from('students')
-    ->groupBy('id')
-    ->having(new AggregateFunction(AggregateFunction::AVERAGE, ['score']), '<', 80);
-
 $query2 = new Query($database);
-
-$query2->select(['id'])
-    ->sum('score')
-    ->from($query4)
-    ->innerJoin('students')
-    ->groupBy('id')
-
-    ->having(new AggregateFunction(AggregateFunction::AVERAGE, ['score']), '<', 80);
-    //->having(new AggregateFunctions(AggregateFunctions::MEDIAN, ['score']), '<', 91);
-    //->having(new AggregateFunctions(AggregateFunctions::COUNT, ['score']), '=', 2);
+$query2->select()->select(['a.pocet', 'b.pocet'])
+    ->from('test', 'a')
+    ->innerJoin('test', [new \pql\Condition('a.pocet', '=', 'b.pocet')], 'b')
+    ->where('a.pocet', '>', '2')
+    ->where('b.pocet', '<', '5')
+    ->orderBy('a.pocet', true);
 
 bdump($query2);
-echo $query2->run();
-bdump($query2);
-echo $query2;
-*/
 
+$query1 = new Query($database);
+$query1->select()->select(['a.pocet', 'b.pocet'])
+    ->from('test', 'a')
+    ->innerJoin('test', [new \pql\Condition('a.pocet', '=', 'b.pocet')], 'b')
+    ->where('a.pocet', '>', '2')
+    ->where('b.pocet', '<', '5')
+    ->orderBy('a.pocet', true)
+    ->unionAll($query2);
 
-/*
-$query2->select(['a.article_id', 'a.article_text', 'user_name', 'u.user_id', 'u.user_name', 'c.comment_text', 'a.c'])
-    ->count('c')
-    ->from('articles', 'a')
-    ->innerJoin(
-        'users',
-        [
-            new Condition('a.user_id', '=', 'u.user_id'),
-            //new Condition('article_text', '=', 'user_name'),
-        ],
-        'u'
-    )
-    ->leftJoin('comments', [new Condition('a.article_id', '=', 'c.comment_article_id')], 'c')
-    ->groupBy('user_name')
-    ->orderBy('user_id', false);
-
-
-$query = new Query($database);
-
-$query->select(['a.article_id', 'a.article_text', 'user_name', 'u.user_id', 'u.user_name', 'c.comment_text', 'a.c'])
-    ->count('c')
-    ->from('articles', 'a')
-    ->innerJoin(
-        'users',
-        [
-            new Condition('a.user_id', '=', 'u.user_id'),
-            //new Condition('article_text', '=', 'user_name'),
-        ],
-        'u'
-    )
-    ->leftJoin('comments', [new Condition('a.article_id', '=', 'c.comment_article_id')], 'c')
-    ->groupBy('user_name')
-    ->orderBy('user_id', true)
-    //->where(new Condition('a.c', '=', 15))
-    //->where(new Condition('u.user_name', '=', 'xpt26'));
-    //->having(22.5, '=', New AggregateFunctions(AggregateFunctions::MEDIAN, ['c']))
-    ->having(35, '=', New AggregateFunctions(AggregateFunctions::MAX, ['c']))                     ;
-    //->union($query2);
-
-    //->explain();
-    //->limit(1)
-    //->offset(1);
-    //->where(new Condition('user_id', '!=', 2));
-    //->where(new Condition('article_id', '!=', 2));
-
-//bdump($query);
-
-
-echo $query;
-echo $query->run();
-/*
-
-$query5 = new Query($database);
-$query5->insertSelect($query, 'articles');
-//$query5->insert('articles', ['article_title' => 'DDD']);
-$query5->run();
-*/
-
-/*
-$query = new Query($database);
-
-
-$query->select(['a.article_id', 'a.article_text','user_name'  /*'u.user_id', 'u.user_name', 'c.comment_text',*//*, 'a.c'])
-    ->count('c')
-    ->from('articles', 'a')
-    ->innerJoin(
-        'users',
-        [
-            new Condition('a.article_user_id', '=', 'u.user_id'),
-            //new Condition('article_text', '=', 'user_name'),
-        ],
-        'u'
-    )
-    ->leftJoin('comments', [new Condition('a.article_id', '=', 'c.comment_article_id')], 'c')
-    ->groupBy('user_name')
-    ->orderBy('user_id', true);
-*/
-//->union($query2);
-
-//->explain();
-//->limit(1)
-//->offset(1);
-//->where(new Condition('user_id', '!=', 2));
-//->where(new Condition('article_id', '!=', 2));
-
-//bdump($query);
-
-//echo $query;
-//echo $query->run();
-
-
-
-//echo $query2;
-//echo $query2->run();
-
-
-/*
 $query3 = new Query($database);
-$query3->select(['a.article_id', 'a.article_text','user_name', 'a.c', 'COUNT(c)'  /*'u.user_id', 'u.user_name', 'c.comment_text', *//*])
-    ->from($query)
-    ->orderBy('article_id')
-    ->explain();
+$query3->select()->select(['a.pocet', 'b.pocet'])
+->from($query1)
+    ->crossJoin($query1/*, [new \pql\Condition('a.pocet', '=', 'b.pocet')], 'b'*/)
+    ->leftJoin($query1, [new \pql\Condition('a.pocet', '=', 'b.pocet')], 'b')
+    ->rightJoin($query1, [new \pql\Condition('a.pocet', '=', 'b.pocet')], 'b')
+    ->innerJoin($query1, [new \pql\Condition('a.pocet', '=', 'b.pocet')], 'b')
+    ->fullJoin($query1, [new \pql\Condition('a.pocet', '=', 'b.pocet')], 'b')
+->orderBy('a.pocet')
+->groupBy('a.pocet');
+
+
 
 echo $query3;
-echo  $query3->run();
+    $res3 = $query3->run();
 
-//bdump($query3, '$query3');
+echo $res3;
 
-
-/*
-
-$query = new Query($database);
-$query->update('articles', ['article_text' => 'a'])
-    ->where(new Condition('article_id', '=', 1))
-    ->run();
-
-
-
-$query = new Query($database);
-
-$query->select(['article_id', 'article_text', 'user_id', 'user_name', 'comment_text'])
-    ->from('articles')
-    ->innerJoin(
-        'users',
-        [
-            new Condition('article_user_id', '=', 'user_id'),
-            //new Condition('article_text', '=', 'user_name'),
-        ]
-    )
-    ->leftJoin('comments', [new Condition('article_id', '=', 'comment_article_id')]);
-//->where(new Condition('user_id', '!=', 2));
-//->where(new Condition('article_id', '!=', 2));
-
-echo $query;
-
-echo $query->run();
-
-*/
-
-/*
-$subRes2 = $query->select(['pocet'])
-    ->from('test')
-    ->where('pocet', 'in', [1, 3, 5])
-    ->where([1, 3, 5], 'in', 'pocet')
-    ->where([1, 3], 'between_in', 'pocet')
-    ->where('pocet', 'between_in', [1, 3]);
-*/
-
-$query6 = new Query($database);
-$query6->select(['datum'])
-    ->from('test', '5');
-
-$query5 = new Query($database);
-$query5->select(['datum'])
-    ->from('test');
-
-//$query = new Query($database);
-$query1 = new Query($database);
-$query1->select()->select(['pocet'])
-->from('test')
-->where('pocet', '<', 45)
-->limit(50);
-
-$query2 = new Query($database);
-$query2->select(['pocet'])
-    ->from($query1);
-
-
-$query3 = new Query($database);
-$query3->select(['pocet'])
-    ->from($query2);
-
-$query4 = new Query($database);
-$query4->select(['pocet',])
-    ->from($query3, 'b')
-    ->innerJoin($query6, [new \pql\Condition('a.pocet', '=', 'b.pocet')], 'a');
-
-//->where('pocet', 'in', [1, 3, 5])
-//->where([1, 3, 5], 'in', 'pocet')
-//->where([1, 3], 'between_in', 'pocet')
-//->where('pocet', 'in', $subRes2)
-//->where('pocet', 'between_in', [1, 3]);
-
-/*
-$query2 = new Query($database);
-
-$res = $query2->select(['id', 'datum', 'pocet'])
-    //->sum('pocet')
-    ->from('test')
-    ->where('pocet', 'in', $subRes)
-    //->where('pocet', 'in', $subRes)
-    ->groupBy('datum')
-    ->orderBy('pocet')
-    ->limit(5);
-*/
-
-bdump($query1, '$query2');
-
-echo $query1;
-    $res4 = $query1->run();
-
-echo $res4;
+bdump($query3);
 
 Profiler::finish('select');
 

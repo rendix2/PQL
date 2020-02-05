@@ -30,10 +30,10 @@ trait Where
             --$whereCount;
 
             foreach ($this->query->getWhereConditions() as $i => $whereCondition) {
-                $where . (string) $whereCondition;
+                $where .= (string) $whereCondition;
 
                 if ($whereCount !== $i) {
-                    $where .= ' <br> &nbsp;&nbsp;&nbsp;&nbsp;AND';
+                    $where .= ' <br> &nbsp;&nbsp;&nbsp;&nbsp;AND ';
                 }
             }
         }

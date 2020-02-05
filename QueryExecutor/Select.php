@@ -247,7 +247,7 @@ class Select implements IQueryExecutor
                     }
                 }
             } elseif ($innerJoinedTable->getTable() instanceof Query) {
-                $tmpColumns = $innerJoinedTable->getTable()->getSelectedColumns();
+                $tmpColumns = $innerJoinedTable->getTable()->getQuery()->getSelectedColumns();
 
                 foreach ($tmpColumns as $column) {
                     $columns[] = $column->getColumn();
@@ -267,7 +267,7 @@ class Select implements IQueryExecutor
                     }
                 }
             } elseif ($leftJoinedTable->getTable() instanceof Query) {
-                $tmpColumns = $leftJoinedTable->getTable()->getSelectedColumns();
+                $tmpColumns = $leftJoinedTable->getTable()->getQuery()->getSelectedColumns();
 
                 foreach ($tmpColumns as $column) {
                     $columns[] = $column->getColumn();
@@ -287,7 +287,7 @@ class Select implements IQueryExecutor
                     }
                 }
             } elseif ($rightJoinedTable->getTable() instanceof Query) {
-                $tmpColumns = $rightJoinedTable->getTable()->getSelectedColumns();
+                $tmpColumns = $rightJoinedTable->getTable()->getQuery()->getSelectedColumns();
 
                 foreach ($tmpColumns as $column) {
                     $columns[] = $column->getColumn();
@@ -307,7 +307,7 @@ class Select implements IQueryExecutor
                     }
                 }
             } elseif ($fullJoinedTable->getTable() instanceof Query) {
-                $tmpColumns = $fullJoinedTable->getTable()->getSelectedColumns();
+                $tmpColumns = $fullJoinedTable->getTable()->getQuery()->getSelectedColumns();
 
                 foreach ($tmpColumns as $column) {
                     $columns[] = $column->getColumn();
@@ -327,7 +327,7 @@ class Select implements IQueryExecutor
                     }
                 }
             } elseif ($crossJoinedTable->getTable() instanceof Query) {
-                $tmpColumns = $crossJoinedTable->getTable()->getSelectedColumns();
+                $tmpColumns = $crossJoinedTable->getTable()->getQuery()->getSelectedColumns();
 
                 foreach ($tmpColumns as $column) {
                     $columns[] = $column->getColumn();
@@ -353,7 +353,7 @@ class Select implements IQueryExecutor
                 $selectedColumns[] = $column->getColumn();
             }
 
-            $result = $this->query->getTable()->getResult();
+            $result = $this->query->getTable()->getQuery();
 
             if ($result instanceof TableResult) {
                 $query = $result->getQuery();

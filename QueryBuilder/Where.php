@@ -31,7 +31,7 @@ trait Where
      * @param string $operator
      * @param string|int|AggregateFunction|Query $value
      *
-     * @return Where
+     * @return Where|Select
      * @throws Exception
      */
     public function where($column, $operator, $value)
