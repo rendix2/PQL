@@ -13,6 +13,11 @@ use Exception;
 class Condition
 {
     /**
+     * @var string
+     */
+    const IN_SEPARATOR = ', ';
+
+    /**
      * @var string|array|Query|AggregateFunction $column
      */
     private $column;
@@ -62,7 +67,23 @@ class Condition
      */
     public function __toString()
     {
-        return $this->column . ' ' . $this->operator . ' ' .  $this->value;
+        if ($this->column instanceof Query) {
+            $column = '(<br><br>' . (string)$this->column . '<br><br>)';
+        } elseif (is_array($this->column)) {
+            $column = '(' . implode(self::IN_SEPARATOR, $this->column) . ')';
+        } else {
+            $column = $this->column;
+        }
+
+        if ($this->value instanceof Query) {
+            $value = '(<br><br>' . (string)$this->value . '<br><br>)';
+        } elseif (is_array($this->value)) {
+            $value =  '(' . implode(self::IN_SEPARATOR, $this->value) . ')';
+        } else {
+            $value = $this->value;
+        }
+
+        return $column . ' ' . mb_strtoupper($this->operator) . ' ' . $value;
     }
 
     /**

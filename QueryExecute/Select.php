@@ -215,42 +215,102 @@ class Select extends BaseQuery
         $columns = [];
         
         foreach ($this->query->getInnerJoinedTables() as $innerJoinedTable) {
-            foreach ($innerJoinedTable->getTable()->getColumns() as $column) {
-                $columns[] = $column->getName();
+            if ($innerJoinedTable->getTable() instanceof Table) {
+                foreach ($innerJoinedTable->getTable()->getColumns() as $column) {
+                    $columns[] = $column->getName();
 
-                if ($innerJoinedTable->hasAlias()) {
-                    $columns[] = $innerJoinedTable->getAlias()->getTo() . Alias::DELIMITER . $column->getName();
+                    if ($innerJoinedTable->hasAlias()) {
+                        $columns[] = $innerJoinedTable->getAlias()->getTo() . Alias::DELIMITER . $column->getName();
+                    }
                 }
+            } elseif ($innerJoinedTable->getTable() instanceof Query) {
+                $tmpColumns = $innerJoinedTable->getTable()->getSelectedColumns();
+
+                foreach ($tmpColumns as $column) {
+                    $columns[] = $column->getColumn();
+                }
+            } else {
+                throw new Exception('Unknown inner join input.');
             }
         }
 
         foreach ($this->query->getLeftJoinedTables() as $leftJoinedTable) {
-            foreach ($leftJoinedTable->getTable()->getColumns() as $column) {
-                $columns[] = $column->getName();
+            if ($leftJoinedTable->getTable() instanceof Table) {
+                foreach ($leftJoinedTable->getTable()->getColumns() as $column) {
+                    $columns[] = $column->getName();
 
-                if ($leftJoinedTable->hasAlias()) {
-                    $columns[] = $leftJoinedTable->getAlias()->getTo() . Alias::DELIMITER . $column->getName();
+                    if ($leftJoinedTable->hasAlias()) {
+                        $columns[] = $leftJoinedTable->getAlias()->getTo() . Alias::DELIMITER . $column->getName();
+                    }
                 }
+            } elseif ($leftJoinedTable->getTable() instanceof Query) {
+                $tmpColumns = $leftJoinedTable->getTable()->getSelectedColumns();
+
+                foreach ($tmpColumns as $column) {
+                    $columns[] = $column->getColumn();
+                }
+            } else {
+                throw new Exception('Unknown left joined input.');
             }
         }
 
         foreach ($this->query->getRightJoinedTables() as $rightJoinedTable) {
-            foreach ($rightJoinedTable->getTable()->getColumns() as $column) {
-                $columns[] = $column->getName();
+            if ($rightJoinedTable->getTable() instanceof Table) {
+                foreach ($rightJoinedTable->getTable()->getColumns() as $column) {
+                    $columns[] = $column->getName();
 
-                if ($rightJoinedTable->hasAlias()) {
-                    $columns[] = $rightJoinedTable->getAlias()->getTo() . Alias::DELIMITER . $column->getName();
+                    if ($rightJoinedTable->hasAlias()) {
+                        $columns[] = $rightJoinedTable->getAlias()->getTo() . Alias::DELIMITER . $column->getName();
+                    }
                 }
+            } elseif ($rightJoinedTable->getTable() instanceof Query) {
+                $tmpColumns = $rightJoinedTable->getTable()->getSelectedColumns();
+
+                foreach ($tmpColumns as $column) {
+                    $columns[] = $column->getColumn();
+                }
+            } else {
+                throw new Exception('Unknown right join input.');
+            }
+        }
+
+        foreach ($this->query->getFullJoinedTables() as $fullJoinedTable) {
+            if ($fullJoinedTable->getTable() instanceof Table) {
+                foreach ($fullJoinedTable->getTable()->getColumns() as $column) {
+                    $columns[] = $column->getName();
+
+                    if ($fullJoinedTable->hasAlias()) {
+                        $columns[] = $fullJoinedTable->getAlias()->getTo() . Alias::DELIMITER . $column->getName();
+                    }
+                }
+            } elseif ($fullJoinedTable->getTable() instanceof Query) {
+                $tmpColumns = $fullJoinedTable->getTable()->getSelectedColumns();
+
+                foreach ($tmpColumns as $column) {
+                    $columns[] = $column->getColumn();
+                }
+            } else {
+                throw new Exception('Unknown input for full join.');
             }
         }
 
         foreach ($this->query->getCrossJoinedTables() as $crossJoinedTable) {
-            foreach ($crossJoinedTable->getTable()->getColumns() as $column) {
-                $columns[] = $column->getName();
+            if ($crossJoinedTable->getTable() instanceof Table) {
+                foreach ($crossJoinedTable->getTable()->getColumns() as $column) {
+                    $columns[] = $column->getName();
 
-                if ($crossJoinedTable->hasAlias()) {
-                    $columns[] = $crossJoinedTable->getAlias()->getTo() . Alias::DELIMITER . $column->getName();
+                    if ($crossJoinedTable->hasAlias()) {
+                        $columns[] = $crossJoinedTable->getAlias()->getTo() . Alias::DELIMITER . $column->getName();
+                    }
                 }
+            } elseif ($crossJoinedTable->getTable() instanceof Query) {
+                $tmpColumns = $crossJoinedTable->getTable()->getSelectedColumns();
+
+                foreach ($tmpColumns as $column) {
+                    $columns[] = $column->getColumn();
+                }
+            } else {
+                throw new Exception('Unknown input for cross join.');
             }
         }
 
@@ -441,7 +501,7 @@ class Select extends BaseQuery
             foreach ($innerJoinedTable->getOnConditions() as $condition) {
                 $innerJoinedTableRows = $this->joinedTableAliases($innerJoinedTable);
 
-                switch ($this->optimizer->sayJoinAlgorithm($condition)) {
+                switch ($this->optimizer->sayJoinAlgorithm($innerJoinedTable, $condition)) {
                     case Optimizer::MERGE_JOIN:
                         $this->result = SortMergeJoin::innerJoin($this->result, $innerJoinedTableRows, $condition);
                         break;
@@ -489,13 +549,10 @@ class Select extends BaseQuery
         }
 
         foreach ($this->query->getLeftJoinedTables() as $leftJoinedTable) {
-            /**
-             * @var Condition $condition
-             */
             foreach ($leftJoinedTable->getOnConditions() as $condition) {
                 $leftJoinedTableRows = $this->joinedTableAliases($leftJoinedTable);
 
-                switch ($this->optimizer->sayJoinAlgorithm($condition)) {
+                switch ($this->optimizer->sayJoinAlgorithm($leftJoinedTable, $condition)) {
                     case Optimizer::MERGE_JOIN:
                         $this->result = SortMergeJoin::leftJoin($this->result, $leftJoinedTableRows, $condition);
                         break;
@@ -528,7 +585,7 @@ class Select extends BaseQuery
             foreach ($rightJoinedTable->getOnConditions() as $condition) {
                 $rightJoinedTableRows = $this->joinedTableAliases($rightJoinedTable);
 
-                switch ($this->optimizer->sayJoinAlgorithm($condition)) {
+                switch ($this->optimizer->sayJoinAlgorithm($rightJoinedTable, $condition)) {
                     case Optimizer::MERGE_JOIN:
                         $this->result = SortMergeJoin::rightJoin($this->result, $rightJoinedTableRows, $condition);
                         break;
@@ -562,7 +619,7 @@ class Select extends BaseQuery
             foreach ($fullJoinedTable->getOnConditions() as $condition) {
                 $fullJoinedTableRows = $this->joinedTableAliases($fullJoinedTable);
 
-                switch ($this->optimizer->sayJoinAlgorithm($condition)) {
+                switch ($this->optimizer->sayJoinAlgorithm($fullJoinedTable, $condition)) {
                     case Optimizer::MERGE_JOIN:
                         $this->result = SortMergeJoin::fullJoin($this->result, $fullJoinedTableRows, $condition);
                         break;

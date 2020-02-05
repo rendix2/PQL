@@ -11,7 +11,7 @@ namespace pql;
 class JoinedTable
 {
     /**
-     * @var Table $table
+     * @var Table|Query $table
      */
     private $table;
 
@@ -32,11 +32,11 @@ class JoinedTable
 
     /**
      * JoinedTable constructor.
-     * @param Table       $table
+     * @param Table|Query $table
      * @param Condition[] $onConditions
      * @param Alias|null  $alias
      */
-    public function __construct(Table $table, array $onConditions, $alias = null)
+    public function __construct($table, array $onConditions, $alias = null)
     {
         $this->table = $table;
         $this->onConditions = $onConditions;

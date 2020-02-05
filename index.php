@@ -375,6 +375,14 @@ $subRes2 = $query->select(['pocet'])
     ->where('pocet', 'between_in', [1, 3]);
 */
 
+$query6 = new Query($database);
+$query6->select(['datum'])
+    ->from('test', '5');
+
+$query5 = new Query($database);
+$query5->select(['datum'])
+    ->from('test');
+
 //$query = new Query($database);
 $query1 = new Query($database);
 $query1->select(['pocet'])
@@ -389,8 +397,9 @@ $query3->select(['pocet'])
     ->from($query2);
 
 $query4 = new Query($database);
-$query4->select(['pocet', 'datum'])
-    ->from($query3);
+$query4->select(['pocet',])
+    ->from($query3, 'b')
+    ->innerJoin($query6, [new \pql\Condition('a.pocet', '=', 'b.pocet')], 'a');
 
 //->where('pocet', 'in', [1, 3, 5])
 //->where([1, 3, 5], 'in', 'pocet')
@@ -411,7 +420,7 @@ $res = $query2->select(['id', 'datum', 'pocet'])
     ->limit(5);
 */
 
-bdump($query4, '$query2');
+bdump($query4, '$query4');
 
 echo $query4;
     $res4 = $query4->run();

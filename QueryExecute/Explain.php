@@ -484,7 +484,7 @@ class Explain extends BaseQuery
                 '---',
                 '---',
                 (string)$condition,
-                self::JOIN_ALGORITHMS[$this->optimizer->sayJoinAlgorithm($condition)],
+                self::JOIN_ALGORITHMS[$this->optimizer->sayJoinAlgorithm($joinedTable, $condition)],
                 null
             );
         }

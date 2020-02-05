@@ -66,11 +66,12 @@ class Optimizer
     }
 
     /**
+     * @param JoinedTable $joinedTable
      * @param Condition $condition
      *
      * @return string
      */
-    public function sayJoinAlgorithm(Condition $condition)
+    public function sayJoinAlgorithm(JoinedTable $joinedTable, Condition $condition)
     {
         $equalOperator = $condition->getOperator() === Operator::EQUAL;
 
@@ -92,7 +93,11 @@ class Optimizer
                 self::NESTED_LOOP;
             }
         } elseif ($equalOperator) {
-            return self::HASH_JOIN;
+            if ($joinedTable->getTable() instanceof Query) {
+                return self::NESTED_LOOP;
+            } else {
+                return self::HASH_JOIN;
+            }
         } else {
             return self::NESTED_LOOP;
         }
