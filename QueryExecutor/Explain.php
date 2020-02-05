@@ -36,6 +36,11 @@ class Explain implements IQueryExecutor
     private $query;
 
     /**
+     * @var array $result
+     */
+    private $result;
+
+    /**
      * Explain constructor.
      *
      * @param ExplainBuilder $query

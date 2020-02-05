@@ -31,6 +31,16 @@ class InsertSelect implements IQueryExecutor
     }
 
     /**
+     * InsertSelect destructor.
+     *
+     *
+     */
+    public function __destruct()
+    {
+        $this->query = null;
+    }
+
+    /**
      * @inheritDoc
      * @throws Exception
      */

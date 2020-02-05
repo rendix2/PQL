@@ -26,6 +26,9 @@ class Explain extends Select
      */
     private $result;
 
+    /**
+     * @return IResult|ListResult|TableResult
+     */
     public function run()
     {
         if ($this->result instanceof TableResult) {

@@ -45,6 +45,9 @@ class UpdateSelect implements IQueryExecutor
         $this->query = null;
     }
 
+    /**
+     * @return UpdateSelectBuilder
+     */
     public function getQuery()
     {
         return $this->query;

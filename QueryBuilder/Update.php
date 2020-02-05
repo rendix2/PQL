@@ -9,7 +9,6 @@
 namespace pql\QueryBuilder;
 
 use pql\Database;
-use pql\Query;
 use pql\QueryExecutor\Update as UpdateExecutor;
 use pql\QueryResult\IResult;
 use pql\QueryResult\TableResult;
@@ -63,8 +62,14 @@ class Update implements IQueryBuilder
     public function __destruct()
     {
         $this->database = null;
+        $this->result = null;
+        $this->table = null;
+        $this->data = null;
     }
 
+    /**
+     * @return array
+     */
     public function getData()
     {
         return $this->data;
@@ -93,6 +98,9 @@ class Update implements IQueryBuilder
         return $this;
     }
 
+    /**
+     * @return IResult|TableResult
+     */
     public function run()
     {
         if ($this->result instanceof TableResult) {

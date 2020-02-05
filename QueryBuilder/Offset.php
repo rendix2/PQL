@@ -56,5 +56,4 @@ trait Offset
 
         return $this;
     }
-
 }

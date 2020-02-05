@@ -17,5 +17,4 @@ namespace pql\QueryExecutor;
 interface IQueryExecutor
 {
     public function run();
-
 }

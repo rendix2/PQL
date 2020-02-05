@@ -59,13 +59,22 @@ class Insert implements IQueryBuilder
     public function __destruct()
     {
         $this->database = null;
+        $this->table = null;
+        $this->data = null;
+        $this->result = null;
     }
 
+    /**
+     * @return Table
+     */
     public function getTable()
     {
         return $this->table;
     }
 
+    /**
+     * @return Query
+     */
     public function getData()
     {
         return $this->data;
@@ -97,6 +106,9 @@ class Insert implements IQueryBuilder
         return $this;
     }
 
+    /**
+     * @return IResult|TableResult
+     */
     public function run()
     {
         if ($this->result instanceof TableResult) {

@@ -58,6 +58,9 @@ class InsertSelect implements IQueryBuilder
     public function __destruct()
     {
         $this->database = null;
+        $this->data = null;
+        $this->result = null;
+        $this->table = null;
     }
 
     /**
@@ -76,6 +79,9 @@ class InsertSelect implements IQueryBuilder
         return $this->table;
     }
 
+    /**
+     * @return Database
+     */
     public function getDatabase()
     {
         return $this->database;
@@ -96,6 +102,9 @@ class InsertSelect implements IQueryBuilder
         return $this;
     }
 
+    /**
+     * @return IResult|TableResult
+     */
     public function run()
     {
         if ($this->result instanceof TableResult) {
@@ -113,5 +122,4 @@ class InsertSelect implements IQueryBuilder
 
         return $this->result = new TableResult([], [], $executeTime, $insertSelect, $affectedRows);
     }
-
 }

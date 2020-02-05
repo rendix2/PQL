@@ -6,6 +6,7 @@ use Nette\Utils\FileSystem;
 use pql\Condition;
 use pql\ConditionHelper;
 use pql\QueryBuilder\Update as UpdateBuilder;
+use pql\QueryResult\IResult;
 use pql\Table;
 use SplFileObject;
 
@@ -24,6 +25,9 @@ class Update implements IQueryExecutor
      */
     private $query;
 
+    /**
+     * @var IResult $result
+     */
     private $result;
 
     /**
@@ -34,6 +38,15 @@ class Update implements IQueryExecutor
     public function __construct(UpdateBuilder $query)
     {
         $this->query = $query;
+    }
+
+    /**
+     * Update destructor.
+     */
+    public function __destruct()
+    {
+        $this->query = null;
+        $this->result = null;
     }
 
     /**

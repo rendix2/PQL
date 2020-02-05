@@ -40,6 +40,9 @@ class Delete implements IQueryExecutor
         $this->query = $query;
     }
 
+    /**
+     * Delete destructor.
+     */
     public function __destruct()
     {
         $this->query = null;

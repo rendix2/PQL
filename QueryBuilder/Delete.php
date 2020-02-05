@@ -58,8 +58,13 @@ class Delete implements IQueryBuilder
     public function __destruct()
     {
         $this->database = null;
+        $this->data = null;
+        $this->result = null;
     }
 
+    /**
+     * @return IResult
+     */
     public function getResult()
     {
         return $this->result;
@@ -73,6 +78,9 @@ class Delete implements IQueryBuilder
         return $this->table;
     }
 
+    /**
+     * @return array
+     */
     public function getData()
     {
         return  $this->data;
@@ -90,6 +98,9 @@ class Delete implements IQueryBuilder
         return $this;
     }
 
+    /**
+     * @return IResult|TableResult
+     */
     public function run()
     {
         if ($this->result instanceof TableResult) {

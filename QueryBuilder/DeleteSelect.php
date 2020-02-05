@@ -58,6 +58,9 @@ class DeleteSelect implements IQueryBuilder
     public function __destruct()
     {
         $this->database = null;
+        $this->table = null;
+        $this->data = null;
+        $this->result = null;
     }
 
     /**
@@ -68,11 +71,17 @@ class DeleteSelect implements IQueryBuilder
         return $this->data;
     }
 
+    /**
+     * @return Database
+     */
     public function getDatabase()
     {
         return $this->database;
     }
 
+    /**
+     * @return Table
+     */
     public function getTable()
     {
         return $this->table;
@@ -93,6 +102,9 @@ class DeleteSelect implements IQueryBuilder
         return $this;
     }
 
+    /**
+     * @return IResult|TableResult
+     */
     public function run()
     {
         if ($this->result instanceof TableResult) {

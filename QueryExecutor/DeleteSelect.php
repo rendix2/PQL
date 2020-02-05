@@ -37,6 +37,14 @@ class DeleteSelect implements IQueryExecutor
     }
 
     /**
+     * DeleteSelect destructor.
+     */
+    public function __destruct()
+    {
+        $this->query = null;
+    }
+
+    /**
      * @inheritDoc
      */
     public function run()

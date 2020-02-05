@@ -10,6 +10,7 @@ namespace pql\QueryBuilder;
 
 use Exception;
 use pql\Alias;
+use pql\Table;
 
 /**
  * Trait From
@@ -19,11 +20,13 @@ use pql\Alias;
  */
 trait From
 {
-
+    /**
+     * @var Table $table
+     */
     private $table;
 
     /**
-     * @param string $table
+     * @param string      $table
      * @param string|null $alias
      *
      * @return From

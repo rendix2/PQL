@@ -70,6 +70,9 @@ trait Where
         return $this->whereConditions;
     }
 
+    /**
+     * @return bool
+     */
     public function hasWhereCondition()
     {
         return $this->hasWhereCondition;

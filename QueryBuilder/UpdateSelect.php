@@ -9,7 +9,6 @@
 namespace pql\QueryBuilder;
 
 use pql\Database;
-use pql\Query;
 use pql\QueryExecutor\UpdateSelect as UpdateSelectExecutor;
 use pql\QueryResult\IResult;
 use pql\QueryResult\TableResult;
@@ -61,6 +60,9 @@ class UpdateSelect implements IQueryBuilder
     public function __destruct()
     {
         $this->database = null;
+        $this->result = null;
+        $this->data = null;
+        $this->table = null;
     }
 
     /**
