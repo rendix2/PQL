@@ -5,6 +5,7 @@ namespace pql\QueryExecutor;
 use pql\Condition;
 use pql\JoinedTable;
 use pql\Operator;
+use pql\QueryBuilder\Query;
 use pql\QueryBuilder\Select as SelectBuilder;
 use pql\Table;
 
@@ -106,7 +107,7 @@ class Optimizer
             } elseif ($equalOperator) {
                 return self::HASH_JOIN;
             } else {
-                self::NESTED_LOOP;
+                return self::NESTED_LOOP;
             }
         } elseif ($equalOperator) {
             if ($joinedTable->getTable() instanceof Query) {

@@ -51,6 +51,8 @@ class Update implements IQueryExecutor
 
     /**
      * run query
+     *
+     * @return int
      */
     public function run()
     {

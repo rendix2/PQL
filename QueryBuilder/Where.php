@@ -21,14 +21,19 @@ use pql\Operator;
  */
 trait Where
 {
+    /**
+     * @var Condition[] $whereConditions
+     */
     private $whereConditions;
 
+    /**
+     * @var bool $hasWhereCondition
+     */
     private $hasWhereCondition;
-
 
     /**
      * @param string|int|AggregateFunction|Query $column
-     * @param string $operator
+     * @param string                             $operator
      * @param string|int|AggregateFunction|Query $value
      *
      * @return Where|Select
@@ -38,9 +43,7 @@ trait Where
     {
         $condition = new Condition($column, $operator, $value);
 
-        if ($condition->getOperator() === Operator::BETWEEN ||
-            $condition->getOperator() === Operator::BETWEEN_INCLUSIVE
-        ) {
+        if ($condition->getOperator() === Operator::BETWEEN || $condition->getOperator() === Operator::BETWEEN_INCLUSIVE) {
             if (!is_array($condition->getValue()) && !is_array($condition->getColumn())) {
                 throw new Exception('Parameter for between must be array.');
             }
@@ -76,5 +79,18 @@ trait Where
     public function hasWhereCondition()
     {
         return $this->hasWhereCondition;
+    }
+
+    /**
+     *
+     * @param string $key
+     * @internal
+     */
+    public function removeWhereCondition($key)
+    {
+        unset($this->whereConditions[$key]);
+
+        $this->whereConditions = array_values($this->whereConditions);
+        $this->hasWhereCondition = count($this->whereConditions);
     }
 }

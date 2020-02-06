@@ -86,11 +86,17 @@ class Select implements IQueryExecutor
         $this->result = null;
     }
 
+    /**
+     * @return SelectBuilder
+     */
     public function getQuery()
     {
         return $this->query;
     }
 
+    /**
+     * @return array
+     */
     public function getResult()
     {
         return $this->result;
@@ -131,6 +137,11 @@ class Select implements IQueryExecutor
 
         //bdump($this->result, '$this->result DISTINCT');
 
+        Profiler::start('whereForFromClause');
+        $this->whereForFromClause();
+        Profiler::finish('whereForFromClause');
+
+        //bdump($this->result, '$this->result whereForFromClause');
 
         Profiler::start('innerJoin');
         $this->innerJoin();
@@ -696,6 +707,64 @@ class Select implements IQueryExecutor
         } else {
             foreach ($this->query->getWhereConditions() as $whereCondition) {
                 $this->result = $this->doWhere($this->result, $whereCondition);
+            }
+        }
+
+        return $this->result;
+    }
+
+    /**
+     * @return array
+     */
+    private function whereForFromClause()
+    {
+        if (!$this->query->hasWhereCondition()) {
+            return $this->result;
+        }
+
+        $table = $this->query->getTable();
+
+        while ($table instanceof Query) {
+            $table = $table->getTable();
+        }
+
+        foreach ($this->query->getWhereConditions() as $key => $whereCondition) {
+            // column
+            if (is_string($whereCondition->getColumn())) {
+                if (strpos($whereCondition->getColumn(),Alias::DELIMITER) === false && $table->columnExists($whereCondition->getColumn())) {
+                    $this->result = $this->doWhere($this->result, $whereCondition);
+
+                    $this->query->removeWhereCondition($key);
+                } else {
+                    if ($this->query->hasTableAlias()) {
+                        list($alias, $column) = explode(Alias::DELIMITER, $whereCondition->getColumn());
+
+                        if ($alias === $this->query->getTableAlias()->getTo() && $table->columnExists($column)) {
+                            $this->result = $this->doWhere($this->result, $whereCondition);
+
+                            $this->query->removeWhereCondition($key);
+                        }
+                    }
+                }
+            }
+
+            // value
+            if (is_string($whereCondition->getValue())) {
+                if (strpos($whereCondition->getValue(),Alias::DELIMITER) === false && $table->columnExists($whereCondition->getValue())) {
+                    $this->result = $this->doWhere($this->result, $whereCondition);
+
+                    $this->query->removeWhereCondition($key);
+                } else {
+                    if ($this->query->hasTableAlias()) {
+                        list($alias, $column) = explode(Alias::DELIMITER, $whereCondition->getValue());
+
+                        if ($alias === $this->query->getTableAlias()->getTo() && $table->columnExists($column)) {
+                            $this->result = $this->doWhere($this->result, $whereCondition);
+
+                            $this->query->removeWhereCondition($key);
+                        }
+                    }
+                }
             }
         }
 
