@@ -535,17 +535,31 @@ class Select implements IQueryExecutor
             foreach ($innerJoinedTable->getOnConditions() as $condition) {
                 $innerJoinedTableRows = $this->joinedTableAliases($innerJoinedTable);
 
+                $orderOfTables = $this->optimizer->sayOrderOfInnerJoinedTables($this->result, $innerJoinedTableRows);
+
                 switch ($this->optimizer->sayJoinAlgorithm($innerJoinedTable, $condition)) {
                     case Optimizer::MERGE_JOIN:
-                        $this->result = SortMergeJoin::innerJoin($this->result, $innerJoinedTableRows, $condition);
+                        if ($orderOfTables === Optimizer::TABLE_A_FIRST) {
+                            $this->result = SortMergeJoin::innerJoin($this->result, $innerJoinedTableRows, $condition);
+                        } else {
+                            $this->result = SortMergeJoin::innerJoin($innerJoinedTableRows, $this->result, $condition);
+                        }
                         break;
 
                     case Optimizer::HASH_JOIN:
-                        $this->result = HashJoin::innerJoin($this->result, $innerJoinedTableRows, $condition);
+                        if ($orderOfTables === Optimizer::TABLE_A_FIRST) {
+                            $this->result = HashJoin::innerJoin($this->result, $innerJoinedTableRows, $condition);
+                        } else {
+                            $this->result = HashJoin::innerJoin($innerJoinedTableRows, $this->result, $condition);
+                        }
                         break;
 
                     case Optimizer::NESTED_LOOP:
-                        $this->result = NestedLoopJoin::innerJoin($this->result, $innerJoinedTableRows, $condition);
+                        if ($orderOfTables === Optimizer::TABLE_A_FIRST) {
+                            $this->result = NestedLoopJoin::innerJoin($this->result, $innerJoinedTableRows, $condition);
+                        } else {
+                            $this->result = NestedLoopJoin::innerJoin($innerJoinedTableRows, $this->result, $condition);
+                        }
                         break;
                 }
             }

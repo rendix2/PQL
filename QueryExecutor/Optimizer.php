@@ -121,15 +121,14 @@ class Optimizer
     }
 
     /**
-     * @param Table $innerJoinedTable
+     * @param array $tableA
+     * @param array $tableB
+     *
      * @return string
      */
-    public function sayOrderOfInnerJoinedTables(Table $innerJoinedTable)
+    public function sayOrderOfInnerJoinedTables(array $tableA, array $tableB)
     {
-        $countA = $this->query->getTable()->getRowsCount();
-        $countB = $innerJoinedTable->getRowsCount();
-
-        return $countA > $countB ? self::TABLE_B_FIRST : self::TABLE_A_FIRST;
+        return count($tableA) > count($tableB) ? self::TABLE_B_FIRST : self::TABLE_A_FIRST;
     }
 
     /**
