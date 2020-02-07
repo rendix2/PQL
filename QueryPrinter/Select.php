@@ -33,13 +33,26 @@ class Select implements IQueryPrinter
     private $query;
 
     /**
+     * @var string $indent
+     */
+    private $indent;
+
+    /**
+     * @var int $level
+     */
+    private $level;
+
+    /**
      * Select constructor.
      *
      * @param SelectBuilder $query
+     * @param int           $level
      */
-    public function __construct(SelectBuilder $query)
+    public function __construct(SelectBuilder $query, $level = 0)
     {
-        $this->query = $query;
+        $this->query  = $query;
+        $this->indent = str_repeat('&nbsp;&nbsp;&nbsp;&nbsp;', $level);
+        $this->level  = $level;
     }
 
     /**
@@ -97,7 +110,7 @@ class Select implements IQueryPrinter
      */
     private function columns()
     {
-        $select = 'SELECT ' . $this->distinct();
+        $select = $this->indent . 'SELECT ' . $this->distinct();
 
         foreach ($this->query->getSelectedColumns() as $i => $selectedColumn) {
             if ($i !== 0) {
@@ -148,12 +161,14 @@ class Select implements IQueryPrinter
      */
     private function from()
     {
-        $from = '<br> FROM ';
+        $from = '<br>' . $this->indent . 'FROM ';
 
         if ($this->query->getTable() instanceof Table) {
             $from .= $this->query->getTable()->getName();
         } elseif ($this->query->getTable() instanceof Query) {
-            $from .= '(<br><br>' . (string)$this->query->getTable() . '<br<br><br>)';
+            $queryPrinter = new QueryPrinter($this->query->getTable(), $this->level + 1);
+
+            $from .= '(<br><br>' . $queryPrinter->printQuery() . '<br><br>)';
         }
 
         if ($this->query->hasTableAlias()) {
@@ -172,12 +187,14 @@ class Select implements IQueryPrinter
 
         if ($this->query->hasInnerJoinedTable()) {
             foreach ($this->query->getInnerJoinedTables() as $innerJoinedTable) {
-                $innerJoin .= ' <br>INNER JOIN ';
+                $innerJoin .= '<br>' . $this->indent . 'INNER JOIN ';
 
                 if ($innerJoinedTable->getTable() instanceof Table) {
                     $innerJoin .= $innerJoinedTable->getTable()->getName();
                 } elseif ($innerJoinedTable->getTable() instanceof Query) {
-                    $innerJoin .= '(<br><br>' . (string)$this->query->getTable() . '<br<br><br>)';
+                    $queryPrinter = new QueryPrinter($this->query->getTable(), $this->level + 1);
+
+                    $innerJoin .= '(<br><br>' . $this->indent . $queryPrinter->printQuery() . '<br><br>)';
                 }
 
                 $innerJoin .= $this->printTableAlias($innerJoinedTable);
@@ -197,12 +214,14 @@ class Select implements IQueryPrinter
 
         if ($this->query->hasCrossJoinedTable()) {
             foreach ($this->query->getCrossJoinedTables() as $crossJoinedTable) {
-                $crossJoin .= ' <br>CROSS JOIN ';
+                $crossJoin .= '<br>' . $this->indent . 'CROSS JOIN ';
 
                 if ($crossJoinedTable->getTable() instanceof Table) {
                     $crossJoin .= $crossJoinedTable->getTable()->getName();
                 } elseif ($crossJoinedTable->getTable() instanceof Query) {
-                    $crossJoin .= '(<br><br>' . (string)$this->query->getTable() . '<br<br><br>)';
+                    $queryPrinter = new QueryPrinter($this->query->getTable(), $this->level + 1);
+
+                    $crossJoin .= '(<br><br>' . $this->indent . $queryPrinter->printQuery() . '<br><br>)';
                 }
 
                 $crossJoin .= $this->printTableAlias($crossJoinedTable);
@@ -221,12 +240,14 @@ class Select implements IQueryPrinter
 
         if ($this->query->hasLeftJoinedTable()) {
             foreach ($this->query->getLeftJoinedTables() as $leftJoinedTable) {
-                $leftJoin .= ' <br>LEFT JOIN ';
+                $leftJoin .= '<br>' . $this->indent . 'LEFT JOIN ';
 
                 if ($leftJoinedTable->getTable() instanceof Table) {
                     $leftJoin .= $leftJoinedTable->getTable()->getName();
                 } elseif ($leftJoinedTable->getTable() instanceof Query) {
-                    $leftJoin .= '(<br><br>' . (string)$leftJoinedTable->getTable() . '<br<br><br>)';
+                    $queryPrinter = new QueryPrinter($leftJoinedTable->getTable(), $this->level + 1);
+
+                    $leftJoin .= '(<br><br>' . $this->indent . $queryPrinter->printQuery() . '<br><br>)';
                 }
 
                 $leftJoin .= $this->printTableAlias($leftJoinedTable);
@@ -246,12 +267,14 @@ class Select implements IQueryPrinter
 
         if ($this->query->hasRightJoinedTable()) {
             foreach ($this->query->getRightJoinedTables() as $rightJoinedTable) {
-                $rightJoin .= ' <br>RIGHT JOIN ';
+                $rightJoin .= '<br>' . $this->indent . 'RIGHT JOIN ';
 
                 if ($rightJoinedTable->getTable() instanceof Table) {
                     $rightJoin .= $rightJoinedTable->getTable()->getName();
                 } elseif ($rightJoinedTable->getTable() instanceof Query) {
-                    $rightJoin .= '(<br><br>' . (string)$this->query->getTable() . '<br<br><br>)';
+                    $queryPrinter = new QueryPrinter($rightJoinedTable->getTable(), $this->level + 1);
+
+                    $rightJoin .= '(<br><br>' . $this->indent . $queryPrinter->printQuery() . '<br><br>)';
                 }
 
                 $rightJoin .= $this->printTableAlias($rightJoinedTable);
@@ -271,12 +294,14 @@ class Select implements IQueryPrinter
 
         if ($this->query->hasFullJoinedTable()) {
             foreach ($this->query->getFullJoinedTables() as $fullJoinedTable) {
-                $fullJoin .= ' <br>FULL JOIN ';
+                $fullJoin .= '<br>' . $this->indent . 'FULL JOIN ';
 
                 if ($fullJoinedTable->getTable() instanceof Table) {
                     $fullJoin .= $fullJoinedTable->getTable()->getName();
                 } elseif ($fullJoinedTable->getTable() instanceof Query) {
-                    $fullJoin .= '(<br><br>' . (string)$this->query->getTable() . '<br<br><br>)';
+                    $queryPrinter = new QueryPrinter($fullJoinedTable->getTable(), $this->level + 1);
+
+                    $fullJoin .= '(<br><br>' . $this->indent . $queryPrinter->printQuery() . '<br><br>)';
                 }
 
                 $fullJoin .= $this->printTableAlias($fullJoinedTable);
@@ -295,7 +320,7 @@ class Select implements IQueryPrinter
         $groupBy = '';
 
         if ($this->query->hasGroupBy()) {
-            $groupBy = '<br> GROUP BY ';
+            $groupBy = '<br>' . $this->indent . 'GROUP BY ';
 
             foreach ($this->query->getGroupByColumns() as $i => $groupByColumn) {
                 if ($i !== 0) {
@@ -317,7 +342,7 @@ class Select implements IQueryPrinter
         $having = '';
 
         if ($this->query->hasHavingCondition()) {
-            $having = ' <br> HAVING ';
+            $having = '<br>' . $this->indent . 'HAVING ';
 
             foreach ($this->query->getHavingConditions() as $i => $havingCondition) {
                 if ($i !== 0) {
@@ -339,7 +364,7 @@ class Select implements IQueryPrinter
         $orderBy = '';
 
         if ($this->query->hasOrderBy()) {
-            $orderBy = '<br> ORDER BY ';
+            $orderBy = '<br>' . $this->indent . 'ORDER BY ';
 
             foreach ($this->query->getOrderByColumns() as $i => $orderedBy) {
                 if ($i !== 0) {
@@ -365,7 +390,9 @@ class Select implements IQueryPrinter
                 $union .= '<br><br>';
             }
 
-            $union .= ' UNION <br><br>' . (string) $unionQuery;
+            $queryPrinter = new QueryPrinter($unionQuery, $this->level);
+
+            $union .= $this->indent . 'UNION <br><br>' . $queryPrinter->printQuery();
         }
 
         return $union;
@@ -383,7 +410,9 @@ class Select implements IQueryPrinter
                 $unionAll .= '<br><br>';
             }
 
-            $unionAll .= ' UNION ALL <br><br>' . (string) $unionAllQuery;
+            $queryPrinter = new QueryPrinter($unionAllQuery, $this->level);
+
+            $unionAll .= $this->indent . 'UNION ALL <br><br>' .$queryPrinter->printQuery();
         }
 
         return $unionAll;
@@ -401,7 +430,9 @@ class Select implements IQueryPrinter
                 $intersect .= '<br><br>';
             }
 
-            $intersect .= ' INTERSECT <br><br>' . (string) $intersectQuery;
+            $queryPrinter = new QueryPrinter($intersectQuery, $this->level);
+
+            $intersect .= $this->indent . 'INTERSECT <br><br>' . $queryPrinter->printQuery();
         }
 
         return $intersect;
@@ -419,7 +450,9 @@ class Select implements IQueryPrinter
                 $except .= '<br><br>';
             }
 
-            $except .= ' EXCEPT <br><br>' . (string) $exceptQuery;
+            $queryPrinter = new QueryPrinter($exceptQuery, $this->level);
+
+            $except .= $this->indent . 'EXCEPT <br><br>' . $queryPrinter->printQuery();
         }
 
         return $except;

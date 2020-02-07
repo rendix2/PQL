@@ -196,6 +196,7 @@ $query2->select()->select(['a.pocet', 'b.pocet'])
     ->where('b.pocet', '<', '5')
     ->orderBy('a.pocet', true);
 
+
 bdump($query2);
 
 $query1 = new Query($database);
@@ -210,7 +211,7 @@ $query1->select()->select(['a.pocet', 'b.pocet'])
 $query3 = new Query($database);
 $query3->select()->select(['a.pocet', 'b.pocet'])
 ->from($query1)
-    ->crossJoin($query1/*, [new \pql\Condition('a.pocet', '=', 'b.pocet')], 'b'*/)
+    ->crossJoin($query1, 'b')
     ->leftJoin($query1, [new \pql\Condition('a.pocet', '=', 'b.pocet')], 'b')
     ->rightJoin($query1, [new \pql\Condition('a.pocet', '=', 'b.pocet')], 'b')
     ->innerJoin($query1, [new \pql\Condition('a.pocet', '=', 'b.pocet')], 'b')
@@ -220,12 +221,13 @@ $query3->select()->select(['a.pocet', 'b.pocet'])
 
 
 
+
 echo $query3;
-    $res3 = $query3->run();
+    //$res3 = $query2->run();
 
-echo $res3;
+//echo $res3;
 
-bdump($query3);
+//bdump($query2);
 
 Profiler::finish('select');
 

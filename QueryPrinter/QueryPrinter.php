@@ -30,10 +30,11 @@ class QueryPrinter
      * QueryPrinter constructor.
      *
      * @param Query $query
-     *
+     * @param int   $level
+
      * @throws Exception
      */
-    public function __construct(Query $query)
+    public function __construct(Query $query, $level = 0)
     {
         // decide which Query type we have
 
@@ -41,7 +42,7 @@ class QueryPrinter
 
         switch ($className) {
             case SelectBuilder::class:
-                $this->query = new Select($query->getQuery());
+                $this->query = new Select($query->getQuery(), $level);
                 break;
             case InsertBuilder::class:
                 $this->query = new Insert($query->getQuery());

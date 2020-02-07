@@ -57,7 +57,7 @@ class Query
      */
     public function __toString()
     {
-        $queryPrinter = new QueryPrinter($this);
+        $queryPrinter = new QueryPrinter($this, 0);
 
         return $queryPrinter->printQuery();
     }

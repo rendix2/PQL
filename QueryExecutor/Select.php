@@ -826,7 +826,7 @@ class Select implements IQueryExecutor
                             $functionResult = $functions->median($function->getParams()[0]);
                             break;
                         default:
-                            $message = sprintf('Unknown agregate function "%s".', $function->getName());
+                            $message = sprintf('Unknown aggregate function "%s".', $function->getName());
 
                             throw new Exception($message);
                     }

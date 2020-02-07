@@ -25,7 +25,7 @@ trait Where
         $where = '';
 
         if ($whereCount) {
-            $where = ' <br>WHERE ';
+            $where = '<br>' . $this->indent . 'WHERE ';
 
             --$whereCount;
 
