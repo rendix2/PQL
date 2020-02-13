@@ -11,7 +11,7 @@ namespace pql\QueryExecutor;
 use pql\QueryRow\TableRow;
 
 /**
- * Class Limit
+ * Trait Limit
  *
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryExecute

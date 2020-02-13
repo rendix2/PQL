@@ -90,10 +90,17 @@ class Delete implements IQueryBuilder
      * @param string $table
      *
      * @return Delete
+     * @throws \Exception
      */
     public function delete($table)
     {
-        $this->table = new Table($this->database, $table);
+        if (is_string($table)) {
+            $this->table = new Table($this->database, $table);
+        } else {
+            $message = 'Delete query supports only table name for input.';
+
+            throw new \Exception($message);
+        }
 
         return $this;
     }

@@ -14,7 +14,7 @@ use pql\Condition;
 use pql\Operator;
 
 /**
- * Class Where
+ * Trait Where
  *
  * @package pql\QueryBuilder
  * @author  rendix2 <rendix2@seznam.cz>

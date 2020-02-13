@@ -93,6 +93,12 @@ class Database
      */
     public function __destruct()
     {
+        foreach ($this->tables as &$table) {
+            $table = null;
+        }
+
+        unset($table);
+
         $this->tables      = null;
         $this->name        = null;
         $this->size        = null;

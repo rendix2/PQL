@@ -5,7 +5,6 @@ namespace pql\QueryExecutor;
 use Exception;
 use Nette\Utils\FileSystem;
 use pql\Condition;
-use pql\ConditionHelper;
 use pql\QueryBuilder\Delete as DeleteBuilder;
 use pql\Table;
 use SplFileObject;

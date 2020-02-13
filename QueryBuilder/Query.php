@@ -38,7 +38,7 @@ class Query
      */
     public function __construct(Database $database)
     {
-        $this->database =  $database;
+        $this->database = $database;
     }
 
     /**
@@ -62,36 +62,62 @@ class Query
         return $queryPrinter->printQuery();
     }
 
+    /**
+     * @return Delete
+     */
     public function delete()
     {
         return $this->query = new Delete($this->database);
     }
 
+    /**
+     * @return DeleteSelect
+     */
     public function deleteSelect()
     {
         return $this->query = new DeleteSelect($this->database);
     }
 
+    /**
+     * @return Explain
+     */
     public function explain()
     {
         return $this->query = new Explain($this->database);
     }
 
+    /**
+     * @return Insert
+     */
     public function insert()
     {
         return $this->query = new Insert($this->database);
     }
 
+    public function insertSelect()
+    {
+        return $this->query = new InsertSelect($this->database);
+    }
+
+    /**
+     * @return Select
+     */
     public function select()
     {
         return $this->query = new Select($this->database);
     }
 
+    /**
+     * @return Update
+     */
     public function update()
     {
         return $this->query = new Update($this->database);
     }
 
+    /**
+     * @return UpdateSelect
+     */
     public function updateSelect()
     {
         return $this->query = new UpdateSelect($this->database);

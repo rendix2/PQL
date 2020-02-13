@@ -18,7 +18,6 @@ use Exception;
  */
 trait Offset
 {
-
     /**
      * @var int $offset
      */

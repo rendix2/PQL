@@ -614,6 +614,10 @@ class Table implements ITable
      */
     public function getRows($object = false)
     {
+        if ($this->rows) {
+            return $this->rows;
+        }
+
         $fileRows = $this->toArray();
         unset($fileRows[0]);
 
@@ -659,7 +663,7 @@ class Table implements ITable
             }
         }
         
-        return $resultRows;
+        return $this->rows = $resultRows;
     }
 
     /**

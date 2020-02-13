@@ -4,9 +4,7 @@ namespace pql\QueryExecutor;
 
 use Nette\Utils\FileSystem;
 use pql\Condition;
-use pql\ConditionHelper;
 use pql\QueryBuilder\Update as UpdateBuilder;
-use pql\QueryResult\IResult;
 use pql\Table;
 use SplFileObject;
 
@@ -26,7 +24,7 @@ class Update implements IQueryExecutor
     private $query;
 
     /**
-     * @var IResult $result
+     * @var array $result
      */
     private $result;
 

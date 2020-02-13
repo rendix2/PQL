@@ -5,10 +5,13 @@ namespace pql\QueryResult;
 /**
  * Interface IResult
  *
+ * @author rendix2 <rendix2@seznam.cz>
  * @package pql\QueryResult
- * @author  Tomáš Babický tomas.babicky@layoutmaschine.de
  */
 interface IResult
 {
+    /**
+     * @return string
+     */
     public function __toString();
 }

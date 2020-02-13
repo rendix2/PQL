@@ -1,8 +1,11 @@
 <?php
 
-namespace pql;
+namespace pql\QueryExecutor;
 
 use Exception;
+use pql\AggregateFunction;
+use pql\Condition;
+use pql\Operator;
 use pql\QueryBuilder\Query;
 
 /**

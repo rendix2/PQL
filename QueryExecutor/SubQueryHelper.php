@@ -1,6 +1,6 @@
 <?php
 
-namespace pql;
+namespace pql\QueryExecutor;
 
 use Exception;
 use pql\QueryBuilder\Query;

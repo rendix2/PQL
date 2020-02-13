@@ -7,7 +7,6 @@ use Netpromotion\Profiler\Profiler;
 use pql\AggregateFunction;
 use pql\Alias;
 use pql\Condition;
-use pql\ConditionHelper;
 use pql\JoinedTable;
 use pql\QueryBuilder\Query;
 use pql\QueryBuilder\Select as SelectBuilder;
@@ -838,7 +837,7 @@ class Select implements IQueryExecutor
             }
         }
 
-        unset($groupByColumn, $groupedRows, $groupedRow, $function);
+        unset($groupByColumn, $groupedRows, $groupedRow);
 
         // calculate needed functions
         foreach ($this->query->getHavingConditions() as $havingCondition) {
@@ -956,14 +955,14 @@ class Select implements IQueryExecutor
             $inversed = true;
         }
 
+        $smallFunctionName = mb_strtolower($condition->getColumn()->getName());
+
         if ($condition->getColumn() instanceof AggregateFunction) {
             $functionParameter = $condition->getColumn()->getParams()[0];
 
             foreach ($this->groupedByData as $groupByColumn => $groupByValues) {
                 foreach ($groupByValues as $groupedRows) {
                     $functions = new Functions($groupedRows);
-
-                    $smallFunctionName = mb_strtolower($condition->getColumn()->getName());
 
                     switch ($smallFunctionName) {
                         case AggregateFunction::SUM:

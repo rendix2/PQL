@@ -3,7 +3,7 @@
 namespace pql\QueryExecutor\Joins;
 
 use pql\Condition;
-use pql\ConditionHelper;
+use pql\QueryExecutor\ConditionHelper;
 
 /**
  * Class NestedLoopJoin

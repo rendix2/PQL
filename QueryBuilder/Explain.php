@@ -31,7 +31,7 @@ class Explain extends Select
      */
     public function run()
     {
-        if ($this->result instanceof TableResult) {
+        if ($this->result instanceof ListResult) {
             return $this->result;
         }
 

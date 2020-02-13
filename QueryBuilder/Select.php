@@ -196,6 +196,9 @@ class Select implements IQueryBuilder
      */
     private $hasExceptQuery;
 
+    /**
+     * @var string $timeLimit
+     */
     private $timeLimit;
 
     /**
@@ -230,11 +233,11 @@ class Select implements IQueryBuilder
         $this->whereConditions   = [];
         $this->hasWhereCondition = false;
 
-        $this->orderByColumns    = [];
-        $this->hasOrderBy = false;
+        $this->orderByColumns = [];
+        $this->hasOrderBy     = false;
 
-        $this->groupByColumns    = [];
-        $this->hasGroupBy = false;
+        $this->groupByColumns = [];
+        $this->hasGroupBy     = false;
 
         $this->havingConditions   = [];
         $this->hasHavingCondition = false;
@@ -344,8 +347,8 @@ class Select implements IQueryBuilder
         $this->havingConditions   = null;
         $this->hasHavingCondition = null;
 
-        $this->orderByColumns    = null;
-        $this->hasOrderBy = null;
+        $this->orderByColumns = null;
+        $this->hasOrderBy     = null;
 
         $this->limit = null;
 
@@ -667,7 +670,7 @@ class Select implements IQueryBuilder
      * @return Select
      * @throws Exception
      */
-    public function select(array $columns = [], $alias = null)
+    public function select($columns = [], $alias = null)
     {
         if (is_string($columns)) {
             if (strpos(', ', $columns) === false) {

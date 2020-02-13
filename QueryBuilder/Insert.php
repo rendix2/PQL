@@ -34,7 +34,7 @@ class Insert implements IQueryBuilder
     private $table;
 
     /**
-     * @var Query $data
+     * @var array $data
      */
     private $data;
 
@@ -73,7 +73,7 @@ class Insert implements IQueryBuilder
     }
 
     /**
-     * @return Query
+     * @return array
      */
     public function getData()
     {

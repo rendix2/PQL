@@ -104,6 +104,9 @@ class UpdateSelect implements IQueryBuilder
         return $this;
     }
 
+    /**
+     * @return IResult|TableResult
+     */
     public function run()
     {
         if ($this->result instanceof TableResult) {
