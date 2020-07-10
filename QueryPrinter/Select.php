@@ -10,6 +10,7 @@ namespace pql\QueryPrinter;
 
 use pql\Condition;
 use pql\JoinedTable;
+use pql\QueryBuilder\PFunction;
 use pql\QueryBuilder\Query;
 use pql\QueryBuilder\Select as SelectBuilder;
 use pql\Table;
@@ -117,7 +118,11 @@ class Select implements IQueryPrinter
                 $select .= ', ';
             }
 
-            $select .= (string)$selectedColumn;
+            if (is_string($selectedColumn->getColumn())) {
+                $select .= (string) $selectedColumn;
+            } elseif ($selectedColumn->getColumn() instanceof PFunction) {
+                $select .= (string) $selectedColumn->getColumn();
+            }
         }
 
         return $select;

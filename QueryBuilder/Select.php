@@ -693,6 +693,8 @@ class Select implements IQueryBuilder
 
                 $this->selectedColumns = array_merge($this->selectedColumns, $selectedColumns);
             }
+        } elseif ($columns instanceof PFunction) {
+            $this->selectedColumns[] = new SelectedColumn($columns);
         } elseif (is_array($columns)) {
             $selectedColumns = [];
 

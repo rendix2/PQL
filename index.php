@@ -5,6 +5,7 @@ use Netpromotion\Profiler\Adapter\TracyBarAdapter;
 use pql\AggregateFunction;
 use pql\Database;
 use pql\QueryBuilder\Query;
+use pql\QueryExecutor\Functions\NumberFormat;
 use Tracy\Debugger;
 use Nette\Loaders\RobotLoader;
 
@@ -189,43 +190,41 @@ $query->update('test', ['a' => '888'])->where('id', '=', '96')->run();
 Profiler::start('select');
 
 $query2 = new Query($database);
-$query2->select()->select(['a.pocet', 'b.pocet'])
-    ->from('test', 'a')
-    ->innerJoin('test', [new \pql\Condition('a.pocet', '=', 'b.pocet')], 'b')
-    ->where('a.pocet', '>', '2')
-    ->where('b.pocet', '<', '5')
-    ->orderBy('a.pocet', true);
+$query2->select()->select(new \pql\QueryBuilder\PFunction(NumberFormat::FUNCTION_NAME, 'pocet', [5 , ',' , $thousands_sep = '_']))
+    ->from('test')
+    //->innerJoin('test', [new \pql\Condition('a.pocet', '=', 'b.pocet')], 'b')
+    //->where('a.pocet', '>', '2')
+    //->where('b.pocet', '<', '5')
+    ->orderBy('pocet', true);
+
+//
+//bdump($query2);
+//
+//$query1 = new Query($database);
+//$query1->select()->select(['a.pocet', 'b.pocet'])
+//    ->from('test', 'a')
+//    ->innerJoin('test', [new \pql\Condition('a.pocet', '=', 'b.pocet')], 'b')
+//    ->where('a.pocet', '>', '2')
+//    ->where('b.pocet', '<', '5')
+//    ->orderBy('a.pocet', true)
+//    ->unionAll($query2);
+//
+//$query3 = new Query($database);
+//$query3->select()->select(['a.pocet', 'b.pocet'])
+//->from($query1)
+//    ->crossJoin($query1, 'b')
+//    ->leftJoin($query1, [new \pql\Condition('a.pocet', '=', 'b.pocet')], 'b')
+//    ->rightJoin($query1, [new \pql\Condition('a.pocet', '=', 'b.pocet')], 'b')
+//    ->innerJoin($query1, [new \pql\Condition('a.pocet', '=', 'b.pocet')], 'b')
+//    ->fullJoin($query1, [new \pql\Condition('a.pocet', '=', 'b.pocet')], 'b')
+//->orderBy('a.pocet')
+//->groupBy('a.pocet');
 
 
-bdump($query2);
+$res3 = $query2->run();
+echo $query2;
 
-$query1 = new Query($database);
-$query1->select()->select(['a.pocet', 'b.pocet'])
-    ->from('test', 'a')
-    ->innerJoin('test', [new \pql\Condition('a.pocet', '=', 'b.pocet')], 'b')
-    ->where('a.pocet', '>', '2')
-    ->where('b.pocet', '<', '5')
-    ->orderBy('a.pocet', true)
-    ->unionAll($query2);
-
-$query3 = new Query($database);
-$query3->select()->select(['a.pocet', 'b.pocet'])
-->from($query1)
-    ->crossJoin($query1, 'b')
-    ->leftJoin($query1, [new \pql\Condition('a.pocet', '=', 'b.pocet')], 'b')
-    ->rightJoin($query1, [new \pql\Condition('a.pocet', '=', 'b.pocet')], 'b')
-    ->innerJoin($query1, [new \pql\Condition('a.pocet', '=', 'b.pocet')], 'b')
-    ->fullJoin($query1, [new \pql\Condition('a.pocet', '=', 'b.pocet')], 'b')
-->orderBy('a.pocet')
-->groupBy('a.pocet');
-
-
-
-
-echo $query3;
-    //$res3 = $query2->run();
-
-//echo $res3;
+echo $res3;
 
 //bdump($query2);
 

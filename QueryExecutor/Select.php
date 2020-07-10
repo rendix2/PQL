@@ -8,8 +8,16 @@ use pql\AggregateFunction;
 use pql\Alias;
 use pql\Condition;
 use pql\JoinedTable;
+use pql\QueryBuilder\PFunction;
 use pql\QueryBuilder\Query;
 use pql\QueryBuilder\Select as SelectBuilder;
+use pql\QueryExecutor\AggregateFunctions\Average;
+use pql\QueryExecutor\AggregateFunctions\Count;
+use pql\QueryExecutor\AggregateFunctions\Max;
+use pql\QueryExecutor\AggregateFunctions\Median;
+use pql\QueryExecutor\AggregateFunctions\Min;
+use pql\QueryExecutor\AggregateFunctions\Sum;
+use pql\QueryExecutor\Functions\NumberFormat;
 use pql\QueryExecutor\Joins\HashJoin;
 use pql\QueryExecutor\Joins\NestedLoopJoin;
 use pql\QueryExecutor\Joins\SortMergeJoin;
@@ -183,6 +191,12 @@ class Select implements IQueryExecutor
         Profiler::finish('groupBy');
 
         //bdump($this->result, '$this->result GROUP');
+
+        Profiler::start('valueFunctions');
+        $this->valueFunctions();
+        Profiler::finish('valueFunctions');
+
+        //bdump($this->result, '$this->result VALUE FUNCTIONS');
 
         Profiler::start('functions');
         $this->functions();
@@ -379,8 +393,20 @@ class Select implements IQueryExecutor
         }
 
         foreach ($this->query->getSelectedColumns() as $column) {
-            if (!in_array($column->getColumn(), $columns, true)) {
-                throw new Exception(sprintf('Selected column "%s" does not exists.', $column->getColumn()));
+            if ($column->getColumn() instanceof PFunction) {
+               $columns[] = (string)$column->getColumn();
+            }
+        }
+
+        foreach ($this->query->getSelectedColumns() as $column) {
+            if (is_string($column->getColumn())) {
+                if (!in_array($column->getColumn(), $columns, true)) {
+                    throw new Exception(sprintf('Selected column "%s" does not exists.', $column->getColumn()));
+                }
+            } elseif ($column->getColumn() instanceof PFunction) {
+                if (!in_array($column->getColumn()->getColumn(), $columns, true)) {
+                    throw new Exception(sprintf('Selected column "%s" does not exists.', $column->getColumn()));
+                }
             }
         }
     }
@@ -442,6 +468,27 @@ class Select implements IQueryExecutor
         return array_values($resultTemp);
     }
 
+    private function valueFunctions()
+    {
+        foreach ($this->result as $column => &$row) {
+            foreach ($this->query->getSelectedColumns() as $selectedColumn) {
+                $function = $selectedColumn->getColumn();
+
+                if ($function instanceof PFunction) {
+                    switch ($function->getName()) {
+                        case NumberFormat::FUNCTION_NAME:
+                            $valueFunction = new NumberFormat();
+
+                            $row[(string) $function] = $valueFunction->run($row[$function->getColumn()], $function->getArguments());
+                            break;
+                    }
+                }
+            }
+        }
+
+        return $this->result;
+    }
+
     /**
      *
      */
@@ -458,8 +505,8 @@ class Select implements IQueryExecutor
             switch ($functionName) {
                 case AggregateFunction::SUM:
                     if ($this->groupedByDataCount) {
-                        $aggregateFunctions = new AggregateFunctions($this);
-                        $aggregateFunctions->sum($column, $functionColumnName);
+                        $aggregateFunction = new Sum($this);
+                        $aggregateFunction->run($column, $functionColumnName);
                     } else {
                         $this->addFunctionIntoResult($functionColumnName, $functions->sum($column));
                     }
@@ -468,8 +515,8 @@ class Select implements IQueryExecutor
 
                 case AggregateFunction::COUNT:
                     if ($this->groupedByDataCount) {
-                        $aggregateFunctions = new AggregateFunctions($this);
-                        $aggregateFunctions->count($functionColumnName);
+                        $aggregateFunction = new Count($this);
+                        $aggregateFunction->run($column, $functionColumnName);
                     } else {
                         $this->addFunctionIntoResult($functionColumnName, $functions->count($column));
                     }
@@ -478,8 +525,8 @@ class Select implements IQueryExecutor
 
                 case AggregateFunction::AVERAGE:
                     if ($this->groupedByDataCount) {
-                        $aggregateFunctions = new AggregateFunctions($this);
-                        $aggregateFunctions->average($column, $functionColumnName);
+                        $aggregateFunction = new Average($this);
+                        $aggregateFunction->run($column, $functionColumnName);
                     } else {
                         $this->addFunctionIntoResult($functionColumnName, $functions->avg($column));
                     }
@@ -488,8 +535,8 @@ class Select implements IQueryExecutor
 
                 case AggregateFunction::MIN:
                     if ($this->groupedByDataCount) {
-                        $aggregateFunctions = new AggregateFunctions($this);
-                        $aggregateFunctions->min($column, $functionColumnName);
+                        $aggregateFunction = new Min($this);
+                        $aggregateFunction->run($column, $functionColumnName);
                     } else {
                         $this->addFunctionIntoResult($functionColumnName, $functions->min($column));
                     }
@@ -498,8 +545,8 @@ class Select implements IQueryExecutor
 
                 case AggregateFunction::MAX:
                     if ($this->groupedByDataCount) {
-                        $aggregateFunctions = new AggregateFunctions($this);
-                        $aggregateFunctions->max($column, $functionColumnName);
+                        $aggregateFunction = new Max($this);
+                        $aggregateFunction->run($column, $functionColumnName);
                     } else {
                         $this->addFunctionIntoResult($functionColumnName, $functions->max($column));
                     }
@@ -507,8 +554,8 @@ class Select implements IQueryExecutor
 
                 case AggregateFunction::MEDIAN:
                     if ($this->groupedByDataCount) {
-                        $aggregateFunctions = new AggregateFunctions($this);
-                        $aggregateFunctions->median($column, $functionColumnName);
+                        $aggregateFunction = new Median($this);
+                        $aggregateFunction->run($column, $functionColumnName);
                     } else {
                         $this->addFunctionIntoResult($functionColumnName, $functions->median($column));
                     }
@@ -748,9 +795,11 @@ class Select implements IQueryExecutor
                     $this->result = $this->doWhere($this->result, $whereCondition);
 
                     $this->query->removeWhereCondition($key);
-                } else {
-                    if ($this->query->hasTableAlias()) {
-                        list($alias, $column) = explode(Alias::DELIMITER, $whereCondition->getColumn());
+                } elseif ($this->query->hasTableAlias()) {
+                    $exploded = explode(Alias::DELIMITER, $whereCondition->getColumn());
+
+                    if (count($exploded) === 2) {
+                        list($alias, $column) = $exploded   ;
 
                         if ($alias === $this->query->getTableAlias()->getTo() && $table->columnExists($column)) {
                             $this->result = $this->doWhere($this->result, $whereCondition);
@@ -767,9 +816,11 @@ class Select implements IQueryExecutor
                     $this->result = $this->doWhere($this->result, $whereCondition);
 
                     $this->query->removeWhereCondition($key);
-                } else {
-                    if ($this->query->hasTableAlias()) {
-                        list($alias, $column) = explode(Alias::DELIMITER, $whereCondition->getValue());
+                } elseif ($this->query->hasTableAlias()) {
+                    $exploded = explode(Alias::DELIMITER, $whereCondition->getValue());
+
+                    if (count($exploded) === 2) {
+                        list($alias, $column) = $exploded;
 
                         if ($alias === $this->query->getTableAlias()->getTo() && $table->columnExists($column)) {
                             $this->result = $this->doWhere($this->result, $whereCondition);
@@ -1116,7 +1167,11 @@ class Select implements IQueryExecutor
             if ($column->hasAlias()) {
                 $columns[] = $column->getAlias()->getTo();
             } else {
-                $columns[] = $column->getColumn();
+                if ($column->getColumn() instanceof PFunction) {
+                    $columns[] = (string)$column->getColumn();
+                } else {
+                    $columns[] = $column->getColumn();
+                }
             }
         }
 
