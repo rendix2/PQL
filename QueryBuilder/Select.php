@@ -17,6 +17,7 @@ use pql\Database;
 use pql\GroupByColumn;
 use pql\JoinedTable;
 use pql\OrderByColumn;
+use pql\QueryBuilder\Select\IExpression;
 use pql\QueryExecutor\Select as SelectExecutor;
 use pql\QueryResult\IResult;
 use pql\QueryResult\TableResult;
@@ -62,9 +63,9 @@ class Select implements IQueryBuilder
     private $selectedColumnsCount;
 
     /**
-     * @var AggregateFunction[] $functions
+     * @var AggregateFunction[] $aggregateFunctions
      */
-    private $functions;
+    private $aggregateFunctions;
 
     /**
      * @var Alias|null $tableAlias
@@ -211,7 +212,7 @@ class Select implements IQueryBuilder
         $this->database = $database;
 
         $this->selectedColumns = [];
-        $this->functions = [];
+        $this->aggregateFunctions = [];
 
         $this->hasTableAlias = false;
 
@@ -278,7 +279,7 @@ class Select implements IQueryBuilder
 
         $this->distinctColumn = null;
 
-        $this->functions = null;
+        $this->aggregateFunctions = null;
 
         $this->table = null;
 
@@ -419,9 +420,9 @@ class Select implements IQueryBuilder
     /**
      * @return AggregateFunction[]
      */
-    public function getFunctions()
+    public function getAggregateFunctions()
     {
-        return $this->functions;
+        return $this->aggregateFunctions;
     }
 
     /**
@@ -663,6 +664,18 @@ class Select implements IQueryBuilder
 
     // has*
 
+    public function selectNew(IExpression ...$expressions)
+    {
+        foreach ($expressions as $expression) {
+            $this->selectedColumns[] = new SelectedColumn($expression->evaluate(), $expression);
+        }
+
+        $this->selectedColumnsCount = count($this->selectedColumns);
+
+        return $this;
+    }
+
+
     /**
      * @param array|string $columns
      * @param string|null $alias
@@ -717,7 +730,7 @@ class Select implements IQueryBuilder
      */
     public function count($column)
     {
-        $this->functions[] = new AggregateFunction(AggregateFunction::COUNT, [$column]);
+        $this->aggregateFunctions[] = new AggregateFunction(AggregateFunction::COUNT, [$column]);
 
         return $this;
     }
@@ -729,7 +742,7 @@ class Select implements IQueryBuilder
      */
     public function sum($column)
     {
-        $this->functions[] = new AggregateFunction(AggregateFunction::SUM, [$column]);
+        $this->aggregateFunctions[] = new AggregateFunction(AggregateFunction::SUM, [$column]);
 
         return $this;
     }
@@ -741,7 +754,7 @@ class Select implements IQueryBuilder
      */
     public function avg($column)
     {
-        $this->functions[] = new AggregateFunction(AggregateFunction::AVERAGE, [$column]);
+        $this->aggregateFunctions[] = new AggregateFunction(AggregateFunction::AVERAGE, [$column]);
 
         return $this;
     }
@@ -753,7 +766,7 @@ class Select implements IQueryBuilder
      */
     public function min($column)
     {
-        $this->functions[] = new AggregateFunction(AggregateFunction::MIN, [$column]);
+        $this->aggregateFunctions[] = new AggregateFunction(AggregateFunction::MIN, [$column]);
 
         return $this;
     }
@@ -765,7 +778,7 @@ class Select implements IQueryBuilder
      */
     public function max($column)
     {
-        $this->functions[] = new AggregateFunction(AggregateFunction::MAX, [$column]);
+        $this->aggregateFunctions[] = new AggregateFunction(AggregateFunction::MAX, [$column]);
 
         return $this;
     }
@@ -777,7 +790,7 @@ class Select implements IQueryBuilder
      */
     public function median($column)
     {
-        $this->functions[] = new AggregateFunction(AggregateFunction::MEDIAN, [$column]);
+        $this->aggregateFunctions[] = new AggregateFunction(AggregateFunction::MEDIAN, [$column]);
 
         return $this;
     }

@@ -190,11 +190,12 @@ $query->update('test', ['a' => '888'])->where('id', '=', '96')->run();
 Profiler::start('select');
 
 $query2 = new Query($database);
-$query2->select()->select(new \pql\QueryBuilder\PFunction(NumberFormat::FUNCTION_NAME, 'pocet', [5 , ',' , $thousands_sep = '_']))
+//$query2->select()->select(new \pql\QueryBuilder\PFunction(NumberFormat::FUNCTION_NAME, 'pocet', [5 , ',' , $thousands_sep = '_']))
+$query2->select()->selectNew(new \pql\QueryBuilder\Select\StandardFunction(NumberFormat::FUNCTION_NAME, 'pocet', 2, ',', '_'), new \pql\QueryBuilder\Select\Column('pocet'))
     ->from('test')
     //->innerJoin('test', [new \pql\Condition('a.pocet', '=', 'b.pocet')], 'b')
-    //->where('a.pocet', '>', '2')
-    //->where('b.pocet', '<', '5')
+    ->where('pocet', '>', 2)
+    ->where('pocet', '<', 5)
     ->orderBy('pocet', true);
 
 //

@@ -14,7 +14,7 @@ namespace pql\QueryExecutor;
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryExecute
  */
-class Functions
+class AggregateFunctions
 {
     /**
      * @var array $table

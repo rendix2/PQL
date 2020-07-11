@@ -2,6 +2,8 @@
 
 namespace pql;
 
+use pql\QueryBuilder\Select\IExpression;
+
 /**
  * Class SelectedColumn
  *
@@ -14,6 +16,11 @@ class SelectedColumn
      * @var string $column
      */
     private $column;
+
+    /**
+     * @var IExpression $expression
+     */
+    private $expression;
 
     /**
      * @var Alias $alias
@@ -33,14 +40,16 @@ class SelectedColumn
     /**
      * SelectedColumn constructor.
      *
-     * @param string     $column
-     * @param Alias|null $alias
+     * @param string      $column
+     * @param IExpression $expression
+     * @param Alias|null  $alias
      */
-    public function __construct($column, Alias $alias = null)
+    public function __construct($column, IExpression $expression, Alias $alias = null)
     {
-        $this->column   = $column;
-        $this->alias    = $alias;
-        $this->hasAlias = $alias !== null;
+        $this->column        = $column;
+        $this->expression    = $expression;
+        $this->alias         = $alias;
+        $this->hasAlias      = $alias !== null;
         $this->hasTableAlias = Alias::hasAlias($column);
     }
 
@@ -69,6 +78,11 @@ class SelectedColumn
     public function getColumn()
     {
         return $this->column;
+    }
+
+    public function getExpression()
+    {
+        return $this->expression;
     }
 
     /**

@@ -199,7 +199,7 @@ class Select implements IQueryExecutor
         //bdump($this->result, '$this->result VALUE FUNCTIONS');
 
         Profiler::start('functions');
-        $this->functions();
+        $this->aggregateFunctions();
         Profiler::finish('functions');
 
         //bdump($this->result, '$this->result FUNCTIONS');
@@ -392,19 +392,17 @@ class Select implements IQueryExecutor
             $columns = array_merge($columns, $selectedColumns);
         }
 
-        foreach ($this->query->getSelectedColumns() as $column) {
-            if ($column->getColumn() instanceof PFunction) {
-               $columns[] = (string)$column->getColumn();
-            }
-        }
+
+        bdump($this->query->getSelectedColumns(), '$this->query->getSelectedColumns()');
+        bdump($columns, '$columns');
 
         foreach ($this->query->getSelectedColumns() as $column) {
-            if (is_string($column->getColumn())) {
-                if (!in_array($column->getColumn(), $columns, true)) {
+            if ($column->getExpression() instanceof SelectBuilder\StandardFunction) {
+                if (!in_array($column->getExpression()->getColumn(), $columns, true)) {
                     throw new Exception(sprintf('Selected column "%s" does not exists.', $column->getColumn()));
                 }
-            } elseif ($column->getColumn() instanceof PFunction) {
-                if (!in_array($column->getColumn()->getColumn(), $columns, true)) {
+            } elseif (is_string($column->getColumn())) {
+                if (!in_array($column->getColumn(), $columns, true)) {
                     throw new Exception(sprintf('Selected column "%s" does not exists.', $column->getColumn()));
                 }
             }
@@ -472,14 +470,14 @@ class Select implements IQueryExecutor
     {
         foreach ($this->result as $column => &$row) {
             foreach ($this->query->getSelectedColumns() as $selectedColumn) {
-                $function = $selectedColumn->getColumn();
+                $expression = $selectedColumn->getExpression();
 
-                if ($function instanceof PFunction) {
-                    switch ($function->getName()) {
+                if ($expression instanceof SelectBuilder\StandardFunction) {
+                    switch ($expression->getName()) {
                         case NumberFormat::FUNCTION_NAME:
                             $valueFunction = new NumberFormat();
 
-                            $row[(string) $function] = $valueFunction->run($row[$function->getColumn()], $function->getArguments());
+                            $row[(string) $expression->evaluate()] = $valueFunction->run($row[$expression->getColumn()], $expression->getParams());
                             break;
                     }
                 }
@@ -492,11 +490,11 @@ class Select implements IQueryExecutor
     /**
      *
      */
-    private function functions()
+    private function aggregateFunctions()
     {
-        $functions = new Functions($this->result);
+        $functions = new AggregateFunctions($this->result);
 
-        foreach ($this->query->getFunctions() as $function) {
+        foreach ($this->query->getAggregateFunctions() as $function) {
             $functionName = $function->getName();
             $column       = $function->getParams()[0];
 
@@ -851,29 +849,29 @@ class Select implements IQueryExecutor
         }
 
         // put into aggregated rows missing selected columns
-        foreach ($this->query->getFunctions() as $function) {
+        foreach ($this->query->getAggregateFunctions() as $function) {
             foreach ($groupByTemp as &$groupByColumn) {
                 foreach ($groupByColumn as $value => &$groupedRows) {
-                    $functions = new Functions($groupedRows);
+                    $aggregateFunctions = new AggregateFunctions($groupedRows);
 
                     switch ($function->getName()) {
                         case AggregateFunction::SUM:
-                            $functionResult = $functions->sum($function->getParams()[0]);
+                            $functionResult = $aggregateFunctions->sum($function->getParams()[0]);
                             break;
                         case AggregateFunction::COUNT:
-                            $functionResult = $functions->count($function->getParams()[0]);
+                            $functionResult = $aggregateFunctions->count($function->getParams()[0]);
                             break;
                         case AggregateFunction::MAX:
-                            $functionResult = $functions->max($function->getParams()[0]);
+                            $functionResult = $aggregateFunctions->max($function->getParams()[0]);
                             break;
                         case AggregateFunction::MIN:
-                            $functionResult = $functions->min($function->getParams()[0]);
+                            $functionResult = $aggregateFunctions->min($function->getParams()[0]);
                             break;
                         case AggregateFunction::AVERAGE:
-                            $functionResult = $functions->avg($function->getParams()[0]);
+                            $functionResult = $aggregateFunctions->avg($function->getParams()[0]);
                             break;
                         case AggregateFunction::MEDIAN:
-                            $functionResult = $functions->median($function->getParams()[0]);
+                            $functionResult = $aggregateFunctions->median($function->getParams()[0]);
                             break;
                         default:
                             $message = sprintf('Unknown aggregate function "%s".', $function->getName());
@@ -898,26 +896,26 @@ class Select implements IQueryExecutor
             if ($havingCondition->getColumn() instanceof AggregateFunction) {
                 foreach ($groupByTemp as &$groupByColumn) {
                     foreach ($groupByColumn as $value => &$groupedRows) {
-                        $functions = new Functions($groupedRows);
+                        $aggregateFunctions = new AggregateFunctions($groupedRows);
 
                         switch ($smallFunctionName) {
                             case AggregateFunction::SUM:
-                                $functionResult = $functions->sum($firstParam);
+                                $functionResult = $aggregateFunctions->sum($firstParam);
                                 break;
                             case AggregateFunction::COUNT:
-                                $functionResult = $functions->count($firstParam);
+                                $functionResult = $aggregateFunctions->count($firstParam);
                                 break;
                             case AggregateFunction::MAX:
-                                $functionResult = $functions->max($firstParam);
+                                $functionResult = $aggregateFunctions->max($firstParam);
                                 break;
                             case AggregateFunction::MIN:
-                                $functionResult = $functions->min($firstParam);
+                                $functionResult = $aggregateFunctions->min($firstParam);
                                 break;
                             case AggregateFunction::AVERAGE:
-                                $functionResult = $functions->avg($firstParam);
+                                $functionResult = $aggregateFunctions->avg($firstParam);
                                 break;
                             case AggregateFunction::MEDIAN:
-                                $functionResult = $functions->median($firstParam);
+                                $functionResult = $aggregateFunctions->median($firstParam);
                                 break;
                             default:
                                 $message = sprintf('Unknown aggregate function "%s".', $smallFunctionName);
@@ -1013,7 +1011,7 @@ class Select implements IQueryExecutor
 
             foreach ($this->groupedByData as $groupByColumn => $groupByValues) {
                 foreach ($groupByValues as $groupedRows) {
-                    $functions = new Functions($groupedRows);
+                    $functions = new AggregateFunctions($groupedRows);
 
                     switch ($smallFunctionName) {
                         case AggregateFunction::SUM:

@@ -150,7 +150,7 @@ class Select implements IQueryPrinter
         $functions    = '';
         $columnsCount = $this->query->getSelectedColumnsCount();
 
-        foreach ($this->query->getFunctions() as $i => $function) {
+        foreach ($this->query->getAggregateFunctions() as $i => $function) {
             if (($i === 0 && $columnsCount) || $i > 0) {
                 $functions .= ', ' . mb_strtoupper($function->getName()) . '(' . implode(', ', $function->getParams()) . ')';
             } elseif ($i === 0 && !$columnsCount) {
