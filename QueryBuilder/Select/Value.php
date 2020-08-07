@@ -10,7 +10,6 @@ namespace pql\QueryBuilder\Select;
  */
 class Value implements ISelectExpression
 {
-
     /**
      * @var string|int $value
      */
@@ -29,6 +28,14 @@ class Value implements ISelectExpression
      * @inheritDoc
      */
     public function evaluate()
+    {
+        return $this->value;
+    }
+
+    /**
+     * @return string|int
+     */
+    public function getValue()
     {
         return $this->value;
     }

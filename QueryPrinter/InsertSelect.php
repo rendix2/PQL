@@ -13,8 +13,8 @@ use pql\QueryBuilder\InsertSelectQuery as InsertSelectBuilder;
 /**
  * Class InsertSelect
  *
- * @package pql\QueryPrinter
  * @author  rendix2 <rendix2@seznam.cz>
+ * @package pql\QueryPrinter
  * @internal
  */
 class InsertSelect implements IQueryPrinter

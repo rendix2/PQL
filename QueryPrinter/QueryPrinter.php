@@ -16,7 +16,7 @@ use pql\QueryBuilder\UpdateSelectQuery as UpdateSelectBuilder;
 /**
  * Class QueryPrinter
  *
- * @author rendix2 <rendix2@seznam.cz>
+ * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryPrinter
  */
 class QueryPrinter

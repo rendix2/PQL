@@ -153,6 +153,10 @@ class Select implements IQueryPrinter
      */
     private function from()
     {
+        if ($this->query->getTable() === null) {
+            return '';
+        }
+
         $from = '<br>' . $this->indent . 'FROM ';
 
         if ($this->query->getTable() instanceof Table) {

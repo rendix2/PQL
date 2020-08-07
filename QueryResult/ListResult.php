@@ -7,7 +7,7 @@ use pql\QueryRow\ExplainRow;
 /**
  * Class ListResult
  *
- * @author rendix2 <rendix2@seznam.cz>
+ * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryResult
  */
 class ListResult implements IResult

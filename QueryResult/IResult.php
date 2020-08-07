@@ -5,7 +5,7 @@ namespace pql\QueryResult;
 /**
  * Interface IResult
  *
- * @author rendix2 <rendix2@seznam.cz>
+ * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryResult
  */
 interface IResult

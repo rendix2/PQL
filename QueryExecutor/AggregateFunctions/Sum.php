@@ -5,6 +5,7 @@ namespace pql\QueryExecutor\AggregateFunctions;
 /**
  * Class Sum
  *
+ * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryExecutor\AggregateFunctions
  */
 class Sum extends AggregateFunction

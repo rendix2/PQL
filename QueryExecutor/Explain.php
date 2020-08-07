@@ -11,7 +11,7 @@ use pql\Table;
 /**
  * Class Explain
  *
- * @author rendix2 <rendix2@seznam.cz>
+ * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryExecute
  */
 class Explain implements IQueryExecutor

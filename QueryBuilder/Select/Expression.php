@@ -30,6 +30,26 @@ class Expression implements ISelectExpression
      */
     public function evaluate()
     {
-        return implode(',' , $this->expressions);
+        $result = '';
+
+        foreach ($this->expressions as $expression) {
+            $result .= $expression->evaluate();
+        }
+
+        return $result;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function result()
+    {
+        $result = 0;
+
+        foreach ($this->expressions as $expression) {
+            $result += $expression->result();
+        }
+
+        return $result;
     }
 }

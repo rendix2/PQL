@@ -9,6 +9,8 @@ use pql\Condition;
 use pql\JoinedTable;
 use pql\QueryBuilder\Query;
 use pql\QueryBuilder\Select\AggregateFunction;
+use pql\QueryBuilder\Select\Expression;
+use pql\QueryBuilder\Select\IMathExpression;
 use pql\QueryBuilder\Select\ISelectExpression;
 use pql\QueryBuilder\Select\StandardFunction;
 use pql\QueryBuilder\SelectQuery as SelectBuilder;
@@ -67,6 +69,8 @@ class SelectQuery implements IQueryExecutor
      */
     private $result;
 
+    private $hasExpression;
+
     /**
      * Select constructor.
      *
@@ -78,6 +82,8 @@ class SelectQuery implements IQueryExecutor
         $this->columns   = [];
 
         $this->query = $query;
+
+        $this->hasExpression = false;
     }
 
     /**
@@ -394,7 +400,10 @@ class SelectQuery implements IQueryExecutor
         }
 
         foreach ($this->query->getSelectedColumns() as $column) {
-            if ($column->getExpression() instanceof StandardFunction) {
+            if ($column->getExpression() instanceof IMathExpression || $column->getExpression() instanceof Expression) {
+                $this->hasExpression = true;
+                continue;
+            } elseif ($column->getExpression() instanceof StandardFunction) {
                 if (!in_array($column->getExpression()->getColumn(), $columns, true)) {
                     throw new Exception(sprintf('Selected column "%s" does not exists.', $column->getColumn()));
                 }
@@ -1222,6 +1231,14 @@ class SelectQuery implements IQueryExecutor
             $rows = $this->query->getTable()->getRows();
         } elseif ($this->query->getTable() instanceof Query) {
             $rows = $this->query->getTable()->run()->getQuery()->getResult();
+        } elseif ($this->hasExpression) {
+            $result = [];
+
+            foreach ($this->getQuery()->getSelectedColumns() as $selectedColumn) {
+                $result[] = [$selectedColumn->getExpression()->evaluate() => $selectedColumn->getExpression()->result()];
+            }
+
+            return $result;
         } else {
             throw new Exception('Unknown input in FROM clause.');
         }

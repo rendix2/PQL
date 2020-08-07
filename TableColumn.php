@@ -7,7 +7,7 @@ use Exception;
 /**
  * Class TableColumn
  *
- * @author rendix2 <rendix2@seznam.cz>
+ * @author  rendix2 <rendix2@seznam.cz>
  * @package pql
  */
 class TableColumn
@@ -77,8 +77,8 @@ class TableColumn
             throw new Exception(sprintf('Unknown type "%s" of column "%s".', $type, $name));
         }
         
-        $this->name = $name;
-        $this->type = $type;
+        $this->name  = $name;
+        $this->type  = $type;
         $this->table = $table;
     }
 

@@ -5,6 +5,7 @@ namespace pql\QueryExecutor\AggregateFunctions;
 /**
  * Class Min
  *
+ * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryExecutor\AggregateFunctions
  */
 class Min extends AggregateFunction

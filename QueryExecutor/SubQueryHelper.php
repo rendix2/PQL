@@ -9,7 +9,7 @@ use pql\QueryResult\TableResult;
 /**
  * Class SubQueryHelper
  *
- * @author rendix2 <rendix2@seznam.cz>
+ * @author  rendix2 <rendix2@seznam.cz>
  * @package pql
  */
 class SubQueryHelper

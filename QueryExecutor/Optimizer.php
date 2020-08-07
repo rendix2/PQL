@@ -12,7 +12,7 @@ use pql\Table;
 /**
  * Class Optimizer
  *
- * @author rendix2 <rendix2@seznam.cz>
+ * @author  rendix2 <rendix2@seznam.cz>
  * @package pql
  */
 class Optimizer

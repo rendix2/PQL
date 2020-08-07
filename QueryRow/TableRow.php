@@ -13,7 +13,7 @@ use stdClass;
 /**
  * Class TaleRow
  *
- * @author rendix2 <rendix2@seznam.cz>
+ * @author  rendix2 <rendix2@seznam.cz>
  * @package pql
  */
 class TableRow implements IRow

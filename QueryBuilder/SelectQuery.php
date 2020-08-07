@@ -770,8 +770,8 @@ class SelectQuery implements IQueryBuilder
      */
     public function groupBy(ISelectExpression $column)
     {
-        $this->groupByColumns[]  = new GroupByColumn($column->evaluate());
-        $this->hasGroupBy = true;
+        $this->groupByColumns[] = new GroupByColumn($column->evaluate());
+        $this->hasGroupBy       = true;
 
         return $this;
     }
@@ -807,6 +807,7 @@ class SelectQuery implements IQueryBuilder
 
     /**
      * @param IFromExpression $expression
+     *
      * @return Query|Table
      * @throws Exception
      */
@@ -825,12 +826,6 @@ class SelectQuery implements IQueryBuilder
                 throw new Exception($message);
             }
         } elseif ($expression instanceof \pql\QueryBuilder\From\Query) {
-            /*
-            if ($table->type !== self::SELECT) {
-                throw new Exception('It is not a SELECT query.');
-            }
-            */
-
             $originTable   = $expression->getQuery();
             $iteratedTable = $expression->getQuery();
 

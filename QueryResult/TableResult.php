@@ -16,7 +16,7 @@ use pql\SelectedColumn;
 /**
  * Class TableResult
  *
- * @author rendix2 <rendix2@seznam.cz>
+ * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryResult
  */
 final class TableResult implements ITable, IResult

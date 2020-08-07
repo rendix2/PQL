@@ -5,6 +5,7 @@ namespace pql\QueryExecutor\Functions;
 /**
  * Class NumberFormat
  *
+ * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryExecutor\Functions
  */
 class NumberFormat implements IFunction

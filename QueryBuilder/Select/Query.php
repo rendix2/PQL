@@ -2,6 +2,7 @@
 
 namespace pql\QueryBuilder\Select;
 
+use pql\QueryBuilder\Query as QueryBuilder;
 use pql\QueryPrinter\QueryPrinter;
 
 /**
@@ -13,16 +14,16 @@ use pql\QueryPrinter\QueryPrinter;
 class Query implements ISelectExpression
 {
     /**
-     * @var \pql\QueryBuilder\Query $query
+     * @var QueryBuilder $query
      */
     private $query;
 
     /**
      * Query constructor.
      *
-     * @param \pql\QueryBuilder\Query $query
+     * @param QueryBuilder $query
      */
-    public function __construct(\pql\QueryBuilder\Query $query)
+    public function __construct(QueryBuilder $query)
     {
         $this->query = $query;
     }
@@ -37,7 +38,7 @@ class Query implements ISelectExpression
     }
 
     /**
-     * @return \pql\QueryBuilder\Query
+     * @return QueryBuilder
      */
     public function getQuery()
     {

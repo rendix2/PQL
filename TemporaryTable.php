@@ -11,7 +11,7 @@ namespace pql;
 /**
  * Class TemporaryTable
  *
- * @author rendix2 <rendix2@seznam.cz>
+ * @author  rendix2 <rendix2@seznam.cz>
  * @package pql
  */
 class TemporaryTable implements ITable
@@ -56,8 +56,7 @@ class TemporaryTable implements ITable
      */
     public function addRow(array $row)
     {
-        $this->rows[] = $row;
-
+        $this->rows[]  = $row;
         $this->columns = array_keys($this->rows);
     }
 

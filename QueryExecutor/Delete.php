@@ -12,7 +12,7 @@ use SplFileObject;
 /**
  * Class Delete
  *
- * @author rendix2 <rendix2@seznam.cz>
+ * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryExecute
  */
 class Delete implements IQueryExecutor

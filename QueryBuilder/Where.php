@@ -16,8 +16,8 @@ use pql\QueryBuilder\Select\ISelectExpression;
 /**
  * Trait Where
  *
- * @package pql\QueryBuilder
  * @author  rendix2 <rendix2@seznam.cz>
+ * @package pql\QueryBuilder
  */
 trait Where
 {

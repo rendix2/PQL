@@ -8,9 +8,8 @@ namespace pql\QueryBuilder\Select;
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryBuilder\Select
  */
-class Plus implements ISelectExpression
+class Plus implements IMathExpression
 {
-
     /**
      * @var ISelectExpression[] $expressions
      */
@@ -31,6 +30,30 @@ class Plus implements ISelectExpression
      */
     public function evaluate()
     {
-        return implode('+', $this->expressions);
+        $result = '';
+
+        foreach ($this->expressions as $i =>$expression) {
+            if ($i !== 0) {
+                $result .= '+';
+            }
+
+            $result .= $expression->evaluate() ;
+        }
+
+        return $result;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function result()
+    {
+        $result = 0;
+
+        foreach ($this->expressions as $i => $expression) {
+            $result += $expression->result();
+        }
+
+        return $result;
     }
 }

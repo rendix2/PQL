@@ -215,7 +215,7 @@ $q1->select()->select(null, new Column('datum'))
 
 $query3 = new Query($database);
 $query3->select()->select(null, new Column('datum'))
-    ->select(null, new \pql\QueryBuilder\Select\Query($q1))
+    //->select(null, new \pql\QueryBuilder\Select\Query($q1))
 ->from($querySelect, 'a')
     //->crossJoin($querySelect)
     ->leftJoin($querySelect, [new \pql\Condition($acount, $equalsOperator, new Column('b.pocet'))], 'b')
@@ -262,6 +262,19 @@ $query4->select()->select(null, new Column('datum'))
 //    ->fullJoin($query1, [new \pql\Condition('a.pocet', '=', 'b.pocet')], 'b')
 //->orderBy('a.pocet')
 //->groupBy('a.pocet');
+
+$plus = new \pql\QueryBuilder\Select\Minus(new \pql\QueryBuilder\Select\Value(1), new \pql\QueryBuilder\Select\Value(15));
+
+$ex = new \pql\QueryBuilder\Select\Expression(new \pql\QueryBuilder\Select\Plus($plus));
+
+$q2 = new Query($database);
+$q2->select()->select(null, $ex);
+$res2 = $q2->run();
+
+bdump($q2);
+echo $q2 .'<br><br>';
+echo $res2 .'<br><br>';
+
 
 
 $res3 = $query3->run();

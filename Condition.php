@@ -9,7 +9,7 @@ use pql\QueryBuilder\Select\ISelectExpression;
 /**
  * Class Condition
  *
- * @author rendix2 <rendix2@seznam.cz>
+ * @author  rendix2 <rendix2@seznam.cz>
  * @package pql
  */
 class Condition
@@ -45,15 +45,9 @@ class Condition
      */
     public function __construct(ISelectExpression $column, IOperator $operator, ISelectExpression $value)
     {
-        /*
-        if (!Operator::isOperatorValid($operator)) {
-            throw new Exception(sprintf('Unknown operator "%s".', $operator));
-        }
-        */
-
-        $this->column = $column;
+        $this->column   = $column;
         $this->operator = $operator;
-        $this->value = $value;
+        $this->value    = $value;
     }
 
     /**
@@ -96,15 +90,5 @@ class Condition
     public function getValue()
     {
         return $this->value;
-    }
-
-    /**
-     * inversed Condition
-     *
-     * @return Condition
-     */
-    public function inverse()
-    {
-        return new Condition($this->value, $this->operator, $this->column);
     }
 }
