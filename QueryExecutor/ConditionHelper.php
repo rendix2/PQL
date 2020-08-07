@@ -3,10 +3,24 @@
 namespace pql\QueryExecutor;
 
 use Exception;
-use pql\AggregateFunction;
 use pql\Condition;
 use pql\Operator;
+use pql\QueryBuilder\Operator\Between;
+use pql\QueryBuilder\Operator\BetweenInclusive;
+use pql\QueryBuilder\Operator\Equals;
+use pql\QueryBuilder\Operator\Exists;
+use pql\QueryBuilder\Operator\In;
+use pql\QueryBuilder\Operator\IsNotNull;
+use pql\QueryBuilder\Operator\IsNull;
+use pql\QueryBuilder\Operator\Larger;
+use pql\QueryBuilder\Operator\LargerInclusive;
+use pql\QueryBuilder\Operator\NotEquals;
+use pql\QueryBuilder\Operator\NotIn;
+use pql\QueryBuilder\Operator\RegularExpression;
+use pql\QueryBuilder\Operator\Smaller;
+use pql\QueryBuilder\Operator\SmallerInclusive;
 use pql\QueryBuilder\Query;
+use pql\QueryBuilder\Select\AggregateFunction;
 
 /**
  * Class ConditionHelper
@@ -74,31 +88,33 @@ class ConditionHelper
             $issetRowAColumnRowBValue = false;
             $issetRowAValueRowBColumn = false;
         } else {
-            $issetRowAColumn = isset($rowA[$condition->getColumn()]);
-            $issetRowAValue = isset($rowA[$condition->getValue()]);
-            $issetRowAColumnRowBValue = isset($rowA[$condition->getColumn()], $rowB[$condition->getValue()]);
-            $issetRowAValueRowBColumn = isset($rowA[$condition->getValue()], $rowB[$condition->getColumn()]);
+            $issetRowAColumn = isset($rowA[$condition->getColumn()->evaluate()]);
+            $issetRowAValue = isset($rowA[$condition->getValue()->evaluate()]);
+            $issetRowAColumnRowBValue = isset($rowA[$condition->getColumn()->evaluate()], $rowB[$condition->getValue()->evaluate()]);
+            $issetRowAValueRowBColumn = isset($rowA[$condition->getValue()->evaluate()], $rowB[$condition->getColumn()->evaluate()]);
         }
 
-        switch ($condition->getOperator()) {
-            case Operator::EQUAL:
+        $operator = get_class($condition->getOperator());
+
+        switch ($operator) {
+            case Equals::class:
                 // column = 5
-                if ($issetRowAColumn && $rowA[$condition->getColumn()] === $condition->getValue()) {
+                if ($issetRowAColumn && $rowA[$condition->getColumn()->evaluate()] === $condition->getValue()) {
                     return true;
                 }
 
                 // 5 = column
-                if ($issetRowAValue && $rowA[$condition->getValue()] === $condition->getColumn()) {
+                if ($issetRowAValue && $rowA[$condition->getValue()->evaluate()] === $condition->getColumn()) {
                     return true;
                 }
 
                 // column1 = column2
-                if ($issetRowAColumnRowBValue && $rowA[$condition->getColumn()] === $rowB[$condition->getValue()]) {
+                if ($issetRowAColumnRowBValue && $rowA[$condition->getColumn()->evaluate()] === $rowB[$condition->getValue()->evaluate()]) {
                     return true;
                 }
 
                 // column2 = column1
-                if ($issetRowAValueRowBColumn && $rowA[$condition->getValue()] === $rowB[$condition->getColumn()]) {
+                if ($issetRowAValueRowBColumn && $rowA[$condition->getValue()->evaluate()] === $rowB[$condition->getColumn()->evaluate()]) {
                     return true;
                 }
 
@@ -106,12 +122,12 @@ class ConditionHelper
                  * (SELECT id from table ....) = column
                  */
                 if ($hasSubQueryColumn) {
-                    $subQueryResult = SubQueryHelper::runAndCheckOneRowOneColumn($condition->getColumn());
+                    $subQueryResult = SubQueryHelper::runAndCheckOneRowOneColumn($condition->getColumn()->getQuery());
 
                     $firstRow    = $subQueryResult->getRows()[0];
                     $firstColumn = $subQueryResult->getColumns()[0];
 
-                    if ($rowA[$condition->getValue()] === $firstRow->get()->{$firstColumn}) {
+                    if ($rowA[$condition->getValue()->evaluate()] === $firstRow->get()->{$firstColumn}) {
                         return true;
                     }
                 }
@@ -120,12 +136,12 @@ class ConditionHelper
                  * column = (SELECT id from table ....)
                  */
                 if ($hasSubQueryValue) {
-                    $subQueryResult = SubQueryHelper::runAndCheckOneRowOneColumn($condition->getValue());
+                    $subQueryResult = SubQueryHelper::runAndCheckOneRowOneColumn($condition->getValue()->getQuery());
 
                     $firstRow    = $subQueryResult->getRows()[0];
                     $firstColumn = $subQueryResult->getColumns()[0];
 
-                    if ($rowA[$condition->getColumn()] === $firstRow->get()->{$firstColumn}) {
+                    if ($rowA[$condition->getColumn()->evaluate()] === $firstRow->get()->{$firstColumn}) {
                         return true;
                     }
                 }
@@ -146,24 +162,24 @@ class ConditionHelper
 
                 break;
 
-            case Operator::GREATER_THAN:
+            case Larger::class:
                 // column > 5
-                if ($issetRowAColumn && $rowA[$condition->getColumn()] > $condition->getValue()) {
+                if ($issetRowAColumn && $rowA[$condition->getColumn()->evaluate()] > $condition->getValue()) {
                     return true;
                 }
 
                 // 5 > column
-                if ($issetRowAValue && $rowA[$condition->getValue()] > $condition->getColumn()) {
+                if ($issetRowAValue && $rowA[$condition->getValue()->evaluate()] > $condition->getColumn()) {
                     return true;
                 }
 
                 // column1 > column2
-                if ($issetRowAColumnRowBValue && $rowA[$condition->getColumn()] > $rowB[$condition->getValue()]) {
+                if ($issetRowAColumnRowBValue && $rowA[$condition->getColumn()->evaluate()] > $rowB[$condition->getValue()->evaluate()]) {
                     return true;
                 }
 
                 // column2 > column1
-                if ($issetRowAValueRowBColumn && $rowA[$condition->getValue()] > $rowB[$condition->getColumn()]) {
+                if ($issetRowAValueRowBColumn && $rowA[$condition->getValue()->evaluate()] > $rowB[$condition->getColumn()->evaluate()]) {
                     return true;
                 }
 
@@ -171,12 +187,12 @@ class ConditionHelper
                  * (SELECT id from table ....) > column
                  */
                 if ($hasSubQueryColumn) {
-                    $subQueryResult = SubQueryHelper::runAndCheckOneRowOneColumn($condition->getColumn());
+                    $subQueryResult = SubQueryHelper::runAndCheckOneRowOneColumn($condition->getColumn()->evaluate()->evaluate());
 
                     $firstRow    = $subQueryResult->getRows()[0];
                     $firstColumn = $subQueryResult->getColumns()[0];
 
-                    if ($rowA[$condition->getValue()] > $firstRow->get()->{$firstColumn}) {
+                    if ($rowA[$condition->getValue()->evaluate()] > $firstRow->get()->{$firstColumn}) {
                         return true;
                     }
                 }
@@ -185,12 +201,12 @@ class ConditionHelper
                  * column > (SELECT id from table ....)
                  */
                 if ($hasSubQueryValue) {
-                    $subQueryResult = SubQueryHelper::runAndCheckOneRowOneColumn($condition->getValue());
+                    $subQueryResult = SubQueryHelper::runAndCheckOneRowOneColumn($condition->getValue()->getQuery());
 
                     $firstRow    = $subQueryResult->getRows()[0];
                     $firstColumn = $subQueryResult->getColumns()[0];
 
-                    if ($rowA[$condition->getColumn()] > $firstRow->get()->{$firstColumn}) {
+                    if ($rowA[$condition->getColumn()->evaluate()] > $firstRow->get()->{$firstColumn}) {
                         return true;
                     }
                 }
@@ -211,24 +227,24 @@ class ConditionHelper
 
                 break;
 
-            case Operator::GREATER_EQUAL_THAN:
+            case LargerInclusive::class:
                 // column >= 5
-                if ($issetRowAColumn && $rowA[$condition->getColumn()] >= $condition->getValue()) {
+                if ($issetRowAColumn && $rowA[$condition->getColumn()->evaluate()] >= $condition->getValue()) {
                     return true;
                 }
 
                 // 5 >= column
-                if ($issetRowAValue && $rowA[$condition->getValue()] >= $condition->getColumn()) {
+                if ($issetRowAValue && $rowA[$condition->getValue()->evaluate()] >= $condition->getColumn()) {
                     return true;
                 }
 
                 // column1 >= column2
-                if ($issetRowAColumnRowBValue && $rowA[$condition->getColumn()] >= $rowB[$condition->getValue()]) {
+                if ($issetRowAColumnRowBValue && $rowA[$condition->getColumn()->evaluate()] >= $rowB[$condition->getValue()->evaluate()]) {
                     return true;
                 }
 
                 // column2 = column1
-                if ($issetRowAValueRowBColumn && $rowA[$condition->getValue()] >= $rowB[$condition->getColumn()]) {
+                if ($issetRowAValueRowBColumn && $rowA[$condition->getValue()->evaluate()] >= $rowB[$condition->getColumn()->evaluate()]) {
                     return true;
                 }
 
@@ -236,12 +252,12 @@ class ConditionHelper
                  * (SELECT id from table ....) >= column
                  */
                 if ($hasSubQueryColumn) {
-                    $subQueryResult = SubQueryHelper::runAndCheckOneRowOneColumn($condition->getColumn());
+                    $subQueryResult = SubQueryHelper::runAndCheckOneRowOneColumn($condition->getColumn()->getQuery());
 
                     $firstRow    = $subQueryResult->getRows()[0];
                     $firstColumn = $subQueryResult->getColumns()[0];
 
-                    if ($rowA[$condition->getValue()] >= $firstRow->get()->{$firstColumn}) {
+                    if ($rowA[$condition->getValue()->evaluate()] >= $firstRow->get()->{$firstColumn}) {
                         return true;
                     }
                 }
@@ -250,12 +266,12 @@ class ConditionHelper
                  * column >= (SELECT id from table ....)
                  */
                 if ($hasSubQueryValue) {
-                    $subQueryResult = SubQueryHelper::runAndCheckOneRowOneColumn($condition->getValue());
+                    $subQueryResult = SubQueryHelper::runAndCheckOneRowOneColumn($condition->getValue()->getQuery());
 
                     $firstRow    = $subQueryResult->getRows()[0];
                     $firstColumn = $subQueryResult->getColumns()[0];
 
-                    if ($rowA[$condition->getColumn()] >= $firstRow->get()->{$firstColumn}) {
+                    if ($rowA[$condition->getColumn()->evaluate()] >= $firstRow->get()->{$firstColumn}) {
                         return true;
                     }
                 }
@@ -276,24 +292,24 @@ class ConditionHelper
 
                 break;
 
-            case Operator::LESS_THAN:
+            case Smaller::class:
                 // column < 5
-                if ($issetRowAColumn && $rowA[$condition->getColumn()] < $condition->getValue()) {
+                if ($issetRowAColumn && $rowA[$condition->getColumn()->evaluate()] < $condition->getValue()) {
                     return true;
                 }
 
                 // 5 < column
-                if ($issetRowAValue && $rowA[$condition->getValue()] < $condition->getColumn()) {
+                if ($issetRowAValue && $rowA[$condition->getValue()->evaluate()] < $condition->getColumn()) {
                     return true;
                 }
 
                 // column1 < column2
-                if ($issetRowAColumnRowBValue && $rowA[$condition->getColumn()] < $rowB[$condition->getValue()]) {
+                if ($issetRowAColumnRowBValue && $rowA[$condition->getColumn()->evaluate()] < $rowB[$condition->getValue()->evaluate()]) {
                     return true;
                 }
 
                 // column2 < column1
-                if ($issetRowAValueRowBColumn && $rowA[$condition->getValue()] < $rowB[$condition->getColumn()]) {
+                if ($issetRowAValueRowBColumn && $rowA[$condition->getValue()->evaluate()] < $rowB[$condition->getColumn()->evaluate()]) {
                     return true;
                 }
 
@@ -301,12 +317,12 @@ class ConditionHelper
                  * (SELECT id from table ....) < column
                  */
                 if ($hasSubQueryColumn) {
-                    $subQueryResult = SubQueryHelper::runAndCheckOneRowOneColumn($condition->getColumn());
+                    $subQueryResult = SubQueryHelper::runAndCheckOneRowOneColumn($condition->getColumn()->getQuery());
 
                     $firstRow    = $subQueryResult->getRows()[0];
                     $firstColumn = $subQueryResult->getColumns()[0];
 
-                    if ($rowA[$condition->getValue()] < $firstRow->get()->{$firstColumn}) {
+                    if ($rowA[$condition->getValue()->evaluate()] < $firstRow->get()->{$firstColumn}) {
                         return true;
                     }
                 }
@@ -315,12 +331,12 @@ class ConditionHelper
                  * column < (SELECT id from table ....)
                  */
                 if ($hasSubQueryValue) {
-                    $subQueryResult = SubQueryHelper::runAndCheckOneRowOneColumn($condition->getValue());
+                    $subQueryResult = SubQueryHelper::runAndCheckOneRowOneColumn($condition->getValue()->getQuery());
 
                     $firstRow    = $subQueryResult->getRows()[0];
                     $firstColumn = $subQueryResult->getColumns()[0];
 
-                    if ($rowA[$condition->getColumn()] < $firstRow->get()->{$firstColumn}) {
+                    if ($rowA[$condition->getColumn()->evaluate()] < $firstRow->get()->{$firstColumn}) {
                         return true;
                     }
                 }
@@ -341,24 +357,24 @@ class ConditionHelper
 
                 break;
 
-            case Operator::LESS_EQUAL_THAN:
+            case SmallerInclusive::class:
                 // column <= 5
-                if ($issetRowAColumn && $rowA[$condition->getColumn()] <= $condition->getValue()) {
+                if ($issetRowAColumn && $rowA[$condition->getColumn()->evaluate()] <= $condition->getValue()) {
                     return true;
                 }
 
                 // 5 <= column
-                if ($issetRowAValue && $rowA[$condition->getValue()] <= $condition->getColumn()) {
+                if ($issetRowAValue && $rowA[$condition->getValue()->evaluate()] <= $condition->getColumn()) {
                     return true;
                 }
 
                 // column1 <= column2
-                if ($issetRowAColumnRowBValue && $rowA[$condition->getColumn()] <= $rowB[$condition->getValue()]) {
+                if ($issetRowAColumnRowBValue && $rowA[$condition->getColumn()->evaluate()] <= $rowB[$condition->getValue()->evaluate()]) {
                     return true;
                 }
 
                 // column2 <= column1
-                if ($issetRowAValueRowBColumn && $rowA[$condition->getValue()] <= $rowB[$condition->getColumn()]) {
+                if ($issetRowAValueRowBColumn && $rowA[$condition->getValue()->evaluate()] <= $rowB[$condition->getColumn()->evaluate()]) {
                     return true;
                 }
 
@@ -366,12 +382,12 @@ class ConditionHelper
                  * (SELECT id from table ....) <= column
                  */
                 if ($hasSubQueryColumn) {
-                    $subQueryResult = SubQueryHelper::runAndCheckOneRowOneColumn($condition->getColumn());
+                    $subQueryResult = SubQueryHelper::runAndCheckOneRowOneColumn($condition->getColumn()->getQuery());
 
                     $firstRow    = $subQueryResult->getRows()[0];
                     $firstColumn = $subQueryResult->getColumns()[0];
 
-                    if ($rowA[$condition->getValue()] <= $firstRow->get()->{$firstColumn}) {
+                    if ($rowA[$condition->getValue()->evaluate()] <= $firstRow->get()->{$firstColumn}) {
                         return true;
                     }
                 }
@@ -380,12 +396,12 @@ class ConditionHelper
                  * column <= (SELECT id from table ....)
                  */
                 if ($hasSubQueryValue) {
-                    $subQueryResult = SubQueryHelper::runAndCheckOneRowOneColumn($condition->getValue());
+                    $subQueryResult = SubQueryHelper::runAndCheckOneRowOneColumn($condition->getValue()->getQuery());
 
                     $firstRow    = $subQueryResult->getRows()[0];
                     $firstColumn = $subQueryResult->getColumns()[0];
 
-                    if ($rowA[$condition->getColumn()] <= $firstRow->get()->{$firstColumn}) {
+                    if ($rowA[$condition->getColumn()->evaluate()] <= $firstRow->get()->{$firstColumn}) {
                         return true;
                     }
                 }
@@ -406,14 +422,14 @@ class ConditionHelper
 
                 break;
 
-            case Operator::IN:
+            case In::class:
                 // column IN (5)
-                if ($issetRowAColumn && in_array($rowA[$condition->getColumn()], $condition->getValue(), true)) {
+                if ($issetRowAColumn && in_array($rowA[$condition->getColumn()->evaluate()], $condition->getValue()->getValues(), true)) {
                     return true;
                 }
 
                 // (5) IN column
-                if ($issetRowAValue && in_array($rowA[$condition->getValue()], $condition->getColumn(), true)) {
+                if ($issetRowAValue && in_array($rowA[$condition->getValue()->evaluate()], $condition->getColumn()->getValues(), true)) {
                     return true;
                 }
 
@@ -421,11 +437,11 @@ class ConditionHelper
                  * (SELECT id from table ....) IN column
                  */
                 if ($hasSubQueryColumn) {
-                    $subQueryResult = SubQueryHelper::runAndCheckOneColumn($condition->getColumn());
+                    $subQueryResult = SubQueryHelper::runAndCheckOneColumn($condition->getColumn()->getQuery());
                     $firstColumn    = $subQueryResult->getColumns()[0];
 
                     foreach ($subQueryResult->getRows() as $subRows) {
-                        if ($rowA[$condition->getColumn()] === $subRows->get()->{$firstColumn}) {
+                        if ($rowA[$condition->getColumn()->evaluate()] === $subRows->get()->{$firstColumn}) {
                             return true;
                         }
                     }
@@ -435,11 +451,11 @@ class ConditionHelper
                  * column IN (SELECT id from table ....)
                  */
                 if ($hasSubQueryValue) {
-                    $subQueryResult = SubQueryHelper::runAndCheckOneColumn($condition->getValue());
+                    $subQueryResult = SubQueryHelper::runAndCheckOneColumn($condition->getValue()->getQuery());
                     $firstColumn    = $subQueryResult->getColumns()[0];
 
                     foreach ($subQueryResult->getRows() as $subRows) {
-                        if ($rowA[$condition->getColumn()] === $subRows->get()->{$firstColumn}) {
+                        if ($rowA[$condition->getColumn()->evaluate()] === $subRows->get()->{$firstColumn}) {
                             return true;
                         }
                     }
@@ -447,14 +463,14 @@ class ConditionHelper
 
                 break;
 
-            case Operator::NOT_IN:
+            case NotIn::class:
                 // column NOT IN (5)
-                if ($issetRowAColumn && !in_array($rowA[$condition->getColumn()], $condition->getValue(), true)) {
+                if ($issetRowAColumn && !in_array($rowA[$condition->getColumn()->evaluate()], $condition->getValue()->getValues(), true)) {
                     return true;
                 }
 
                 // (5) NOT IN column
-                if ($issetRowAValue && !in_array($rowA[$condition->getValue()], $condition->getColumn(), true)) {
+                if ($issetRowAValue && !in_array($rowA[$condition->getValue()->evaluate()], $condition->getColumn()->getValues(), true)) {
                     return true;
                 }
 
@@ -462,11 +478,11 @@ class ConditionHelper
                  * (SELECT id from table ....) NOT IN column
                  */
                 if ($hasSubQueryColumn) {
-                    $subQueryResult = SubQueryHelper::runAndCheckOneColumn($condition->getColumn());
+                    $subQueryResult = SubQueryHelper::runAndCheckOneColumn($condition->getColumn()->getQuery());
                     $firstColumn    = $subQueryResult->getColumns()[0];
 
                     foreach ($subQueryResult->getRows() as $subRows) {
-                        if ($rowA[$condition->getColumn()] !== $subRows->get()->{$firstColumn}) {
+                        if ($rowA[$condition->getColumn()->evaluate()] !== $subRows->get()->{$firstColumn}) {
                             return true;
                         }
                     }
@@ -476,11 +492,11 @@ class ConditionHelper
                  * column NOT IN (SELECT id from table ....)
                  */
                 if ($hasSubQueryValue) {
-                    $subQueryResult = SubQueryHelper::runAndCheckOneColumn($condition->getValue());
+                    $subQueryResult = SubQueryHelper::runAndCheckOneColumn($condition->getValue()->getQuery());
                     $firstColumn    = $subQueryResult->getColumns()[0];
 
                     foreach ($subQueryResult->getRows() as $subRows) {
-                        if ($rowA[$condition->getColumn()] !== $subRows->get()->{$firstColumn}) {
+                        if ($rowA[$condition->getColumn()->evaluate()] !== $subRows->get()->{$firstColumn}) {
                             return true;
                         }
                     }
@@ -488,47 +504,46 @@ class ConditionHelper
 
                 break;
 
-            case Operator::BETWEEN:
-                if (!$issetRowAColumn && $rowA[$condition->getColumn()] > $condition->getValue()[0] && $rowA[$condition->getColumn()] < $condition->getValue()[1]) {
+            case Between::class:
+                if (!$issetRowAColumn && $rowA[$condition->getColumn()->evaluate()] > $condition->getValue()[0] && $rowA[$condition->getColumn()->evaluate()] < $condition->getValue()[1]) {
                     return true;
                 }
 
-                if (!$issetRowAValue && $rowA[$condition->getValue()] > $condition->getColumn()[0] && $rowA[$condition->getValue()] < $condition->getColumn()[1]) {
-                    return true;
-                }
-
-                break;
-
-            case Operator::BETWEEN_INCLUSIVE:
-                if (!$issetRowAColumn && $rowA[$condition->getColumn()] >= $condition->getValue()[0] && $rowA[$condition->getColumn()] <= $condition->getValue()[1]) {
-                    return true;
-                }
-
-                if (!$issetRowAValue && $rowA[$condition->getValue()] >= $condition->getColumn()[0] && $rowA[$condition->getValue()] <= $condition->getColumn()[1]) {
+                if (!$issetRowAValue && $rowA[$condition->getValue()->evaluate()] > $condition->getColumn()[0] && $rowA[$condition->getValue()->evaluate()] < $condition->getColumn()[1]) {
                     return true;
                 }
 
                 break;
 
-            case Operator::NON_EQUAL:
-            case Operator::LESS_AND_GREATER_THAN:
+            case BetweenInclusive::class:
+                if (!$issetRowAColumn && $rowA[$condition->getColumn()->evaluate()] >= $condition->getValue()[0] && $rowA[$condition->getColumn()->evaluate()] <= $condition->getValue()[1]) {
+                    return true;
+                }
+
+                if (!$issetRowAValue && $rowA[$condition->getValue()->evaluate()] >= $condition->getColumn()[0] && $rowA[$condition->getValue()->evaluate()] <= $condition->getColumn()[1]) {
+                    return true;
+                }
+
+                break;
+
+            case NotEquals::class:
                 // column != 5
-                if ($issetRowAColumn && $rowA[$condition->getColumn()] !== $condition->getValue()) {
+                if ($issetRowAColumn && $rowA[$condition->getColumn()->evaluate()] !== $condition->getValue()) {
                     return true;
                 }
 
                 // 5 != column
-                if ($issetRowAValue && $rowA[$condition->getValue()] !== $condition->getColumn()) {
+                if ($issetRowAValue && $rowA[$condition->getValue()->evaluate()] !== $condition->getColumn()) {
                     return true;
                 }
 
                 // column1 != column2
-                if ($issetRowAColumnRowBValue && $rowA[$condition->getColumn()] !== $rowB[$condition->getValue()]) {
+                if ($issetRowAColumnRowBValue && $rowA[$condition->getColumn()->evaluate()] !== $rowB[$condition->getValue()->evaluate()]) {
                     return true;
                 }
 
                 // column2 != column1
-                if ($issetRowAValueRowBColumn && $rowA[$condition->getValue()] !== $rowB[$condition->getColumn()]) {
+                if ($issetRowAValueRowBColumn && $rowA[$condition->getValue()->evaluate()] !== $rowB[$condition->getColumn()->evaluate()]) {
                     return true;
                 }
 
@@ -536,12 +551,12 @@ class ConditionHelper
                  * (SELECT id from table ....) != column
                  */
                 if ($hasSubQueryColumn) {
-                    $subQueryResult = SubQueryHelper::runAndCheckOneRowOneColumn($condition->getColumn());
+                    $subQueryResult = SubQueryHelper::runAndCheckOneRowOneColumn($condition->getColumn()->getQuery());
 
                     $firstRow    = $subQueryResult->getRows()[0];
                     $firstColumn = $subQueryResult->getColumns()[0];
 
-                    if ($rowA[$condition->getValue()] !== $firstRow->get()->{$firstColumn}) {
+                    if ($rowA[$condition->getValue()->evaluate()] !== $firstRow->get()->{$firstColumn}) {
                         return true;
                     }
                 }
@@ -550,12 +565,12 @@ class ConditionHelper
                  * column != (SELECT id from table ....)
                  */
                 if ($hasSubQueryValue) {
-                    $subQueryResult = SubQueryHelper::runAndCheckOneRowOneColumn($condition->getValue());
+                    $subQueryResult = SubQueryHelper::runAndCheckOneRowOneColumn($condition->getValue()->getQuery());
 
                     $firstRow    = $subQueryResult->getRows()[0];
                     $firstColumn = $subQueryResult->getColumns()[0];
 
-                    if ($rowA[$condition->getColumn()] !== $firstRow->get()->{$firstColumn}) {
+                    if ($rowA[$condition->getColumn()->evaluate()] !== $firstRow->get()->{$firstColumn}) {
                         return true;
                     }
                 }
@@ -576,52 +591,52 @@ class ConditionHelper
 
                 break;
 
-            case Operator::REGULAR_EXPRESSION:
+            case RegularExpression::class:
                 $quotedValue  = preg_quote($condition->getValue(), '#');
                 $quotedColumn = preg_quote($condition->getColumn(), '#');
 
                 // column regexp [a-z]
-                if ($issetRowAColumn && preg_match('#' . $quotedValue . '#', $rowA[$condition->getColumn()])) {
+                if ($issetRowAColumn && preg_match('#' . $quotedValue . '#', $rowA[$condition->getColumn()->evaluate()])) {
                     return true;
                 }
 
                 // [a-z] regexp column
-                if ($issetRowAValue && preg_match('#' . $quotedColumn . '#', $rowA[$condition->getValue()])) {
+                if ($issetRowAValue && preg_match('#' . $quotedColumn . '#', $rowA[$condition->getValue()->evaluate()])) {
                     return true;
                 }
 
                 break;
 
-            case Operator::IS_NULL:
+            case IsNull::class:
                 // column IS NULL
-                if ($issetRowAColumn && $rowA[$condition->getColumn()] === 'null') {
+                if ($issetRowAColumn && $rowA[$condition->getColumn()->evaluate()] === 'null') {
                     return true;
                 }
 
                 // IS NULL column
-                if ($issetRowAValue && $rowA[$condition->getValue()] === 'null') {
+                if ($issetRowAValue && $rowA[$condition->getValue()->evaluate()] === 'null') {
                     return true;
                 }
 
                 break;
 
-            case Operator::IS_NOT_NULL:
+            case IsNotNull::class:
                 // column IS NOT NULL
-                if ($issetRowAColumn && $rowA[$condition->getColumn()] !== 'null') {
+                if ($issetRowAColumn && $rowA[$condition->getColumn()->evaluate()] !== 'null') {
                     return true;
                 }
 
                 // IS NOT NULL column
-                if ($issetRowAValue && $rowA[$condition->getValue()] !== 'null') {
+                if ($issetRowAValue && $rowA[$condition->getValue()->evaluate()] !== 'null') {
                     return true;
                 }
 
                 break;
 
-            case Operator::EXISTS:
+            case Exists::class:
                 // WHERE EXISTS (SELECT id from table ....)
                 if ($hasSubQueryColumn) {
-                    $subQueryResult = SubQueryHelper::runAndCheckSubQuery($condition->getColumn());
+                    $subQueryResult = SubQueryHelper::runAndCheckSubQuery($condition->getColumn()->getQuery());
 
                     if ($subQueryResult->getRowsCount()) {
                         return true;
@@ -630,7 +645,7 @@ class ConditionHelper
 
                 // WHERE (SELECT id from table ....) EXISTS
                 if ($hasSubQueryValue) {
-                    $subQueryResult = SubQueryHelper::runAndCheckSubQuery($condition->getValue());
+                    $subQueryResult = SubQueryHelper::runAndCheckSubQuery($condition->getValue()->getQuery());
 
                     if ($subQueryResult->getRowsCount()) {
                         return true;
@@ -680,11 +695,11 @@ class ConditionHelper
             return true;
         }
 
-        if ($condition->getOperator() === Operator::BETWEEN && $value > $condition->getValue() && $value < $condition->getValue()) {
+        if ($condition->getOperator() === Operator::BETWEEN && $value > $condition->getValue() && $value < $condition->getValue()->evaluate()) {
             return true;
         }
 
-        if ($condition->getOperator() === Operator::BETWEEN_INCLUSIVE && $value >= $condition->getValue() && $value <= $condition->getValue()) {
+        if ($condition->getOperator() === Operator::BETWEEN_INCLUSIVE && $value >= $condition->getValue() && $value <= $condition->getValue()->evaluate()) {
             return true;
         }
 

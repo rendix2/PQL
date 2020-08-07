@@ -25,15 +25,15 @@ class HashJoin implements IJoin
         $missingColumns = OuterJoinHelper::createNullColumns($tableB);
 
         foreach ($tableB as $rowB) {
-            $hashTable[$rowB[$condition->getValue()]][] = $rowB;
+            $hashTable[$rowB[$condition->getValue()->evaluate()]][] = $rowB;
         }
 
         // join phase
         $leftJoinResult = [];
 
         foreach ($tableA as $rowA) {
-            if (isset($hashTable[$rowA[$condition->getColumn()]])) {
-                foreach ($hashTable[$rowA[$condition->getColumn()]] as $hashRow) {
+            if (isset($hashTable[$rowA[$condition->getColumn()->evaluate()]])) {
+                foreach ($hashTable[$rowA[$condition->getColumn()->evaluate()]] as $hashRow) {
                     $leftJoinResult[] = array_merge($hashRow, $rowA);
                 }
             } else {
@@ -55,15 +55,15 @@ class HashJoin implements IJoin
         $missingColumns = OuterJoinHelper::createNullColumns($tableA);
 
         foreach ($tableA as $rowA) {
-            $hashTable[$rowA[$condition->getColumn()]][] = $rowA;
+            $hashTable[$rowA[$condition->getColumn()->evaluate()]][] = $rowA;
         }
 
         // join phase
         $rightJoinResult = [];
 
         foreach ($tableB as $rowB) {
-            if (isset($hashTable[$rowB[$condition->getValue()]])) {
-                foreach ($hashTable[$rowB[$condition->getValue()]] as $hashRow) {
+            if (isset($hashTable[$rowB[$condition->getValue()->evaluate()]])) {
+                foreach ($hashTable[$rowB[$condition->getValue()->evaluate()]] as $hashRow) {
                     $rightJoinResult[] = array_merge($hashRow, $rowB);
                 }
             } else {
@@ -98,15 +98,15 @@ class HashJoin implements IJoin
         $hashTable = [];
 
         foreach ($tableB as $rowB) {
-            $hashTable[$rowB[$condition->getValue()]][] = $rowB;
+            $hashTable[$rowB[$condition->getValue()->evaluate()]][] = $rowB;
         }
 
         // join phase
         $innerJoinResult = [];
 
         foreach ($tableA as $rowA) {
-            if (isset($hashTable[$rowA[$condition->getColumn()]])) {
-                foreach ($hashTable[$rowA[$condition->getColumn()]] as $hashRow) {
+            if (isset($hashTable[$rowA[$condition->getColumn()->evaluate()]])) {
+                foreach ($hashTable[$rowA[$condition->getColumn()->evaluate()]] as $hashRow) {
                     $innerJoinResult[] = array_merge($hashRow, $rowA);
                 }
             }

@@ -3,7 +3,7 @@
 namespace pql\QueryExecutor;
 
 use pql\JoinedTable;
-use pql\QueryBuilder\Explain as ExplainBuilder;
+use pql\QueryBuilder\ExplainQuery as ExplainBuilder;
 use pql\QueryBuilder\Query;
 use pql\QueryRow\ExplainRow;
 use pql\Table;

@@ -4,7 +4,7 @@ namespace pql\QueryExecutor;
 
 use Exception;
 use pql\Alias;
-use pql\QueryBuilder\InsertSelect as InsertSelectBuilder;
+use pql\QueryBuilder\InsertSelectQuery as InsertSelectBuilder;
 use pql\QueryBuilder\Query;
 
 /**
@@ -46,7 +46,7 @@ class InsertSelect implements IQueryExecutor
      */
     public function run()
     {
-        $selectQuery = new Select($this->query->getData());
+        $selectQuery = new SelectQuery($this->query->getData());
         $selectQuery->run();
 
         $selectedColumns = [];

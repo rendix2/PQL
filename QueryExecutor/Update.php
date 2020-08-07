@@ -4,7 +4,7 @@ namespace pql\QueryExecutor;
 
 use Nette\Utils\FileSystem;
 use pql\Condition;
-use pql\QueryBuilder\Update as UpdateBuilder;
+use pql\QueryBuilder\UpdateQuery as UpdateBuilder;
 use pql\Table;
 use SplFileObject;
 

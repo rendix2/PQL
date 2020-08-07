@@ -2,19 +2,25 @@
 
 namespace pql\QueryBuilder\Select;
 
-class Expression implements IExpression
+/**
+ * Class Expression
+ *
+ * @author  rendix2 <rendix2@seznam.cz>
+ * @package pql\QueryBuilder\Select
+ */
+class Expression implements ISelectExpression
 {
     /**
-     * @var IExpression[] $expressions
+     * @var ISelectExpression[] $expressions
      */
     private $expressions;
 
     /**
      * Expression constructor.
      *
-     * @param IExpression ...$expressions
+     * @param ISelectExpression ...$expressions
      */
-    public function __construct(IExpression ...$expressions)
+    public function __construct(ISelectExpression ...$expressions)
     {
         $this->expressions = $expressions;
     }

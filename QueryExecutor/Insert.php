@@ -3,7 +3,7 @@
 namespace pql\QueryExecutor;
 
 use pql\BTree\BtreeJ;
-use pql\QueryBuilder\Insert as InsertBuilder;
+use pql\QueryBuilder\InsertQuery as InsertBuilder;
 use pql\Table;
 use pql\TableColumn;
 use SplFileObject;

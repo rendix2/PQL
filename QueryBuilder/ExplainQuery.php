@@ -14,12 +14,12 @@ use pql\QueryResult\ListResult;
 use pql\QueryResult\TableResult;
 
 /**
- * Class Explain
+ * Class ExplainQuery
  *
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryBuilder
  */
-class Explain extends Select
+class ExplainQuery extends SelectQuery
 {
     /**
      * @var IResult $result

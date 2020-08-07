@@ -6,7 +6,7 @@ use pql\Condition;
 use pql\JoinedTable;
 use pql\Operator;
 use pql\QueryBuilder\Query;
-use pql\QueryBuilder\Select as SelectBuilder;
+use pql\QueryBuilder\SelectQuery as SelectBuilder;
 use pql\Table;
 
 /**

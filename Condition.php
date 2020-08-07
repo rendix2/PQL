@@ -3,7 +3,8 @@
 namespace pql;
 
 use Exception;
-use pql\QueryBuilder\Query;
+use pql\QueryBuilder\Operator\IOperator;
+use pql\QueryBuilder\Select\ISelectExpression;
 
 /**
  * Class Condition
@@ -19,37 +20,39 @@ class Condition
     const IN_SEPARATOR = ', ';
 
     /**
-     * @var string|array|Query|AggregateFunction $column
+     * @var ISelectExpression $column
      */
     private $column;
 
     /**
-     * @var string $operator
+     * @var IOperator $operator
      */
     private $operator;
 
     /**
-     * @var string|array|Query|AggregateFunction $value
+     * @var ISelectExpression $value
      */
     private $value;
 
     /**
      * Condition constructor.
      *
-     * @param string|array|Query|AggregateFunction $column
-     * @param string                               $operator
-     * @param string|array|Query|AggregateFunction $value
+     * @param ISelectExpression $column
+     * @param IOperator         $operator
+     * @param ISelectExpression $value
      *
      * @throws Exception
      */
-    public function __construct($column, $operator, $value)
+    public function __construct(ISelectExpression $column, IOperator $operator, ISelectExpression $value)
     {
+        /*
         if (!Operator::isOperatorValid($operator)) {
             throw new Exception(sprintf('Unknown operator "%s".', $operator));
         }
+        */
 
         $this->column = $column;
-        $this->operator = mb_strtolower($operator);
+        $this->operator = $operator;
         $this->value = $value;
     }
 
@@ -68,27 +71,11 @@ class Condition
      */
     public function __toString()
     {
-        if ($this->column instanceof Query) {
-            $column = '(<br><br>' . (string)$this->column . '<br><br>)';
-        } elseif (is_array($this->column)) {
-            $column = '(' . implode(self::IN_SEPARATOR, $this->column) . ')';
-        } else {
-            $column = $this->column;
-        }
-
-        if ($this->value instanceof Query) {
-            $value = '(<br><br>' . (string)$this->value . '<br><br>)';
-        } elseif (is_array($this->value)) {
-            $value =  '(' . implode(self::IN_SEPARATOR, $this->value) . ')';
-        } else {
-            $value = $this->value;
-        }
-
-        return $column . ' ' . mb_strtoupper($this->operator) . ' ' . $value;
+        return $this->column->evaluate() . ' ' . $this->operator . ' ' . $this->value->evaluate();
     }
 
     /**
-     * @return string|array|Query|AggregateFunction
+     * @return ISelectExpression
      */
     public function getColumn()
     {
@@ -96,7 +83,7 @@ class Condition
     }
 
     /**
-     * @return string
+     * @return IOperator
      */
     public function getOperator()
     {
@@ -104,7 +91,7 @@ class Condition
     }
 
     /**
-     * @return string|array|Query|AggregateFunction
+     * @return ISelectExpression
      */
     public function getValue()
     {

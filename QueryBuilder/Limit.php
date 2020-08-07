@@ -34,7 +34,7 @@ trait Limit
     /**
      * @param int $limit
      *
-     * @return Limit|Select
+     * @return Limit|SelectQuery
      * @throws Exception
      */
     public function limit($limit)

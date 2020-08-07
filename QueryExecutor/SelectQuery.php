@@ -4,13 +4,14 @@ namespace pql\QueryExecutor;
 
 use Exception;
 use Netpromotion\Profiler\Profiler;
-use pql\AggregateFunction;
 use pql\Alias;
 use pql\Condition;
 use pql\JoinedTable;
-use pql\QueryBuilder\PFunction;
 use pql\QueryBuilder\Query;
-use pql\QueryBuilder\Select as SelectBuilder;
+use pql\QueryBuilder\Select\AggregateFunction;
+use pql\QueryBuilder\Select\ISelectExpression;
+use pql\QueryBuilder\Select\StandardFunction;
+use pql\QueryBuilder\SelectQuery as SelectBuilder;
 use pql\QueryExecutor\AggregateFunctions\Average;
 use pql\QueryExecutor\AggregateFunctions\Count;
 use pql\QueryExecutor\AggregateFunctions\Max;
@@ -32,7 +33,7 @@ use pql\Table;
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryExecute
  */
-class Select implements IQueryExecutor
+class SelectQuery implements IQueryExecutor
 {
     use Limit;
 
@@ -392,12 +393,12 @@ class Select implements IQueryExecutor
             $columns = array_merge($columns, $selectedColumns);
         }
 
-
-        bdump($this->query->getSelectedColumns(), '$this->query->getSelectedColumns()');
-        bdump($columns, '$columns');
-
         foreach ($this->query->getSelectedColumns() as $column) {
-            if ($column->getExpression() instanceof SelectBuilder\StandardFunction) {
+            if ($column->getExpression() instanceof StandardFunction) {
+                if (!in_array($column->getExpression()->getColumn(), $columns, true)) {
+                    throw new Exception(sprintf('Selected column "%s" does not exists.', $column->getColumn()));
+                }
+            } elseif ($column->getExpression() instanceof AggregateFunction) {
                 if (!in_array($column->getExpression()->getColumn(), $columns, true)) {
                     throw new Exception(sprintf('Selected column "%s" does not exists.', $column->getColumn()));
                 }
@@ -410,21 +411,19 @@ class Select implements IQueryExecutor
     }
 
     /**
-     * @param string $functionColumnName
-     * @param mixed  $functionResult
+     * @param ISelectExpression $expression
+     * @param mixed       $functionResult
      */
-    private function addFunctionIntoResult($functionColumnName, $functionResult)
+    private function addFunctionIntoResult(ISelectExpression $expression, $functionResult)
     {
-        $this->columns[] = new SelectedColumn($functionColumnName);
-
         if ($this->query->getSelectedColumns()) {
             foreach ($this->result as &$row) {
-                $row[$functionColumnName] = $functionResult;
+                $row[$expression->evaluate()] = $functionResult;
             }
 
             unset($row);
         } else {
-            $this->result = [0 => [$functionColumnName => $functionResult]];
+            $this->result = [0 => [$expression->evaluate() => $functionResult]];
         }
     }
 
@@ -437,7 +436,7 @@ class Select implements IQueryExecutor
      */
     public function addGroupedFunctionDataIntoResult($column, array $groupedByResult, $functionColumnName)
     {
-        $this->columns[] = new SelectedColumn($functionColumnName);
+        //$this->columns[] = new SelectedColumn($functionColumnName);
 
         foreach ($this->result as &$row) {
             $row[$functionColumnName] = $groupedByResult[$column][$row[$column]];
@@ -468,11 +467,15 @@ class Select implements IQueryExecutor
 
     private function valueFunctions()
     {
+        if(!$this->query->hasFunctions()) {
+            return $this->result;
+        }
+
         foreach ($this->result as $column => &$row) {
             foreach ($this->query->getSelectedColumns() as $selectedColumn) {
                 $expression = $selectedColumn->getExpression();
 
-                if ($expression instanceof SelectBuilder\StandardFunction) {
+                if ($expression instanceof StandardFunction) {
                     switch ($expression->getName()) {
                         case NumberFormat::FUNCTION_NAME:
                             $valueFunction = new NumberFormat();
@@ -492,73 +495,76 @@ class Select implements IQueryExecutor
      */
     private function aggregateFunctions()
     {
+        if (!$this->query->hasAggregateFunctions()) {
+            return $this->result;
+        }
+
         $functions = new AggregateFunctions($this->result);
 
-        foreach ($this->query->getAggregateFunctions() as $function) {
-            $functionName = $function->getName();
-            $column       = $function->getParams()[0];
+        foreach ($this->query->getSelectedColumns() as $column) {
+            if ($column->getExpression() instanceof AggregateFunction) {
+                $functionColumnName = $column->getExpression()->evaluate();
 
-            $functionColumnName = sprintf('%s(%s)', mb_strtoupper($functionName), $column);
+                switch ($column->getExpression()->getName()) {
+                    case AggregateFunction::SUM:
+                        if ($this->groupedByDataCount) {
+                            $aggregateFunction = new Sum($this);
+                            $aggregateFunction->run($column, $functionColumnName);
+                        } else {
+                            $this->addFunctionIntoResult($column->getExpression(), $functions->sum($column));
+                        }
 
-            switch ($functionName) {
-                case AggregateFunction::SUM:
-                    if ($this->groupedByDataCount) {
-                        $aggregateFunction = new Sum($this);
-                        $aggregateFunction->run($column, $functionColumnName);
-                    } else {
-                        $this->addFunctionIntoResult($functionColumnName, $functions->sum($column));
-                    }
+                        break;
 
-                    break;
+                    case AggregateFunction::COUNT:
+                        if ($this->groupedByDataCount) {
+                            $aggregateFunction = new Count($this);
+                            $aggregateFunction->run($column, $functionColumnName);
+                        } else {
+                            $this->addFunctionIntoResult($column->getExpression(), $functions->count($column));
+                        }
 
-                case AggregateFunction::COUNT:
-                    if ($this->groupedByDataCount) {
-                        $aggregateFunction = new Count($this);
-                        $aggregateFunction->run($column, $functionColumnName);
-                    } else {
-                        $this->addFunctionIntoResult($functionColumnName, $functions->count($column));
-                    }
+                        break;
 
-                    break;
+                    case AggregateFunction::AVERAGE:
+                        if ($this->groupedByDataCount) {
+                            $aggregateFunction = new Average($this);
+                            $aggregateFunction->run($column, $functionColumnName);
+                        } else {
+                            $this->addFunctionIntoResult($column->getExpression(), $functions->avg($column));
+                        }
 
-                case AggregateFunction::AVERAGE:
-                    if ($this->groupedByDataCount) {
-                        $aggregateFunction = new Average($this);
-                        $aggregateFunction->run($column, $functionColumnName);
-                    } else {
-                        $this->addFunctionIntoResult($functionColumnName, $functions->avg($column));
-                    }
+                        break;
 
-                    break;
+                    case AggregateFunction::MIN:
+                        if ($this->groupedByDataCount) {
+                            $aggregateFunction = new Min($this);
+                            $aggregateFunction->run($column, $functionColumnName);
+                        } else {
+                            $this->addFunctionIntoResult($column->getExpression(), $functions->min($column));
+                        }
 
-                case AggregateFunction::MIN:
-                    if ($this->groupedByDataCount) {
-                        $aggregateFunction = new Min($this);
-                        $aggregateFunction->run($column, $functionColumnName);
-                    } else {
-                        $this->addFunctionIntoResult($functionColumnName, $functions->min($column));
-                    }
+                        break;
 
-                    break;
+                    case AggregateFunction::MAX:
+                        if ($this->groupedByDataCount) {
+                            $aggregateFunction = new Max($this);
+                            $aggregateFunction->run($column, $functionColumnName);
+                        } else {
+                            $this->addFunctionIntoResult($column->getExpression(), $functions->max($column));
+                        }
+                        break;
 
-                case AggregateFunction::MAX:
-                    if ($this->groupedByDataCount) {
-                        $aggregateFunction = new Max($this);
-                        $aggregateFunction->run($column, $functionColumnName);
-                    } else {
-                        $this->addFunctionIntoResult($functionColumnName, $functions->max($column));
-                    }
-                    break;
+                    case AggregateFunction::MEDIAN:
+                        if ($this->groupedByDataCount) {
+                            $aggregateFunction = new Median($this);
+                            $aggregateFunction->run($column, $functionColumnName);
+                        } else {
+                            $this->addFunctionIntoResult($column->getExpression(), $functions->median($column));
+                        }
 
-                case AggregateFunction::MEDIAN:
-                    if ($this->groupedByDataCount) {
-                        $aggregateFunction = new Median($this);
-                        $aggregateFunction->run($column, $functionColumnName);
-                    } else {
-                        $this->addFunctionIntoResult($functionColumnName, $functions->median($column));
-                    }
-
-                    break;
+                        break;
+                }
             }
         }
 
@@ -856,22 +862,22 @@ class Select implements IQueryExecutor
 
                     switch ($function->getName()) {
                         case AggregateFunction::SUM:
-                            $functionResult = $aggregateFunctions->sum($function->getParams()[0]);
+                            $functionResult = $aggregateFunctions->sum($function->getName());
                             break;
                         case AggregateFunction::COUNT:
-                            $functionResult = $aggregateFunctions->count($function->getParams()[0]);
+                            $functionResult = $aggregateFunctions->count($function->getName());
                             break;
                         case AggregateFunction::MAX:
-                            $functionResult = $aggregateFunctions->max($function->getParams()[0]);
+                            $functionResult = $aggregateFunctions->max($function->getName());
                             break;
                         case AggregateFunction::MIN:
-                            $functionResult = $aggregateFunctions->min($function->getParams()[0]);
+                            $functionResult = $aggregateFunctions->min($function->getName());
                             break;
                         case AggregateFunction::AVERAGE:
-                            $functionResult = $aggregateFunctions->avg($function->getParams()[0]);
+                            $functionResult = $aggregateFunctions->avg($function->getName());
                             break;
                         case AggregateFunction::MEDIAN:
-                            $functionResult = $aggregateFunctions->median($function->getParams()[0]);
+                            $functionResult = $aggregateFunctions->median($function->getName());
                             break;
                         default:
                             $message = sprintf('Unknown aggregate function "%s".', $function->getName());
@@ -880,7 +886,7 @@ class Select implements IQueryExecutor
                     }
 
                     foreach ($groupedRows as &$groupedRow) {
-                        $groupedRow[(string) $function] = $functionResult;
+                        $groupedRow[$function->evaluate()] = $functionResult;
                     }
                 }
             }
@@ -891,7 +897,7 @@ class Select implements IQueryExecutor
         // calculate needed functions
         foreach ($this->query->getHavingConditions() as $havingCondition) {
             $smallFunctionName = mb_strtolower($havingCondition->getColumn()->getName());
-            $firstParam = $havingCondition->getColumn()->getParams()[0];
+            $firstParam = $havingCondition->getColumn()->getColumn();
 
             if ($havingCondition->getColumn() instanceof AggregateFunction) {
                 foreach ($groupByTemp as &$groupByColumn) {
@@ -924,7 +930,7 @@ class Select implements IQueryExecutor
                         }
 
                         foreach ($groupedRows as &$groupedRow) {
-                            $groupedRow[(string) $havingCondition->getColumn()] = $functionResult;
+                            $groupedRow[(string) $havingCondition->getColumn()->evaluate()] = $functionResult;
                         }
                     }
                 }
@@ -996,18 +1002,10 @@ class Select implements IQueryExecutor
     {
         $havingResult = [];
 
-        $inversed = false;
-
-        if ($condition->getValue() instanceof AggregateFunction) {
-            $condition = $condition->inverse();
-
-            $inversed = true;
-        }
-
         $smallFunctionName = mb_strtolower($condition->getColumn()->getName());
 
         if ($condition->getColumn() instanceof AggregateFunction) {
-            $functionParameter = $condition->getColumn()->getParams()[0];
+            $functionParameter = $condition->getColumn()->getColumn();
 
             foreach ($this->groupedByData as $groupByColumn => $groupByValues) {
                 foreach ($groupByValues as $groupedRows) {
@@ -1093,10 +1091,6 @@ class Select implements IQueryExecutor
             }
         }
 
-        if ($inversed) {
-            $condition = $condition->inverse();
-        }
-
         return $havingResult;
     }
 
@@ -1165,11 +1159,7 @@ class Select implements IQueryExecutor
             if ($column->hasAlias()) {
                 $columns[] = $column->getAlias()->getTo();
             } else {
-                if ($column->getColumn() instanceof PFunction) {
-                    $columns[] = (string)$column->getColumn();
-                } else {
-                    $columns[] = $column->getColumn();
-                }
+                $columns[] = $column->getColumn();
             }
         }
 

@@ -2,7 +2,13 @@
 
 namespace pql\QueryBuilder\Select;
 
-class Column implements IExpression
+/**
+ * Class Column
+ *
+ * @author  rendix2 <rendix2@seznam.cz>
+ * @package pql\QueryBuilder\Select
+ */
+class Column implements ISelectExpression
 {
     /**
      * @var string $column
@@ -12,7 +18,7 @@ class Column implements IExpression
     /**
      * Column constructor.
      *
-     * @param $column
+     * @param string $column
      */
     public function __construct($column)
     {

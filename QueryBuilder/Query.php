@@ -46,7 +46,7 @@ class Query
      */
     public function __destruct()
     {
-        $this->query = null;
+        $this->query    = null;
         $this->database = null;
     }
 
@@ -63,64 +63,64 @@ class Query
     }
 
     /**
-     * @return Delete
+     * @return DeleteQuery
      */
     public function delete()
     {
-        return $this->query = new Delete($this->database);
+        return $this->query = new DeleteQuery($this->database);
     }
 
     /**
-     * @return DeleteSelect
+     * @return DeleteSelectQuery
      */
     public function deleteSelect()
     {
-        return $this->query = new DeleteSelect($this->database);
+        return $this->query = new DeleteSelectQuery($this->database);
     }
 
     /**
-     * @return Explain
+     * @return ExplainQuery
      */
     public function explain()
     {
-        return $this->query = new Explain($this->database);
+        return $this->query = new ExplainQuery($this->database);
     }
 
     /**
-     * @return Insert
+     * @return InsertQuery
      */
     public function insert()
     {
-        return $this->query = new Insert($this->database);
+        return $this->query = new InsertQuery($this->database);
     }
 
     public function insertSelect()
     {
-        return $this->query = new InsertSelect($this->database);
+        return $this->query = new InsertSelectQuery($this->database);
     }
 
     /**
-     * @return Select
+     * @return SelectQuery
      */
     public function select()
     {
-        return $this->query = new Select($this->database);
+        return $this->query = new SelectQuery($this->database);
     }
 
     /**
-     * @return Update
+     * @return UpdateQuery
      */
     public function update()
     {
-        return $this->query = new Update($this->database);
+        return $this->query = new UpdateQuery($this->database);
     }
 
     /**
-     * @return UpdateSelect
+     * @return UpdateSelectQuery
      */
     public function updateSelect()
     {
-        return $this->query = new UpdateSelect($this->database);
+        return $this->query = new UpdateSelectQuery($this->database);
     }
 
     /**

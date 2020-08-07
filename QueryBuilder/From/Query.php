@@ -2,24 +2,32 @@
 
 namespace pql\QueryBuilder\From;
 
-use pql\QueryBuilder\Select;
+use pql\QueryBuilder\Query as QueryBuilder;
 use pql\QueryPrinter\QueryPrinter;
 
-class Query implements IExpression
+class Query implements IFromExpression
 {
     /**
-     * @var Select
+     * @var QueryBuilder $query
      */
     private $query;
 
     /**
      * Query constructor.
      *
-     * @param Select $query
+     * @param QueryBuilder $query
      */
-    public function __construct(Select $query)
+    public function __construct(QueryBuilder $query)
     {
         $this->query = $query;
+    }
+
+    /**
+     * @return QueryBuilder
+     */
+    public function getQuery()
+    {
+        return $this->query;
     }
 
     /**

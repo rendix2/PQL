@@ -8,7 +8,7 @@
 
 namespace pql\QueryPrinter;
 
-use pql\QueryBuilder\InsertSelect as InsertSelectBuilder;
+use pql\QueryBuilder\InsertSelectQuery as InsertSelectBuilder;
 
 /**
  * Class InsertSelect

@@ -2,11 +2,18 @@
 
 namespace pql\QueryBuilder\From;
 
-class Table implements IExpression
+class Table implements IFromExpression
 {
+    /**
+     * @var string $table
+     */
     private $table;
 
-    public function __construct(\pql\Table $table)
+    /**
+     * Table constructor.
+     * @param string $table
+     */
+    public function __construct($table)
     {
         $this->table = $table;
     }
@@ -16,6 +23,6 @@ class Table implements IExpression
      */
     public function evaluate()
     {
-        return $this->table->getName();
+        return $this->table;
     }
 }

@@ -2,7 +2,7 @@
 
 namespace pql\QueryBuilder\From;
 
-interface IExpression
+interface IFromExpression
 {
 
     /**

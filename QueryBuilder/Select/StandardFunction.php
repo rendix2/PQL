@@ -2,7 +2,13 @@
 
 namespace pql\QueryBuilder\Select;
 
-class StandardFunction implements IExpression
+/**
+ * Class StandardFunction
+ *
+ * @author  rendix2 <rendix2@seznam.cz>
+ * @package pql\QueryBuilder\Select
+ */
+class StandardFunction implements ISelectExpression
 {
     /**
      * @var string $name

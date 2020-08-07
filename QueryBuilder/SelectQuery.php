@@ -10,27 +10,29 @@ namespace pql\QueryBuilder;
 
 use Exception;
 use Netpromotion\Profiler\Profiler;
-use pql\AggregateFunction;
 use pql\Alias;
 use pql\Condition;
 use pql\Database;
 use pql\GroupByColumn;
 use pql\JoinedTable;
 use pql\OrderByColumn;
-use pql\QueryBuilder\Select\IExpression;
-use pql\QueryExecutor\Select as SelectExecutor;
+use pql\QueryBuilder\From\IFromExpression;
+use pql\QueryBuilder\Select\AggregateFunction;
+use pql\QueryBuilder\Select\ISelectExpression;
+use pql\QueryBuilder\Select\StandardFunction;
+use pql\QueryExecutor\SelectQuery as SelectExecutor;
 use pql\QueryResult\IResult;
 use pql\QueryResult\TableResult;
 use pql\SelectedColumn;
 use pql\Table;
 
 /**
- * Class Select
+ * Class SelectQuery
  *
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryBuilder
  */
-class Select implements IQueryBuilder
+class SelectQuery implements IQueryBuilder
 {
     use From;
     use Where;
@@ -66,6 +68,16 @@ class Select implements IQueryBuilder
      * @var AggregateFunction[] $aggregateFunctions
      */
     private $aggregateFunctions;
+
+    /**
+     * @var bool $hasFunctions
+     */
+    private $hasFunctions;
+
+    /**
+     * @var bool $hasAggregateFunctions
+     */
+    private $hasAggregateFunctions;
 
     /**
      * @var Alias|null $tableAlias
@@ -212,7 +224,11 @@ class Select implements IQueryBuilder
         $this->database = $database;
 
         $this->selectedColumns = [];
-        $this->aggregateFunctions = [];
+
+        $this->hasFunctions = false;
+
+        $this->aggregateFunctions    = [];
+        $this->hasAggregateFunctions = false;
 
         $this->hasTableAlias = false;
 
@@ -274,12 +290,21 @@ class Select implements IQueryBuilder
 
         unset($selectedColumn);
 
+        $this->hasFunctions = null;
+
         $this->selectedColumns      = null;
         $this->selectedColumnsCount = null;
 
         $this->distinctColumn = null;
 
+        foreach ($this->aggregateFunctions as &$aggregateFunction) {
+            $aggregateFunction = null;
+        }
+
+        unset($aggregateFunction);
+
         $this->aggregateFunctions = null;
+        $this->hasAggregateFunctions = null;
 
         $this->table = null;
 
@@ -408,6 +433,14 @@ class Select implements IQueryBuilder
     // getters
 
     // getters
+
+    /**
+     * @return Database
+     */
+    public function getDatabase()
+    {
+        return $this->database;
+    }
 
     /**
      * @return Alias|null
@@ -561,9 +594,25 @@ class Select implements IQueryBuilder
     /**
      * @return bool
      */
+    public function hasFunctions()
+    {
+        return $this->hasFunctions;
+    }
+
+    /**
+     * @return bool
+     */
     public function hasTableAlias()
     {
         return $this->hasTableAlias;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasAggregateFunctions()
+    {
+        return $this->hasAggregateFunctions;
     }
 
     /**
@@ -664,58 +713,19 @@ class Select implements IQueryBuilder
 
     // has*
 
-    public function selectNew(IExpression ...$expressions)
+    public function select($alias = null, ISelectExpression ...$expressions)
     {
         foreach ($expressions as $expression) {
-            $this->selectedColumns[] = new SelectedColumn($expression->evaluate(), $expression);
-        }
+            $this->selectedColumns[] = new SelectedColumn($expression->evaluate(), $expression, $alias);
 
-        $this->selectedColumnsCount = count($this->selectedColumns);
-
-        return $this;
-    }
-
-
-    /**
-     * @param array|string $columns
-     * @param string|null $alias
-     *
-     * @return Select
-     * @throws Exception
-     */
-    public function select($columns = [], $alias = null)
-    {
-        if (is_string($columns)) {
-            if (strpos(', ', $columns) === false) {
-                if ($alias) {
-                    $this->selectedColumns[] = [new SelectedColumn($columns, new Alias($columns, $alias))];
-                } else {
-                    $this->selectedColumns[] = [new SelectedColumn($columns)];
-                }
-            } else {
-                if ($alias) {
-                    throw new Exception('Using alias does not make any sense.');
-                }
-
-                $columns = explode(', ', $columns);
-                $selectedColumns = [];
-
-                foreach ($columns as $column) {
-                    $selectedColumns[] = new SelectedColumn($column);
-                }
-
-                $this->selectedColumns = array_merge($this->selectedColumns, $selectedColumns);
-            }
-        } elseif ($columns instanceof PFunction) {
-            $this->selectedColumns[] = new SelectedColumn($columns);
-        } elseif (is_array($columns)) {
-            $selectedColumns = [];
-
-            foreach ($columns as $column) {
-                $selectedColumns[] = new SelectedColumn($column);
+            if ($expression instanceof AggregateFunction) {
+                $this->aggregateFunctions[] = $expression;
+                $this->hasAggregateFunctions = true;
             }
 
-            $this->selectedColumns = array_merge($this->selectedColumns, $selectedColumns);
+            if ($expression instanceof StandardFunction) {
+                $this->hasFunctions = true;
+            }
         }
 
         $this->selectedColumnsCount = count($this->selectedColumns);
@@ -724,146 +734,57 @@ class Select implements IQueryBuilder
     }
 
     /**
-     * @param string $column
+     * @param ISelectExpression $column
      *
-     * @return Select
+     * @return SelectQuery
      */
-    public function count($column)
+    public function distinct(ISelectExpression $column)
     {
-        $this->aggregateFunctions[] = new AggregateFunction(AggregateFunction::COUNT, [$column]);
-
-        return $this;
-    }
-
-    /**
-     * @param string $column
-     *
-     * @return Select
-     */
-    public function sum($column)
-    {
-        $this->aggregateFunctions[] = new AggregateFunction(AggregateFunction::SUM, [$column]);
-
-        return $this;
-    }
-
-    /**
-     * @param string $column
-     *
-     * @return Select
-     */
-    public function avg($column)
-    {
-        $this->aggregateFunctions[] = new AggregateFunction(AggregateFunction::AVERAGE, [$column]);
-
-        return $this;
-    }
-
-    /**
-     * @param string $column
-     *
-     * @return Select
-     */
-    public function min($column)
-    {
-        $this->aggregateFunctions[] = new AggregateFunction(AggregateFunction::MIN, [$column]);
-
-        return $this;
-    }
-
-    /**
-     * @param string $column
-     *
-     * @return Select
-     */
-    public function max($column)
-    {
-        $this->aggregateFunctions[] = new AggregateFunction(AggregateFunction::MAX, [$column]);
-
-        return $this;
-    }
-
-    /**
-     * @param string $column
-     *
-     * @return Select
-     */
-    public function median($column)
-    {
-        $this->aggregateFunctions[] = new AggregateFunction(AggregateFunction::MEDIAN, [$column]);
-
-        return $this;
-    }
-
-    /**
-     * @param string $column
-     *
-     * @return Select
-     */
-    public function distinct($column)
-    {
-        $this->distinctColumn  = new SelectedColumn($column);
+        $this->distinctColumn  = new SelectedColumn($column->evaluate(), $column);
         $this->selectedColumns = [$this->distinctColumn];
 
         return $this;
     }
 
     /**
-     * @param string $column
-     * @param bool   $asc
+     * @param ISelectExpression $column
+     * @param bool              $asc
      *
-     * @return Select
+     * @return SelectQuery
      * @throws Exception
      */
-    public function orderBy($column, $asc = true)
+    public function orderBy(ISelectExpression $column, $asc = true)
     {
-        $this->orderByColumns[] = new OrderByColumn($column, $asc);
+        $this->orderByColumns[] = new OrderByColumn($column->evaluate(), $asc);
         $this->hasOrderBy = true;
 
         return $this;
     }
 
     /**
-     * @param string $column
+     * @param ISelectExpression $column
      *
-     * @return Select
+     * @return SelectQuery
      * @throws Exception
      *
      */
-    public function groupBy($column)
+    public function groupBy(ISelectExpression $column)
     {
-        $this->groupByColumns[]  = new GroupByColumn($column);
+        $this->groupByColumns[]  = new GroupByColumn($column->evaluate());
         $this->hasGroupBy = true;
 
         return $this;
     }
 
     /**
-     * @param string $column
-     * @param string $operator
-     * @param mixed  $value
-     *
-     * @return Select
-     * @throws Exception
+     * @param ISelectExpression $expression
+     * @param $operator
+     * @param $value
      */
-    public function having($column, $operator, $value)
+    public function having(ISelectExpression $expression, $operator, $value)
     {
-        // COUNT(column_a, column_b)
-        $matchedColumn = preg_match('#^([a-zA-Z]*)\((([a-zA-Z0-9,_ ]*)\))$#', $column, $functionNameColumn);
-        $matchedValue  = preg_match('#^([a-zA-Z]*)\((([a-zA-Z0-9,_ ]*)\))$#', $value, $functionNameValue);
-
-        if ($matchedColumn) {
-            $column = new AggregateFunction($functionNameColumn[1], explode(', ', $functionNameColumn[3]));
-        }
-
-        if ($matchedValue) {
-            $value = new AggregateFunction($functionNameValue[1], explode(', ', $functionNameValue[3]));
-        }
-
-        $this->havingConditions[] = new Condition($column, $operator, $value);
+        $this->havingConditions[] = new Condition($expression, $operator, $value);
         $this->hasHavingCondition = true;
-
-        return $this;
     }
 
     /**
@@ -885,15 +806,14 @@ class Select implements IQueryBuilder
     }
 
     /**
-     * @param string|Query $table
-     *
+     * @param IFromExpression $expression
      * @return Query|Table
      * @throws Exception
      */
-    private function checkTable($table)
+    private function checkTable(IFromExpression $expression)
     {
-        if (is_string($table)) {
-            $joinedTable = new Table($this->database, $table);
+        if ($expression instanceof \pql\QueryBuilder\From\Table) {
+            $joinedTable = new Table($this->database, $expression->evaluate());
 
             if (!$this->database->tableExists($joinedTable)) {
                 $message = sprintf(
@@ -904,29 +824,31 @@ class Select implements IQueryBuilder
 
                 throw new Exception($message);
             }
-        } elseif ($table instanceof Query) {
+        } elseif ($expression instanceof \pql\QueryBuilder\From\Query) {
             /*
             if ($table->type !== self::SELECT) {
                 throw new Exception('It is not a SELECT query.');
             }
             */
 
-            $originTable   = $table;
-            $iteratedTable = $table;
+            $originTable   = $expression->getQuery();
+            $iteratedTable = $expression->getQuery();
 
             // find Table
             while ($iteratedTable instanceof Query) {
                 $iteratedTable = $iteratedTable->getQuery()->getTable();
             }
 
-            if (!$iteratedTable->getDatabase()->tableExists($iteratedTable)) {
-                $message = sprintf(
-                    'Selected table "%s" is not from selected database "%s".',
-                    $table->getTable(),
-                    $this->database->getName()
-                );
+            if ($expression->getQuery()->getQuery() instanceof self) {
+                if (!$expression->getQuery()->getQuery()->getDatabase()->tableExists($iteratedTable)) {
+                    $message = sprintf(
+                        'Selected table "%s" is not from selected database "%s".',
+                        $expression->getQuery()->getQuery()->getTable(),
+                        $this->database->getName()
+                    );
 
-                throw new Exception($message);
+                    throw new Exception($message);
+                }
             }
 
             $joinedTable = $originTable;
@@ -938,14 +860,14 @@ class Select implements IQueryBuilder
     }
 
     /**
-     * @param string|Query $table
-     * @param array        $onConditions
-     * @param string|null  $alias
+     * @param IFromExpression $table
+     * @param array           $onConditions
+     * @param string|null     $alias
      *
-     * @return Select
+     * @return SelectQuery
      * @throws Exception
      */
-    public function leftJoin($table, array $onConditions, $alias = null)
+    public function leftJoin(IFromExpression $table, array $onConditions, $alias = null)
     {
         $leftJoinedTable = $this->checkTable($table);
 
@@ -958,14 +880,14 @@ class Select implements IQueryBuilder
     }
 
     /**
-     * @param string|Query $table
-     * @param array        $onConditions
-     * @param string|null  $alias
+     * @param IFromExpression $table
+     * @param array           $onConditions
+     * @param string|null     $alias
      *
-     * @return Select
+     * @return SelectQuery
      * @throws Exception
      */
-    public function fullJoin($table, array $onConditions, $alias = null)
+    public function fullJoin(IFromExpression $table, array $onConditions, $alias = null)
     {
         $fullJoinedTable = $this->checkTable($table);
 
@@ -978,14 +900,14 @@ class Select implements IQueryBuilder
     }
 
     /**
-     * @param string|Query $table
-     * @param array        $onConditions
-     * @param string|null  $alias
+     * @param IFromExpression $table
+     * @param array           $onConditions
+     * @param string|null     $alias
      *
-     * @return Select
+     * @return SelectQuery
      * @throws Exception
      */
-    public function rightJoin($table, array $onConditions, $alias = null)
+    public function rightJoin(IFromExpression $table, array $onConditions, $alias = null)
     {
         $rightJoinedTable = $this->checkTable($table);
 
@@ -998,21 +920,31 @@ class Select implements IQueryBuilder
     }
 
     /**
-     * @param string|Query $table
-     * @param Condition[]  $onConditions
-     * @param string|null  $alias
+     * @param IFromExpression $expression
+     * @param Condition[]     $onConditions
+     * @param string|null     $alias
      *
-     * @return Select
-     * @throws Exception
+     * @return SelectQuery
      */
-    public function innerJoin($table, array $onConditions = [], $alias = null)
+    public function innerJoin(IFromExpression $expression, array $onConditions = [], $alias = null)
     {
-        $joinedTable = $this->checkTable($table);
+        $joinedTable = $this->checkTable($expression);
 
         if (count($onConditions)) {
-            $this->innerJoinedTables[] = new JoinedTable($joinedTable, $onConditions, $alias);
+            if ($expression instanceof \pql\QueryBuilder\From\Table) {
+                $this->innerJoinedTables[] = new JoinedTable(new Table($this->database, $joinedTable->getName()), $onConditions, $alias);
+            } elseif ($expression instanceof \pql\QueryBuilder\From\Query) {
+                $this->innerJoinedTables[] = new JoinedTable($joinedTable, $onConditions, $alias);
+            }
+
             $this->hasInnerJoinedTable = true;
         } else {
+            if ($expression instanceof \pql\QueryBuilder\From\Table) {
+                $this->crossJoinedTables[] = new JoinedTable(new Table($this->database, $joinedTable->getName()), $onConditions, $alias);
+            } elseif ($expression instanceof \pql\QueryBuilder\From\Query) {
+                $this->crossJoinedTables[] = new JoinedTable($joinedTable, $onConditions, $alias);
+            }
+
             $this->crossJoinedTables[] = new JoinedTable($joinedTable, [], $alias);
             $this->hasCrossJoinedTable = true;
         }
@@ -1024,7 +956,7 @@ class Select implements IQueryBuilder
      * @param Condition[] $onConditions
      * @param string|null $alias
      *
-     * @return Select
+     * @return SelectQuery
      * @throws Exception
      */
     public function selfJoin(array $onConditions = [], $alias = null)
@@ -1033,17 +965,17 @@ class Select implements IQueryBuilder
             throw new Exception('Cannot do SELF JOIN, if i have empty FROM clause.');
         }
 
-        return $this->innerJoin($this->table, $onConditions, $alias);
+        return $this->innerJoin(new \pql\QueryBuilder\From\Table($this->table->getName()), $onConditions, $alias);
     }
 
     /**
-     * @param string|Query $table
-     * @param string|null  $alias
+     * @param IFromExpression $table
+     * @param string|null     $alias
      *
-     * @return Select
+     * @return SelectQuery
      * @throws Exception
      */
-    public function crossJoin($table, $alias = null)
+    public function crossJoin(IFromExpression $table, $alias = null)
     {
         $crossJoinedTable = $this->checkTable($table);
 
@@ -1056,7 +988,7 @@ class Select implements IQueryBuilder
     /**
      * @param Query $query
      *
-     * @return Select
+     * @return SelectQuery
      */
     public function except(Query $query)
     {
@@ -1069,7 +1001,7 @@ class Select implements IQueryBuilder
     /**
      * @param Query $query
      *
-     * @return Select
+     * @return SelectQuery
      */
     public function intersect(Query $query)
     {
@@ -1082,7 +1014,7 @@ class Select implements IQueryBuilder
     /**
      * @param Query $query
      *
-     * @return Select
+     * @return SelectQuery
      * @throws Exception
      */
     public function union(Query $query)
@@ -1100,7 +1032,7 @@ class Select implements IQueryBuilder
     /**
      * @param Query $query
      *
-     * @return Select
+     * @return SelectQuery
      * @throws Exception
      */
     public function unionAll(Query $query)

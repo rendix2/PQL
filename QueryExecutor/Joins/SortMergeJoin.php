@@ -25,7 +25,7 @@ class SortMergeJoin implements IJoin
     {
         $result = [];
 
-        $columnAData = array_column($tableA, $condition->getColumn());
+        $columnAData = array_column($tableA, $condition->getColumn()->evaluate());
         $columnBData = array_column($tableB, $condition->getValue());
 
         array_multisort($columnAData, SORT_ASC, $tableA);
@@ -45,20 +45,20 @@ class SortMergeJoin implements IJoin
             $rRow = $tableA[$r];
             $qRow = $tableB[$q];
 
-            if ($rRow[$condition->getColumn()] > $qRow[$condition->getValue()]) {
-                $temp[$rRow[$condition->getColumn()]] = $rRow;
+            if ($rRow[$condition->getColumn()->evaluate()] > $qRow[$condition->getValue()->evaluate()]) {
+                $temp[$rRow[$condition->getColumn()->evaluate()]] = $rRow;
                 $q++;
-            } elseif ($rRow[$condition->getColumn()] < $qRow[$condition->getValue()]) {
+            } elseif ($rRow[$condition->getColumn()->evaluate()] < $qRow[$condition->getValue()->evaluate()]) {
                 $r++;
             } else {
                 $result[] = array_merge($rRow, $qRow);
-                unset($temp[$rRow[$condition->getColumn()]]);
+                unset($temp[$rRow[$condition->getColumn()->evaluate()]]);
 
                 $matched = false;
 
                 $q1 = $q+1;
 
-                while ($q1 <= $lastQ && $rRow[$condition->getColumn()] === $tableB[$q1][$condition->getValue()]) {
+                while ($q1 <= $lastQ && $rRow[$condition->getColumn()->evaluate()] === $tableB[$q1][$condition->getValue()->evaluate()]) {
                     $result[] = array_merge($rRow, $tableB[$q1]);
                     $q1++;
                     $matched = true;
@@ -68,7 +68,7 @@ class SortMergeJoin implements IJoin
 
                 $r1 = $r+1;
 
-                while ($r1 <= $lastR && $tableA[$r1][$condition->getColumn()] === $qRow[$condition->getValue()]) {
+                while ($r1 <= $lastR && $tableA[$r1][$condition->getColumn()->evaluate()] === $qRow[$condition->getValue()->evaluate()]) {
                     $result[] = array_merge($tableA[$r1], $qRow);
                     $r1++;
                     $matched2 = true;
@@ -97,7 +97,7 @@ class SortMergeJoin implements IJoin
     {
         $result = [];
 
-        $columnAData = array_column($tableA, $condition->getColumn());
+        $columnAData = array_column($tableA, $condition->getColumn()->evaluate());
         $columnBData = array_column($tableB, $condition->getValue());
 
         array_multisort($columnAData, SORT_ASC, $tableA);
@@ -117,20 +117,20 @@ class SortMergeJoin implements IJoin
             $rRow = $tableA[$r];
             $qRow = $tableB[$q];
 
-            if ($rRow[$condition->getColumn()] > $qRow[$condition->getValue()]) {
+            if ($rRow[$condition->getColumn()->evaluate()] > $qRow[$condition->getValue()->evaluate()]) {
                 $q++;
-            } elseif ($rRow[$condition->getColumn()] < $qRow[$condition->getValue()]) {
-                $temp[$qRow[$condition->getValue()]] = $qRow;
+            } elseif ($rRow[$condition->getColumn()->evaluate()] < $qRow[$condition->getValue()->evaluate()]) {
+                $temp[$qRow[$condition->getValue()->evaluate()]] = $qRow;
                 $r++;
             } else {
                 $result[] = array_merge($rRow, $qRow);
-                unset($temp[$rRow[$condition->getColumn()]]);
+                unset($temp[$rRow[$condition->getColumn()->evaluate()]]);
 
                 $matched = false;
 
                 $q1 = $q+1;
 
-                while ($q1 <= $lastQ && $rRow[$condition->getColumn()] === $tableB[$q1][$condition->getValue()]) {
+                while ($q1 <= $lastQ && $rRow[$condition->getColumn()->evaluate()] === $tableB[$q1][$condition->getValue()->evaluate()]) {
                     $result[] = array_merge($rRow, $tableB[$q1]);
                     $q1++;
                     $matched = true;
@@ -140,7 +140,7 @@ class SortMergeJoin implements IJoin
 
                 $r1 = $r+1;
 
-                while ($r1 <= $lastR && $tableA[$r1][$condition->getColumn()] === $qRow[$condition->getValue()]) {
+                while ($r1 <= $lastR && $tableA[$r1][$condition->getColumn()->evaluate()] === $qRow[$condition->getValue()->evaluate()]) {
                     $result[] = array_merge($tableA[$r1], $qRow);
                     $r1++;
                     $matched2 = true;
@@ -169,7 +169,7 @@ class SortMergeJoin implements IJoin
     {
         $res = [];
 
-        $columnAData = array_column($tableA, $condition->getColumn());
+        $columnAData = array_column($tableA, $condition->getColumn()->evaluate());
         $columnBData = array_column($tableB, $condition->getValue());
 
         array_multisort($columnAData, SORT_ASC, $tableA);
@@ -185,23 +185,23 @@ class SortMergeJoin implements IJoin
             $rRow = $tableA[$r];
             $qRow = $tableB[$q];
 
-            if ($rRow[$condition->getColumn()] > $qRow[$condition->getValue()]) {
+            if ($rRow[$condition->getColumn()->evaluate()] > $qRow[$condition->getValue()->evaluate()]) {
                 $q++;
-            } elseif ($rRow[$condition->getColumn()] < $qRow[$condition->getValue()]) {
+            } elseif ($rRow[$condition->getColumn()->evaluate()] < $qRow[$condition->getValue()->evaluate()]) {
                 $r++;
             } else {
                 $res[] = array_merge($rRow, $qRow);
 
                 $q1 = $q+1;
 
-                while ($q1 <= $lastQ && $rRow[$condition->getColumn()] === $tableB[$q1][$condition->getValue()]) {
+                while ($q1 <= $lastQ && $rRow[$condition->getColumn()->evaluate()] === $tableB[$q1][$condition->getValue()->evaluate()]) {
                     $res[] = array_merge($rRow, $tableB[$q1]);
                     $q1++;
                 }
 
                 $r1 = $r+1;
 
-                while ($r1 <= $lastR && $tableA[$r1][$condition->getColumn()] === $qRow[$condition->getValue()]) {
+                while ($r1 <= $lastR && $tableA[$r1][$condition->getColumn()->evaluate()] === $qRow[$condition->getValue()->evaluate()]) {
                     $res[] = array_merge($tableA[$r1], $qRow);
                     $r1++;
                 }

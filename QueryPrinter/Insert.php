@@ -8,7 +8,7 @@
 
 namespace pql\QueryPrinter;
 
-use pql\QueryBuilder\Insert as InsertBuilder;
+use pql\QueryBuilder\InsertQuery as InsertBuilder;
 
 /**
  * Class Insert

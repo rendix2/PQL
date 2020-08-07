@@ -10,6 +10,7 @@ namespace pql\QueryBuilder;
 
 use Exception;
 use pql\Alias;
+use pql\QueryBuilder\From\IFromExpression;
 use pql\Table;
 
 /**
@@ -26,13 +27,13 @@ trait From
     private $table;
 
     /**
-     * @param string      $table
-     * @param string|null $alias
+     * @param IFromExpression $table
+     * @param string|null     $alias
      *
-     * @return From|Select
+     * @return From|SelectQuery
      * @throws Exception
      */
-    public function from($table, $alias = null)
+    public function from(IFromExpression $table, $alias = null)
     {
         $this->table = $this->checkTable($table);
 

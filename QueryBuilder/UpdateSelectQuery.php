@@ -9,22 +9,20 @@
 namespace pql\QueryBuilder;
 
 use pql\Database;
-use pql\QueryExecutor\Update as UpdateExecutor;
+use pql\QueryExecutor\UpdateSelect as UpdateSelectExecutor;
 use pql\QueryResult\IResult;
 use pql\QueryResult\TableResult;
 use pql\Table;
 
 /**
- * Class Update
+ * Class UpdateSelectQuery
  *
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryBuilder
  */
-class Update implements IQueryBuilder
+class UpdateSelectQuery implements IQueryBuilder
 {
     use Where;
-    use Limit;
-    use Offset;
 
     /**
      * @var Database $database
@@ -37,17 +35,17 @@ class Update implements IQueryBuilder
     private $result;
 
     /**
+     * @var Query $data
+     */
+    private $data;
+
+    /**
      * @var Table $table
      */
     private $table;
 
     /**
-     * @var array $data
-     */
-    private $data;
-
-    /**
-     * Update constructor.
+     * UpdateSelect constructor.
      *
      * @param Database $database
      */
@@ -57,22 +55,30 @@ class Update implements IQueryBuilder
     }
 
     /**
-     * Update destructor.
+     * UpdateSelect destructor.
      */
     public function __destruct()
     {
         $this->database = null;
         $this->result = null;
-        $this->table = null;
         $this->data = null;
+        $this->table = null;
     }
 
     /**
-     * @return array
+     * @return mixed
      */
     public function getData()
     {
         return $this->data;
+    }
+
+    /**
+     * @return Database
+     */
+    public function getDatabase()
+    {
+        return $this->database;
     }
 
     /**
@@ -84,16 +90,16 @@ class Update implements IQueryBuilder
     }
 
     /**
+     * @param Query  $select
      * @param string $table
-     * @param array  $data
      *
-     * @return Update
-     *
+     * @return UpdateSelectQuery
      */
-    public function update($table, array $data)
+    public function updateSelect(Query $select, $table)
     {
-        $this->data  = $data;
         $this->table = new Table($this->database, $table);
+
+        $this->data = $select;
 
         return $this;
     }
@@ -111,11 +117,11 @@ class Update implements IQueryBuilder
 
         $startTime = microtime(true);
 
-        $update       = new UpdateExecutor($this);
-        $affectedRows = $update->run();
+        $updateSelect = new UpdateSelectExecutor($this);
+        $affectedRows = $updateSelect->run();
         $endTime      = microtime(true);
         $executeTime  = $endTime - $startTime;
 
-        return $this->result = new TableResult([], [], $executeTime, $update, $affectedRows);
+        return $this->result = new TableResult([], [], $executeTime, $updateSelect, $affectedRows);
     }
 }

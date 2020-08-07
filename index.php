@@ -2,10 +2,10 @@
 
 use Netpromotion\Profiler\Profiler;
 use Netpromotion\Profiler\Adapter\TracyBarAdapter;
-use pql\AggregateFunction;
 use pql\Database;
 use pql\QueryBuilder\Query;
-use pql\QueryExecutor\Functions\NumberFormat;
+use pql\QueryBuilder\Select\AggregateFunctions\Count;
+use pql\QueryBuilder\Select\Column;
 use Tracy\Debugger;
 use Nette\Loaders\RobotLoader;
 
@@ -190,13 +190,55 @@ $query->update('test', ['a' => '888'])->where('id', '=', '96')->run();
 Profiler::start('select');
 
 $query2 = new Query($database);
+
+$count = new Count( 'pocet');
+$acount = new Column( 'a.pocet');
+
 //$query2->select()->select(new \pql\QueryBuilder\PFunction(NumberFormat::FUNCTION_NAME, 'pocet', [5 , ',' , $thousands_sep = '_']))
-$query2->select()->selectNew(new \pql\QueryBuilder\Select\StandardFunction(NumberFormat::FUNCTION_NAME, 'pocet', 2, ',', '_'), new \pql\QueryBuilder\Select\Column('pocet'))
-    ->from('test')
-    //->innerJoin('test', [new \pql\Condition('a.pocet', '=', 'b.pocet')], 'b')
-    ->where('pocet', '>', 2)
-    ->where('pocet', '<', 5)
-    ->orderBy('pocet', true);
+$query2->select()->select(null, new Column('datum'))
+    ->from(new \pql\QueryBuilder\From\Table('test'))
+    //->innerJoin(new \pql\QueryBuilder\From\Table('test'), [new \pql\Condition(new Column('a.pocet') ,'=', 'b.pocet')], 'b')
+    //->where('pocet', '>', 2)
+    //->where('pocet', '<', 5)
+    ->orderBy(new Column('pocet'), true);
+    //->where(new Column('pocet'), '=', 7.0)
+    //->groupBy('datum');
+//->having($count, '=', 5);
+
+$querySelect = new \pql\QueryBuilder\From\Query($query2);
+$equalsOperator = new \pql\QueryBuilder\Operator\Equals();
+
+
+$q1 = new Query($database);
+$q1->select()->select(null, new Column('datum'))
+    ->from(new \pql\QueryBuilder\From\Table('test'));
+
+$query3 = new Query($database);
+$query3->select()->select(null, new Column('datum'))
+    ->select(null, new \pql\QueryBuilder\Select\Query($q1))
+->from($querySelect, 'a')
+    //->crossJoin($querySelect)
+    ->leftJoin($querySelect, [new \pql\Condition($acount, $equalsOperator, new Column('b.pocet'))], 'b')
+    /*->rightJoin($querySelect, [new \pql\Condition($acount, $equalsOperator, new Column('c.pocet'))], 'c')
+    ->innerJoin($querySelect, [new \pql\Condition($acount, $equalsOperator, new Column('d.pocet'))], 'd')
+    ->fullJoin($querySelect, [new \pql\Condition($acount, $equalsOperator, new Column('e.pocet'))], 'e')*/
+->orderBy(new Column('a.pocet'))
+->orderBy(new Column('a.pocet'))
+->groupBy(new Column('a.pocet'));
+
+/*$querySelect2 = new \pql\QueryBuilder\From\Query($query3);*/
+
+
+/*$query4 = new Query($database);
+$query4->select()->select(null, new Column('datum'))
+    ->from($querySelect2, 'a')
+    ->crossJoin($querySelect2)
+    ->leftJoin($querySelect2, [new \pql\Condition($acount, $equalsOperator, new Column('f.pocet'))], 'f')
+    ->rightJoin($querySelect2, [new \pql\Condition($acount, $equalsOperator, new Column('g.pocet'))], 'g')
+    ->innerJoin($querySelect2, [new \pql\Condition($acount, $equalsOperator, new Column('h.pocet'))], 'h')
+    ->fullJoin($querySelect2, [new \pql\Condition($acount, $equalsOperator, new Column('ch.pocet'))], 'ch')
+    ->orderBy(new Column('a.pocet'))
+    ->groupBy(new Column('a.pocet'));*/
 
 //
 //bdump($query2);
@@ -222,12 +264,11 @@ $query2->select()->selectNew(new \pql\QueryBuilder\Select\StandardFunction(Numbe
 //->groupBy('a.pocet');
 
 
-$res3 = $query2->run();
-echo $query2;
+$res3 = $query3->run();
+echo $query3;
 
 echo $res3;
-
-//bdump($query2);
+// bdump($query3);
 
 Profiler::finish('select');
 

@@ -9,30 +9,23 @@
 namespace pql\QueryBuilder;
 
 use pql\Database;
-use pql\QueryExecutor\UpdateSelect as UpdateSelectExecutor;
+use pql\QueryExecutor\InsertSelect as InsertSelectExecutor;
 use pql\QueryResult\IResult;
 use pql\QueryResult\TableResult;
 use pql\Table;
 
 /**
- * Class UpdateSelect
+ * Class InsertSelectQuery
  *
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryBuilder
  */
-class UpdateSelect implements IQueryBuilder
+class InsertSelectQuery implements IQueryBuilder
 {
-    use Where;
-
     /**
      * @var Database $database
      */
     private $database;
-
-    /**
-     * @var IResult $result
-     */
-    private $result;
 
     /**
      * @var Query $data
@@ -40,12 +33,17 @@ class UpdateSelect implements IQueryBuilder
     private $data;
 
     /**
+     * @var IResult $result
+     */
+    private $result;
+
+    /**
      * @var Table $table
      */
     private $table;
 
     /**
-     * UpdateSelect constructor.
+     * InsertSelect constructor.
      *
      * @param Database $database
      */
@@ -55,30 +53,22 @@ class UpdateSelect implements IQueryBuilder
     }
 
     /**
-     * UpdateSelect destructor.
+     * InsertSelect destructor.
      */
     public function __destruct()
     {
         $this->database = null;
-        $this->result = null;
         $this->data = null;
+        $this->result = null;
         $this->table = null;
     }
 
     /**
-     * @return mixed
+     * @return Query
      */
     public function getData()
     {
         return $this->data;
-    }
-
-    /**
-     * @return Database
-     */
-    public function getDatabase()
-    {
-        return $this->database;
     }
 
     /**
@@ -90,12 +80,20 @@ class UpdateSelect implements IQueryBuilder
     }
 
     /**
+     * @return Database
+     */
+    public function getDatabase()
+    {
+        return $this->database;
+    }
+
+    /**
      * @param Query  $select
      * @param string $table
      *
-     * @return UpdateSelect
+     * @return InsertSelectQuery
      */
-    public function updateSelect(Query $select, $table)
+    public function insertSelect(Query $select, $table)
     {
         $this->table = new Table($this->database, $table);
 
@@ -117,11 +115,11 @@ class UpdateSelect implements IQueryBuilder
 
         $startTime = microtime(true);
 
-        $updateSelect = new UpdateSelectExecutor($this);
-        $affectedRows = $updateSelect->run();
+        $insertSelect = new InsertSelectExecutor($this);
+        $affectedRows = $insertSelect->run();
         $endTime      = microtime(true);
         $executeTime  = $endTime - $startTime;
 
-        return $this->result = new TableResult([], [], $executeTime, $updateSelect, $affectedRows);
+        return $this->result = new TableResult([], [], $executeTime, $insertSelect, $affectedRows);
     }
 }

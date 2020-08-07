@@ -8,7 +8,7 @@
 
 namespace pql\QueryPrinter;
 
-use pql\QueryBuilder\Delete as DeleteBuilder;
+use pql\QueryBuilder\DeleteQuery as DeleteBuilder;
 
 /**
  * Class Delete

@@ -3,25 +3,24 @@
  * Created by PhpStorm.
  * User: Tom
  * Date: 4. 2. 2020
- * Time: 11:58
+ * Time: 11:59
  */
 
 namespace pql\QueryBuilder;
 
-use Exception;
 use pql\Database;
-use pql\QueryExecutor\Insert as InsertExecutor;
+use pql\QueryExecutor\DeleteSelect as DeleteSelectExecutor;
 use pql\QueryResult\IResult;
 use pql\QueryResult\TableResult;
 use pql\Table;
 
 /**
- * Class Insert
+ * Class DeleteSelectQuery
  *
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryBuilder
  */
-class Insert implements IQueryBuilder
+class DeleteSelectQuery implements IQueryBuilder
 {
     /**
      * @var Database $database
@@ -34,7 +33,7 @@ class Insert implements IQueryBuilder
     private $table;
 
     /**
-     * @var array $data
+     * @var Query $data
      */
     private $data;
 
@@ -44,7 +43,7 @@ class Insert implements IQueryBuilder
     private $result;
 
     /**
-     * Insert constructor.
+     * DeleteSelect constructor.
      *
      * @param Database $database
      */
@@ -54,7 +53,7 @@ class Insert implements IQueryBuilder
     }
 
     /**
-     * Insert destructor.
+     * DeleteSelect destructor.
      */
     public function __destruct()
     {
@@ -62,6 +61,22 @@ class Insert implements IQueryBuilder
         $this->table = null;
         $this->data = null;
         $this->result = null;
+    }
+
+    /**
+     * @return Query
+     */
+    public function getData()
+    {
+        return $this->data;
+    }
+
+    /**
+     * @return Database
+     */
+    public function getDatabase()
+    {
+        return $this->database;
     }
 
     /**
@@ -73,35 +88,16 @@ class Insert implements IQueryBuilder
     }
 
     /**
-     * @return array
-     */
-    public function getData()
-    {
-        return $this->data;
-    }
-
-    /**
+     * @param Query  $select
      * @param string $table
-     * @param array  $data
      *
-     * @return Insert
-     * @throws Exception
+     * @return DeleteSelectQuery
      */
-    public function insert($table, array $data)
+    public function deleteSelect(Query $select, $table)
     {
         $this->table = new Table($this->database, $table);
 
-        $this->data = $data;
-
-        $columns = array_keys($data);
-
-        foreach ($columns as $column) {
-            if (!$this->table->columnExists($column)) {
-                $message = sprintf('Column "%s" does not exist in "%s".', $column, $table);
-
-                throw new Exception($message);
-            }
-        }
+        $this->data = $select;
 
         return $this;
     }
@@ -119,11 +115,11 @@ class Insert implements IQueryBuilder
 
         $startTime = microtime(true);
 
-        $insert       = new InsertExecutor($this);
-        $affectedRows = $insert->run();
+        $deleteSelect = new DeleteSelectExecutor($this);
+        $affectedRows = $deleteSelect->run();
         $endTime      = microtime(true);
         $executeTime  = $endTime - $startTime;
 
-        return $this->result = new TableResult([], [], $executeTime, $insert, $affectedRows);
+        return $this->result = new TableResult([], [], $executeTime, $deleteSelect, $affectedRows);
     }
 }

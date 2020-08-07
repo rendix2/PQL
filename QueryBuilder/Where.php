@@ -9,9 +9,9 @@
 namespace pql\QueryBuilder;
 
 use Exception;
-use pql\AggregateFunction;
 use pql\Condition;
-use pql\Operator;
+use pql\QueryBuilder\Operator\IOperator;
+use pql\QueryBuilder\Select\ISelectExpression;
 
 /**
  * Trait Where
@@ -32,32 +32,20 @@ trait Where
     private $hasWhereCondition;
 
     /**
-     * @param string|int|AggregateFunction|Query $column
-     * @param string                             $operator
-     * @param string|int|AggregateFunction|Query $value
+     * @param ISelectExpression $column
+     * @param IOperator         $operator
+     * @param ISelectExpression $value
      *
-     * @return Where|Select
+     * @return Where|SelectQuery
      * @throws Exception
      */
-    public function where($column, $operator, $value)
+    public function where(ISelectExpression $column, IOperator $operator, ISelectExpression $value)
     {
+        if (!$operator->checkConditions($column, $value)) {
+            throw new Exception('Given parameters are not good....');
+        }
+
         $condition = new Condition($column, $operator, $value);
-
-        if ($condition->getOperator() === Operator::BETWEEN || $condition->getOperator() === Operator::BETWEEN_INCLUSIVE) {
-            if (!is_array($condition->getValue()) && !is_array($condition->getColumn())) {
-                throw new Exception('Parameter for between must be array.');
-            }
-
-            if (count($condition->getValue()) !== 2 && count($condition->getColumn()) !== 2) {
-                throw new Exception('I need two parameters.');
-            }
-        }
-
-        if ($condition->getOperator() === Operator::EXISTS) {
-            if (!($condition->getColumn() instanceof self) && !$condition->getValue() instanceof self) {
-                throw new Exception('Parameter for between must be Query.');
-            }
-        }
 
         $this->whereConditions[] = $condition;
         $this->hasWhereCondition = true;

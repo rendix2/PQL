@@ -8,7 +8,7 @@
 
 namespace pql\QueryPrinter;
 
-use pql\QueryBuilder\UpdateSelect as UpdateSelectBuilder;
+use pql\QueryBuilder\UpdateSelectQuery as UpdateSelectBuilder;
 
 /**
  * Class UpdateSelect

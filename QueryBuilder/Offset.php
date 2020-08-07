@@ -34,7 +34,7 @@ trait Offset
     /**
      * @param int $offset
      *
-     * @return Offset|Select
+     * @return Offset|SelectQuery
      * @throws Exception
      */
     public function offset($offset)

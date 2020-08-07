@@ -9,33 +9,27 @@
 namespace pql\QueryBuilder;
 
 use pql\Database;
-use pql\QueryExecutor\DeleteSelect as DeleteSelectExecutor;
+use pql\QueryExecutor\Update as UpdateExecutor;
 use pql\QueryResult\IResult;
 use pql\QueryResult\TableResult;
 use pql\Table;
 
 /**
- * Class DeleteSelect
+ * Class UpdateQuery
  *
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryBuilder
  */
-class DeleteSelect implements IQueryBuilder
+class UpdateQuery implements IQueryBuilder
 {
+    use Where;
+    use Limit;
+    use Offset;
+
     /**
      * @var Database $database
      */
     private $database;
-
-    /**
-     * @var Table $table
-     */
-    private $table;
-
-    /**
-     * @var Query $data
-     */
-    private $data;
 
     /**
      * @var IResult $result
@@ -43,7 +37,17 @@ class DeleteSelect implements IQueryBuilder
     private $result;
 
     /**
-     * DeleteSelect constructor.
+     * @var Table $table
+     */
+    private $table;
+
+    /**
+     * @var array $data
+     */
+    private $data;
+
+    /**
+     * Update constructor.
      *
      * @param Database $database
      */
@@ -53,30 +57,22 @@ class DeleteSelect implements IQueryBuilder
     }
 
     /**
-     * DeleteSelect destructor.
+     * Update destructor.
      */
     public function __destruct()
     {
         $this->database = null;
+        $this->result = null;
         $this->table = null;
         $this->data = null;
-        $this->result = null;
     }
 
     /**
-     * @return Query
+     * @return array
      */
     public function getData()
     {
         return $this->data;
-    }
-
-    /**
-     * @return Database
-     */
-    public function getDatabase()
-    {
-        return $this->database;
     }
 
     /**
@@ -88,16 +84,16 @@ class DeleteSelect implements IQueryBuilder
     }
 
     /**
-     * @param Query  $select
      * @param string $table
+     * @param array  $data
      *
-     * @return DeleteSelect
+     * @return UpdateQuery
+     *
      */
-    public function deleteSelect(Query $select, $table)
+    public function update($table, array $data)
     {
+        $this->data  = $data;
         $this->table = new Table($this->database, $table);
-
-        $this->data = $select;
 
         return $this;
     }
@@ -115,11 +111,11 @@ class DeleteSelect implements IQueryBuilder
 
         $startTime = microtime(true);
 
-        $deleteSelect = new DeleteSelectExecutor($this);
-        $affectedRows = $deleteSelect->run();
+        $update       = new UpdateExecutor($this);
+        $affectedRows = $update->run();
         $endTime      = microtime(true);
         $executeTime  = $endTime - $startTime;
 
-        return $this->result = new TableResult([], [], $executeTime, $deleteSelect, $affectedRows);
+        return $this->result = new TableResult([], [], $executeTime, $update, $affectedRows);
     }
 }

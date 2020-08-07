@@ -2,7 +2,7 @@
 
 namespace pql;
 
-use pql\QueryBuilder\Select\IExpression;
+use pql\QueryBuilder\Select\ISelectExpression;
 
 /**
  * Class SelectedColumn
@@ -18,7 +18,7 @@ class SelectedColumn
     private $column;
 
     /**
-     * @var IExpression $expression
+     * @var ISelectExpression $expression
      */
     private $expression;
 
@@ -41,10 +41,10 @@ class SelectedColumn
      * SelectedColumn constructor.
      *
      * @param string      $column
-     * @param IExpression $expression
+     * @param ISelectExpression $expression
      * @param Alias|null  $alias
      */
-    public function __construct($column, IExpression $expression, Alias $alias = null)
+    public function __construct($column, ISelectExpression $expression, Alias $alias = null)
     {
         $this->column        = $column;
         $this->expression    = $expression;
@@ -80,6 +80,9 @@ class SelectedColumn
         return $this->column;
     }
 
+    /**
+     * @return ISelectExpression
+     */
     public function getExpression()
     {
         return $this->expression;

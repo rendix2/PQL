@@ -8,7 +8,7 @@
 
 namespace pql\QueryPrinter;
 
-use pql\QueryBuilder\Explain as ExplainBuilder;
+use pql\QueryBuilder\ExplainQuery as ExplainBuilder;
 
 /**
  * Class Explain

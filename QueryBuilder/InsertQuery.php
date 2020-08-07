@@ -3,24 +3,25 @@
  * Created by PhpStorm.
  * User: Tom
  * Date: 4. 2. 2020
- * Time: 11:59
+ * Time: 11:58
  */
 
 namespace pql\QueryBuilder;
 
+use Exception;
 use pql\Database;
-use pql\QueryExecutor\InsertSelect as InsertSelectExecutor;
+use pql\QueryExecutor\Insert as InsertExecutor;
 use pql\QueryResult\IResult;
 use pql\QueryResult\TableResult;
 use pql\Table;
 
 /**
- * Class InsertSelect
+ * Class InsertQuery
  *
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryBuilder
  */
-class InsertSelect implements IQueryBuilder
+class InsertQuery implements IQueryBuilder
 {
     /**
      * @var Database $database
@@ -28,7 +29,12 @@ class InsertSelect implements IQueryBuilder
     private $database;
 
     /**
-     * @var Query $data
+     * @var Table $table
+     */
+    private $table;
+
+    /**
+     * @var array $data
      */
     private $data;
 
@@ -38,12 +44,7 @@ class InsertSelect implements IQueryBuilder
     private $result;
 
     /**
-     * @var Table $table
-     */
-    private $table;
-
-    /**
-     * InsertSelect constructor.
+     * Insert constructor.
      *
      * @param Database $database
      */
@@ -53,22 +54,14 @@ class InsertSelect implements IQueryBuilder
     }
 
     /**
-     * InsertSelect destructor.
+     * Insert destructor.
      */
     public function __destruct()
     {
         $this->database = null;
+        $this->table = null;
         $this->data = null;
         $this->result = null;
-        $this->table = null;
-    }
-
-    /**
-     * @return Query
-     */
-    public function getData()
-    {
-        return $this->data;
     }
 
     /**
@@ -80,24 +73,35 @@ class InsertSelect implements IQueryBuilder
     }
 
     /**
-     * @return Database
+     * @return array
      */
-    public function getDatabase()
+    public function getData()
     {
-        return $this->database;
+        return $this->data;
     }
 
     /**
-     * @param Query  $select
      * @param string $table
+     * @param array  $data
      *
-     * @return InsertSelect
+     * @return InsertQuery
+     * @throws Exception
      */
-    public function insertSelect(Query $select, $table)
+    public function insert($table, array $data)
     {
         $this->table = new Table($this->database, $table);
 
-        $this->data = $select;
+        $this->data = $data;
+
+        $columns = array_keys($data);
+
+        foreach ($columns as $column) {
+            if (!$this->table->columnExists($column)) {
+                $message = sprintf('Column "%s" does not exist in "%s".', $column, $table);
+
+                throw new Exception($message);
+            }
+        }
 
         return $this;
     }
@@ -115,11 +119,11 @@ class InsertSelect implements IQueryBuilder
 
         $startTime = microtime(true);
 
-        $insertSelect = new InsertSelectExecutor($this);
-        $affectedRows = $insertSelect->run();
+        $insert       = new InsertExecutor($this);
+        $affectedRows = $insert->run();
         $endTime      = microtime(true);
         $executeTime  = $endTime - $startTime;
 
-        return $this->result = new TableResult([], [], $executeTime, $insertSelect, $affectedRows);
+        return $this->result = new TableResult([], [], $executeTime, $insert, $affectedRows);
     }
 }

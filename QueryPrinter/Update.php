@@ -8,7 +8,7 @@
 
 namespace pql\QueryPrinter;
 
-use pql\QueryBuilder\Update as UpdateBuilder;
+use pql\QueryBuilder\UpdateQuery as UpdateBuilder;
 
 /**
  * Class Update

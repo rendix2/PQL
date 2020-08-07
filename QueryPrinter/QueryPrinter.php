@@ -3,15 +3,15 @@
 namespace pql\QueryPrinter;
 
 use Exception;
-use pql\QueryBuilder\Delete as DeleteBuilder;
-use pql\QueryBuilder\DeleteSelect as DeleteSelectBuilder;
-use pql\QueryBuilder\Explain as ExplainBuilder;
-use pql\QueryBuilder\Insert as InsertBuilder;
-use pql\QueryBuilder\InsertSelect as InsertSelectBuilder;
+use pql\QueryBuilder\DeleteQuery as DeleteBuilder;
+use pql\QueryBuilder\DeleteSelectQuery as DeleteSelectBuilder;
+use pql\QueryBuilder\ExplainQuery as ExplainBuilder;
+use pql\QueryBuilder\InsertQuery as InsertBuilder;
+use pql\QueryBuilder\InsertSelectQuery as InsertSelectBuilder;
 use pql\QueryBuilder\Query;
-use pql\QueryBuilder\Select as SelectBuilder;
-use pql\QueryBuilder\Update as UpdateBuilder;
-use pql\QueryBuilder\UpdateSelect as UpdateSelectBuilder;
+use pql\QueryBuilder\SelectQuery as SelectBuilder;
+use pql\QueryBuilder\UpdateQuery as UpdateBuilder;
+use pql\QueryBuilder\UpdateSelectQuery as UpdateSelectBuilder;
 
 /**
  * Class QueryPrinter

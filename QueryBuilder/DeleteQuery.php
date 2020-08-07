@@ -15,12 +15,12 @@ use pql\QueryResult\TableResult;
 use pql\Table;
 
 /**
- * Class Delete
+ * Class DeleteQuery
  *
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryBuilder
  */
-class Delete implements IQueryBuilder
+class DeleteQuery implements IQueryBuilder
 {
     use From;
     use Where;
@@ -89,7 +89,7 @@ class Delete implements IQueryBuilder
     /**
      * @param string $table
      *
-     * @return Delete
+     * @return DeleteQuery
      * @throws \Exception
      */
     public function delete($table)

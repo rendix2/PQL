@@ -10,7 +10,7 @@ namespace pql\QueryExecutor;
 
 use pql\Alias;
 use pql\Operator;
-use pql\QueryBuilder\DeleteSelect as DeleteSelectBuilder;
+use pql\QueryBuilder\DeleteSelectQuery as DeleteSelectBuilder;
 use pql\QueryBuilder\Query;
 
 /**
@@ -49,7 +49,7 @@ class DeleteSelect implements IQueryExecutor
      */
     public function run()
     {
-        $selectQuery = new Select($this->query->getData());
+        $selectQuery = new SelectQuery($this->query->getData());
         $selectQuery->run();
 
         $selectedColumns = [];
