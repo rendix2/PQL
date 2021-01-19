@@ -4,6 +4,7 @@ namespace pql\QueryExecutor;
 
 use pql\JoinedTable;
 use pql\QueryBuilder\ExplainQuery as ExplainBuilder;
+use pql\QueryBuilder\IQueryBuilder;
 use pql\QueryBuilder\Query;
 use pql\QueryRow\ExplainRow;
 use pql\Table;
@@ -43,9 +44,9 @@ class Explain implements IQueryExecutor
     /**
      * Explain constructor.
      *
-     * @param ExplainBuilder $query
+     * @param IQueryBuilder $query
      */
-    public function __construct(ExplainBuilder $query)
+    public function __construct(IQueryBuilder $query)
     {
         $this->query     = $query;
         $this->optimizer = new Optimizer($query);
@@ -69,11 +70,11 @@ class Explain implements IQueryExecutor
     }
 
     /**
-     * @param ExplainBuilder $query
+     * @param IQueryBuilder $query
      *
      * @return ExplainRow[]
      */
-    private function columns(ExplainBuilder $query)
+    private function columns(IQueryBuilder $query)
     {
         $tables = [];
 
@@ -96,11 +97,11 @@ class Explain implements IQueryExecutor
     }
 
     /**
-     * @param ExplainBuilder $query
+     * @param IQueryBuilder $query
      *
      * @return ExplainRow[]
      */
-    private function from(ExplainBuilder $query)
+    private function from(IQueryBuilder $query)
     {
         $tables = [];
 
@@ -114,7 +115,7 @@ class Explain implements IQueryExecutor
                 null
             );
         } elseif ($query->getTable() instanceof Query) {
-            $explain = new Explain($query->getTable());
+            $explain = new Explain($query->getTable()->getQuery());
 
             $tables[] = new ExplainRow(
                 'FROM CLAUSE',
@@ -130,11 +131,11 @@ class Explain implements IQueryExecutor
     }
 
     /**
-     * @param ExplainBuilder $query
+     * @param IQueryBuilder $query
      *
      * @return ExplainRow[]
      */
-    private function innerJoin(ExplainBuilder $query)
+    private function innerJoin(IQueryBuilder $query)
     {
         $tables = [];
 
@@ -151,11 +152,13 @@ class Explain implements IQueryExecutor
 
                 $tables = array_merge($tables, $this->onConditions($innerJoinedTable));
             } elseif ($innerJoinedTable->getTable() instanceof Query) {
-                $explain = new Explain($innerJoinedTable->getTable());
+                $innerJoinQuery = $innerJoinedTable->getTable()->getQuery();
+
+                $explain = new Explain($innerJoinQuery);
 
                 $tables[] = new ExplainRow(
-                    $innerJoinedTable->getTable()->getName(),
-                    $innerJoinedTable->getTable()->getRowsCount(),
+                    $innerJoinQuery->getTable()->getName(),
+                    $innerJoinQuery->getTable()->getRowsCount(),
                     'INNER JOIN',
                     null,
                     null,
@@ -168,11 +171,11 @@ class Explain implements IQueryExecutor
     }
 
     /**
-     * @param ExplainBuilder $query
+     * @param IQueryBuilder $query
      *
      * @return ExplainRow[]
      */
-    private function crossJoin(ExplainBuilder $query)
+    private function crossJoin(IQueryBuilder $query)
     {
         $tables = [];
 
@@ -187,11 +190,13 @@ class Explain implements IQueryExecutor
                     null
                 );
             } elseif ($crossJoinedTable->getTable() instanceof Query) {
-                $explain = new Explain($crossJoinedTable->getTable());
+                $crossJoinQuery = $crossJoinedTable->getTable()->getQuery();
+
+                $explain = new Explain($crossJoinQuery);
 
                 $tables[] = new ExplainRow(
-                    $crossJoinedTable->getTable()->getName(),
-                    $crossJoinedTable->getTable()->getRowsCount(),
+                    $crossJoinQuery->getTable()->getName(),
+                    $crossJoinQuery->getTable()->getRowsCount(),
                     'CROSS JOIN',
                     null,
                     null,
@@ -204,11 +209,11 @@ class Explain implements IQueryExecutor
     }
 
     /**
-     * @param ExplainBuilder $query
+     * @param IQueryBuilder $query
      *
      * @return ExplainRow[]
      */
-    private function leftJoin(ExplainBuilder $query)
+    private function leftJoin(IQueryBuilder $query)
     {
         $tables = [];
 
@@ -225,11 +230,13 @@ class Explain implements IQueryExecutor
 
                 $tables = array_merge($tables, $this->onConditions($leftJoinedTable));
             } elseif ($leftJoinedTable->getTable() instanceof Query) {
-                $explain = new Explain($leftJoinedTable->getTable());
+                $leftJoinQuery = $leftJoinedTable->getTable()->getQuery();
+
+                $explain = new Explain($leftJoinedTable->getTable()->getQuery());
 
                 $tables[] = new ExplainRow(
-                    $leftJoinedTable->getTable()->getName(),
-                    $leftJoinedTable->getTable()->getRowsCount(),
+                    $leftJoinQuery->getTable()->getName(),
+                    $leftJoinQuery->getTable()->getRowsCount(),
                     'LEFT JOIN',
                     null,
                     null,
@@ -242,11 +249,11 @@ class Explain implements IQueryExecutor
     }
 
     /**
-     * @param ExplainBuilder $query
+     * @param IQueryBuilder $query
      *
      * @return ExplainRow[]
      */
-    private function rightJoin(ExplainBuilder $query)
+    private function rightJoin(IQueryBuilder $query)
     {
         $tables = [];
 
@@ -263,11 +270,13 @@ class Explain implements IQueryExecutor
 
                 $tables = array_merge($tables, $this->onConditions($rightJoinedTable));
             } elseif ($rightJoinedTable->getTable() instanceof Query) {
-                $explain = new Explain($rightJoinedTable->getTable());
+                $rightJoinQuery = $rightJoinedTable->getTable()->getQuery();
+
+                $explain = new Explain($rightJoinQuery);
 
                 $tables[] = new ExplainRow(
-                    $rightJoinedTable->getTable()->getName(),
-                    $rightJoinedTable->getTable()->getRowsCount(),
+                    $rightJoinQuery->getTable()->getName(),
+                    $rightJoinQuery->getTable()->getRowsCount(),
                     'RIGHT JOIN',
                     null,
                     null,
@@ -280,11 +289,11 @@ class Explain implements IQueryExecutor
     }
 
     /**
-     * @param ExplainBuilder $query
+     * @param IQueryBuilder $query
      *
      * @return ExplainRow[]
      */
-    private function fullJoin(ExplainBuilder $query)
+    private function fullJoin(IQueryBuilder $query)
     {
         $tables = [];
 
@@ -301,11 +310,13 @@ class Explain implements IQueryExecutor
 
                 $tables = array_merge($tables, $this->onConditions($fullJoinedTable));
             } elseif ($fullJoinedTable->getTable() instanceof Query) {
-                $explain = new Explain($fullJoinedTable->getTable());
+                $fullJoinQuery = $fullJoinedTable->getTable()->getQuery();
+
+                $explain = new Explain($fullJoinQuery);
 
                 $tables[] = new ExplainRow(
-                    $fullJoinedTable->getTable()->getName(),
-                    $fullJoinedTable->getTable()->getRowsCount(),
+                    $fullJoinQuery->getTable()->getName(),
+                    $fullJoinQuery->getTable()->getRowsCount(),
                     'FULL JOIN',
                     null,
                     null,
@@ -318,11 +329,11 @@ class Explain implements IQueryExecutor
     }
 
     /**
-     * @param ExplainBuilder $query
+     * @param IQueryBuilder $query
      *
      * @return ExplainRow[]
      */
-    private function where(ExplainBuilder $query)
+    private function where(IQueryBuilder $query)
     {
         $tables = [];
 
@@ -342,11 +353,11 @@ class Explain implements IQueryExecutor
     }
 
     /**
-     * @param ExplainBuilder $query
+     * @param IQueryBuilder $query
      *
      * @return ExplainRow[]
      */
-    private function having(ExplainBuilder $query)
+    private function having(IQueryBuilder $query)
     {
         $tables = [];
 
@@ -366,11 +377,11 @@ class Explain implements IQueryExecutor
     }
 
     /**
-     * @param ExplainBuilder $query
+     * @param IQueryBuilder $query
      *
      * @return ExplainRow[]
      */
-    private function union(ExplainBuilder $query)
+    private function union(IQueryBuilder $query)
     {
         $tables = [];
 
@@ -391,11 +402,11 @@ class Explain implements IQueryExecutor
     }
 
     /**
-     * @param ExplainBuilder $query
+     * @param IQueryBuilder $query
      *
      * @return ExplainRow[]
      */
-    private function unionAll(ExplainBuilder $query)
+    private function unionAll(IQueryBuilder $query)
     {
         $tables = [];
 
@@ -416,11 +427,11 @@ class Explain implements IQueryExecutor
     }
 
     /**
-     * @param ExplainBuilder $query
+     * @param IQueryBuilder $query
      *
      * @return ExplainRow[]
      */
-    private function except(ExplainBuilder $query)
+    private function except(IQueryBuilder $query)
     {
         $tables = [];
 
@@ -441,11 +452,11 @@ class Explain implements IQueryExecutor
     }
 
     /**
-     * @param ExplainBuilder $query
+     * @param IQueryBuilder $query
      *
      * @return ExplainRow[]
      */
-    private function intersect(ExplainBuilder $query)
+    private function intersect(IQueryBuilder $query)
     {
         $tables = [];
 
@@ -466,11 +477,11 @@ class Explain implements IQueryExecutor
     }
 
     /**
-     * @param ExplainBuilder $query
+     * @param IQueryBuilder $query
      *
      * @return ExplainRow[]
      */
-    private function explainHelper(ExplainBuilder $query)
+    private function explainHelper(IQueryBuilder $query)
     {
         return array_merge(
             $this->columns($query),

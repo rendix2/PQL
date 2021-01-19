@@ -214,14 +214,14 @@ $q1->select()->select(null, new Column('datum'))
     ->from(new \pql\QueryBuilder\From\Table('test'));
 
 $query3 = new Query($database);
-$query3->select()->select(null, new Column('datum'))
+$query3->explain()->select(null, new Column('datum'))
     //->select(null, new \pql\QueryBuilder\Select\Query($q1))
 ->from($querySelect, 'a')
-    //->crossJoin($querySelect)
+    ->crossJoin($querySelect)
     ->leftJoin($querySelect, [new \pql\Condition($acount, $equalsOperator, new Column('b.pocet'))], 'b')
-    /*->rightJoin($querySelect, [new \pql\Condition($acount, $equalsOperator, new Column('c.pocet'))], 'c')
+    ->rightJoin($querySelect, [new \pql\Condition($acount, $equalsOperator, new Column('c.pocet'))], 'c')
     ->innerJoin($querySelect, [new \pql\Condition($acount, $equalsOperator, new Column('d.pocet'))], 'd')
-    ->fullJoin($querySelect, [new \pql\Condition($acount, $equalsOperator, new Column('e.pocet'))], 'e')*/
+    ->fullJoin($querySelect, [new \pql\Condition($acount, $equalsOperator, new Column('e.pocet'))], 'e')
 ->orderBy(new Column('a.pocet'))
 ->orderBy(new Column('a.pocet'))
 ->groupBy(new Column('a.pocet'));
@@ -334,3 +334,19 @@ Profiler::finish('add');
 */
 
 //$query->update('myNew', ['prijmeni' => 'bbbb'])->where('jmeno', '=', 'a')->run();
+
+
+$tree = new \pql\BTree\Tree();
+
+
+Profiler::start('create tree');
+for ($i = 0; $i <= 5000; $i++) {
+    $tree->insert($i);
+}
+Profiler::finish('create tree');
+
+Profiler::start('search tree');
+bdump($tree->search(5000));
+Profiler::finish('create tree');
+
+//bdump($tree);
