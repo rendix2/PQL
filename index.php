@@ -336,17 +336,20 @@ Profiler::finish('add');
 //$query->update('myNew', ['prijmeni' => 'bbbb'])->where('jmeno', '=', 'a')->run();
 
 
-$tree = new \pql\BTree\Tree();
-
+$tree = new \pql\BTree\BtreePlus();
 
 Profiler::start('create tree');
-for ($i = 0; $i <= 5000; $i++) {
+for ($i = 0; $i <= 50; $i++) {
+    bdump($i, '$i');
+
     $tree->insert($i);
+
+    bdump($tree->search($i), 'FIRST SEARCH $i');
+    $tree->delete($i);
+//    bdump($tree->delete($i), 'DELETE $i');
+    bdump($tree->search($i), 'SEARCH AFTER DELETE $i');
+
+    $tree->insert($i);
+
+    bdump($tree->search($i), 'SEARCH AFTER INSERT $i');
 }
-Profiler::finish('create tree');
-
-Profiler::start('search tree');
-bdump($tree->search(5000));
-Profiler::finish('create tree');
-
-//bdump($tree);

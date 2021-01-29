@@ -42,8 +42,8 @@ class Node
      */
     public function __construct()
     {
-        $this->key = array_fill(0, Tree::MAX, null);
-        $this->ptr = array_fill(0, Tree::MAX+1, null);
+        $this->key = array_fill(0, BtreePlus::MAX, null);
+        $this->ptr = array_fill(0, BtreePlus::MAX+1, null);
         $this->size = 0;
     }
 }
