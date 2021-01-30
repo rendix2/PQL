@@ -2,10 +2,8 @@
 
 namespace pql\QueryExecutor;
 
-use pql\BTree\BtreeJ;
 use pql\QueryBuilder\InsertQuery as InsertBuilder;
 use pql\Table;
-use pql\TableColumn;
 use SplFileObject;
 
 /**
@@ -53,28 +51,10 @@ class Insert implements IQueryExecutor
     private function insert()
     {
         $row = [];
+        $indexData = [];
 
         foreach ($this->query->getTable()->getColumns() as $column) {
             foreach ($this->query->getData() as $key => $data) {
-
-                /**
-                 * index maintenance
-                 * @var TableColumn $column
-                 */
-                foreach ($this->query->getTable()->getIndexes() as $indexColumn => $indexFile) {
-                    if ($column->getName() === $indexColumn) {
-                        $columnRootIndex = BtreeJ::read($indexFile);
-
-                        if ($columnRootIndex === false) {
-                            $columnRootIndex = new BtreeJ();
-                            $columnRootIndex->create($columnRootIndex);
-                        }
-
-                        $columnRootIndex->insert($data);
-                        $columnRootIndex->write($this->query->getTable()->getIndexDir() . $indexFile);
-                    }
-                }
-
                 if ($column->getName() === $key) {
                     $row[$column->getName()] = $data;
                 }
@@ -85,13 +65,34 @@ class Insert implements IQueryExecutor
             }
         }
 
+        foreach ($this->query->getData() as $column => $value) {
+            foreach ($this->query->getTable()->getIndexNames() as $indexName => $indexFile) {
+                if ($column === $indexName) {
+                    $indexData[$column][] = $value;
+
+                    break;
+                }
+            }
+        }
+
+        foreach ($this->query->getTable()->getIndexes() as $tableColumnIndexName => $indexInstance) {
+            foreach ($indexData as $indexDataColumnName => $indexDataValues) {
+                if ($tableColumnIndexName === $indexDataColumnName) {
+                    foreach ($indexDataValues as $indexDataValue ) {
+                        $indexInstance->insert(['value' => $indexDataValue,  'rowNumber' => $this->query->getTable()->getRowsCount()+1]);
+                        $indexInstance->write();
+                    }
+                }
+            }
+        }
+
         $file = new SplFileObject($this->query->getTable()->getFilePath(), 'a');
 
         $line = implode(Table::COLUMN_DELIMITER, $row);
 
         $written = $file->fwrite(
             $line . $this->query->getTable()->getFileEnds(),
-            strlen($line) + $this->query->getTable()->getFileEndsLength() // mb_strlen is bad! count as a one, not two!
+            strlen($line) + $this->query->getTable()->getFileEndsLength() // mb_strlen is bad! count space as a one, not two!
         );
         $file = null;
 

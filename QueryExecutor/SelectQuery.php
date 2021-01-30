@@ -756,6 +756,8 @@ class SelectQuery implements IQueryExecutor
     {
         $whereResult = [];
 
+        bdump($rows);
+
         foreach ($rows as $row) {
             if (ConditionHelper::condition($condition, $row, [])) {
                 $whereResult[] = $row;

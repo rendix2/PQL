@@ -22,14 +22,35 @@ class BtreePlus
     /**
      * @var Node|null $root
      */
-    private $root;
+    public $root;
+
+    /**
+     * @var string $path
+     */
+    private $path;
 
     /**
      * Tree constructor.
+     * @param $path
      */
-    public function __construct()
+    public function __construct($path)
     {
         $this->root = null;
+        $this->path = $path;
+    }
+
+    public function write()
+    {
+        file_put_contents($this->path, serialize($this));
+    }
+
+    /**
+     *
+     * @return BtreeJ
+     */
+    public function read()
+    {
+        return unserialize(file_get_contents($this->path));
     }
 
     /**
@@ -52,7 +73,7 @@ class BtreePlus
                 $parent = $cursor;
 
                 for ($i = 0; $i < $cursor->size; $i++) {
-                    if ($x < $cursor->key[$i]) {
+                    if ($x < $cursor->key[$i]['value']) {
                         $cursor = $cursor->ptr[$i];
 
                         break;
@@ -141,7 +162,7 @@ class BtreePlus
         if ($cursor->size < self::MAX) {
             $i = 0;
 
-            while ($x > $cursor->key[$i] && $i < $cursor->size) {
+            while ($x > $cursor->key[$i]['value'] && $i < $cursor->size) {
                 $i++;
             }
 
@@ -167,7 +188,7 @@ class BtreePlus
 
             $i = $j = 0;
 
-            while ($x > $virtualKey[$i] && $i < self::MAX) {
+            while ($x > $virtualKey[$i]['value'] && $i < self::MAX) {
                 $i++;
             }
 
@@ -245,7 +266,7 @@ class BtreePlus
 
             while ($cursor->isLeaf === false) {
                 for ($i = 0; $i < $cursor->size; $i++) {
-                    if ($x < $cursor->key[$i]) {
+                    if ($x < $cursor->key[$i]['value']) {
                         $cursor = $cursor->ptr[$i];
 
                         break;
@@ -261,8 +282,8 @@ class BtreePlus
             }
 
             for ($i = 0; $i < $cursor->size; $i++) {
-                if ($cursor->key[$i] === $x) {
-                    return $x;
+                if ($cursor->key[$i]['value'] === $x) {
+                    return $cursor->key[$i];
                 }
             }
 
@@ -294,7 +315,7 @@ class BtreePlus
             }
 
             for ($i = 0; $i < $cursor->size; $i++) {
-                if ($cursor->key[$i] === $x) {
+                if ($cursor->key[$i]['value'] === $x) {
                     return $cursor;
                 }
             }
@@ -312,7 +333,7 @@ class BtreePlus
 
             while ($cursor->isLeaf === false) {
                 for ($i = 0; $i < $cursor->size; $i++) {
-                    if ($x < $cursor->key[$i]) {
+                    if ($x < $cursor->key[$i]['value']) {
                         $cursor = $cursor->ptr[$i];
 
                         break;
@@ -328,7 +349,7 @@ class BtreePlus
             }
 
             for ($i = 0; $i < $cursor->size; $i++) {
-                if ($cursor->key[$i] === $x) {
+                if ($cursor->key[$i]['value'] === $x) {
                     return $cursor->ptr[$i];
                 }
             }
@@ -430,7 +451,7 @@ class BtreePlus
 
         $i = 0;
 
-        while ($node->key[$i] !== $x) {
+        while ($node->key[$i]['value'] !== $x) {
             $i++;
         }
 

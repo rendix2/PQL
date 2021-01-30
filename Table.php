@@ -12,6 +12,7 @@ use Exception;
 use Nette\IOException;
 use Nette\Utils\FileSystem;
 use Nette\Utils\Finder;
+use pql\BTree\BtreePlus;
 use pql\QueryRow\TableRow;
 use SplFileInfo;
 use SplFileObject;
@@ -120,6 +121,11 @@ class Table implements ITable
     private $indexes;
 
     /**
+     * @var array $indexNames
+     */
+    private $indexNames;
+
+    /**
      * @var string $lineEnds
      */
     private $lineEnds;
@@ -188,11 +194,19 @@ class Table implements ITable
         /**
          * @var SplFileInfo $index
          */
-        foreach ($indexes as $index) {
-            $fileName = str_replace('.' . self::INDEX_EXTENSION, '', $index->getFilename());
+        foreach ($indexes as $indexFile) {
+            $fileName = str_replace('.' . self::INDEX_EXTENSION, '', $indexFile->getFilename());
 
-            //$this->indexes[$fileName] = BtreeJ::read($this->indexDir . $index->getFilename());
-            $this->indexes[$fileName] = $index->getFilename();
+            $indexInstance = new BtreePlus($this->indexDir . $indexFile->getFilename());
+
+            $readedIndex = $indexInstance->read();
+
+            if ($readedIndex === false) {
+                $indexInstance->write() ;
+            }
+
+            $this->indexes[$fileName] = $readedIndex;
+            $this->indexNames[$fileName] = $indexFile->getFilename();
         }
 
         $fileContent = file($filePath);
@@ -310,6 +324,14 @@ class Table implements ITable
     public function getIndexes()
     {
         return $this->indexes;
+    }
+
+    /**
+     * @return array[]
+     */
+    public function getIndexNames()
+    {
+        return $this->indexNames;
     }
 
     /**

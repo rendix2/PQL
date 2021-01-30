@@ -99,7 +99,7 @@ class ConditionHelper
         switch ($operator) {
             case Equals::class:
                 // column = 5
-                if ($issetRowAColumn && $rowA[$condition->getColumn()->evaluate()] === $condition->getValue()) {
+                if ($issetRowAColumn && $rowA[$condition->getColumn()->evaluate()] === $condition->getValue()->evaluate()) {
                     return true;
                 }
 
@@ -164,7 +164,7 @@ class ConditionHelper
 
             case Larger::class:
                 // column > 5
-                if ($issetRowAColumn && $rowA[$condition->getColumn()->evaluate()] > $condition->getValue()) {
+                if ($issetRowAColumn && $rowA[$condition->getColumn()->evaluate()] > $condition->getValue()->evaluate()) {
                     return true;
                 }
 
@@ -229,7 +229,7 @@ class ConditionHelper
 
             case LargerInclusive::class:
                 // column >= 5
-                if ($issetRowAColumn && $rowA[$condition->getColumn()->evaluate()] >= $condition->getValue()) {
+                if ($issetRowAColumn && $rowA[$condition->getColumn()->evaluate()] >= $condition->getValue()->evaluate()) {
                     return true;
                 }
 
@@ -294,7 +294,7 @@ class ConditionHelper
 
             case Smaller::class:
                 // column < 5
-                if ($issetRowAColumn && $rowA[$condition->getColumn()->evaluate()] < $condition->getValue()) {
+                if ($issetRowAColumn && $rowA[$condition->getColumn()->evaluate()] < $condition->getValue()->evaluate()) {
                     return true;
                 }
 

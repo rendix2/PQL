@@ -210,21 +210,14 @@ $equalsOperator = new \pql\QueryBuilder\Operator\Equals();
 
 
 $q1 = new Query($database);
-$q1->select()->select(null, new Column('datum'))
-    ->from(new \pql\QueryBuilder\From\Table('test'));
+$q1->select()
+    ->select(null, new Column('id'))
+    ->select(null, new Column('datum'))
+    ->select(null, new Column('pocet'))
+    ->from(new \pql\QueryBuilder\From\Table('test'))
+    ->where(new Column('pocet'), new \pql\QueryBuilder\Operator\Equals(), new \pql\QueryBuilder\Select\Value(45.0));
 
-$query3 = new Query($database);
-$query3->explain()->select(null, new Column('datum'))
-    //->select(null, new \pql\QueryBuilder\Select\Query($q1))
-->from($querySelect, 'a')
-    ->crossJoin($querySelect)
-    ->leftJoin($querySelect, [new \pql\Condition($acount, $equalsOperator, new Column('b.pocet'))], 'b')
-    ->rightJoin($querySelect, [new \pql\Condition($acount, $equalsOperator, new Column('c.pocet'))], 'c')
-    ->innerJoin($querySelect, [new \pql\Condition($acount, $equalsOperator, new Column('d.pocet'))], 'd')
-    ->fullJoin($querySelect, [new \pql\Condition($acount, $equalsOperator, new Column('e.pocet'))], 'e')
-->orderBy(new Column('a.pocet'))
-->orderBy(new Column('a.pocet'))
-->groupBy(new Column('a.pocet'));
+$query3 = $q1   ;
 
 /*$querySelect2 = new \pql\QueryBuilder\From\Query($query3);*/
 
@@ -285,6 +278,9 @@ echo $res3;
 
 Profiler::finish('select');
 
+$insertUqery = new Query($database);
+$insertUqery->insert()->insert('test', ['id' => 1, 'datum' => '45.5.2015', 'pocet' => 45])->run();
+
 
 /*
 $j = new \BTree\BtreeJ();
@@ -336,7 +332,7 @@ Profiler::finish('add');
 //$query->update('myNew', ['prijmeni' => 'bbbb'])->where('jmeno', '=', 'a')->run();
 
 
-$tree = new \pql\BTree\BtreePlus();
+/*$tree = new \pql\BTree\BtreePlus();
 
 Profiler::start('create tree');
 for ($i = 0; $i <= 50; $i++) {
@@ -352,4 +348,4 @@ for ($i = 0; $i <= 50; $i++) {
     $tree->insert($i);
 
     bdump($tree->search($i), 'SEARCH AFTER INSERT $i');
-}
+}*/
