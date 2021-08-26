@@ -58,6 +58,11 @@ class TableColumn
     private $type;
 
     /**
+     * @var bool $unique
+     */
+    private $unique;
+
+    /**
      * @var Table|null $table
      */
     private $table;
@@ -65,13 +70,14 @@ class TableColumn
     /**
      * TableColumn constructor.
      *
-     * @param string     $name
-     * @param string     $type
+     * @param string $name
+     * @param string $type
+     * @param bool $unique
      * @param Table|null $table
      *
      * @throws Exception
      */
-    public function __construct($name, $type, Table $table = null)
+    public function __construct($name, $type, $unique, Table $table = null)
     {
         if (!in_array($type, self::COLUMN_TYPES, true)) {
             throw new Exception(sprintf('Unknown type "%s" of column "%s".', $type, $name));
@@ -79,6 +85,7 @@ class TableColumn
         
         $this->name  = $name;
         $this->type  = $type;
+        $this->unique = $unique;
         $this->table = $table;
     }
 
@@ -114,5 +121,13 @@ class TableColumn
     public function getTable()
     {
         return $this->table;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getUnique()
+    {
+        return $this->unique;
     }
 }

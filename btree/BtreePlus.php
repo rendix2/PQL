@@ -10,6 +10,8 @@
 
 namespace pql\BTree;
 
+use Nette\InvalidArgumentException;
+
 /**
  * Class Tree
  *
@@ -58,6 +60,14 @@ class BtreePlus
      */
     public function insert($x)
     {
+        $exist = $this->search($x);
+
+        if ($exist) {
+            $message = sprintf('Value "%s" is already stored.', $x);
+
+            throw new InvalidArgumentException($message);
+        }
+
         if ($this->root === null) {
             $root = new Node();
             $root->key[0] = $x;

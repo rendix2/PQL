@@ -215,7 +215,12 @@ class Table implements ITable
 
         foreach ($columnNames as $column) {
             $columnExploded = explode(self::COLUMN_DATA_DELIMITER, trim($column));
-            $columns[]      = new TableColumn($columnExploded[0], $columnExploded[1], $this);
+            $columns[]      = new TableColumn(
+                $columnExploded[0],
+                $columnExploded[1],
+                $columnExploded[2] === 'unique',
+                $this
+            );
         }
 
         $this->columns       = $columns;
@@ -453,11 +458,11 @@ class Table implements ITable
     /**
      * @param string $name
      * @param string $type
-     *
+     * @param bool $unique
      * @return Table
      * @throws Exception
      */
-    public function addColumn($name, $type)
+    public function addColumn($name, $type, $unique)
     {
         if ($this->columnExists($name)) {
             $message = sprintf('Table "%s" already has column "%s".', $this->name, $name);
@@ -467,6 +472,12 @@ class Table implements ITable
 
         if (!in_array($type, TableColumn::COLUMN_TYPES, true)) {
             $message = sprintf('Unknown "%s" column type.', $type);
+
+            throw new Exception($message);
+        }
+
+        if (!is_bool($unique)) {
+            $message = sprintf('$unique "%s" is not boolean.', $unique);
 
             throw new Exception($message);
         }
@@ -500,7 +511,7 @@ class Table implements ITable
 
         $this->database->setSize($this->database->calculateDatabaseSize());
         $this->size = $size;
-        $this->columns[] = new TableColumn($name, $type, $this);
+        $this->columns[] = new TableColumn($name, $type, $unique, $this);
         $this->columnsString = $firstRow;
         $this->columnsCount++;
 

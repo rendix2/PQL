@@ -69,6 +69,9 @@ class SelectQuery implements IQueryExecutor
      */
     private $result;
 
+    /**
+     * @var bool $hasExpression
+     */
     private $hasExpression;
 
     /**
@@ -756,8 +759,6 @@ class SelectQuery implements IQueryExecutor
     {
         $whereResult = [];
 
-        bdump($rows);
-
         foreach ($rows as $row) {
             if (ConditionHelper::condition($condition, $row, [])) {
                 $whereResult[] = $row;
@@ -814,7 +815,7 @@ class SelectQuery implements IQueryExecutor
                     $exploded = explode(Alias::DELIMITER, $whereCondition->getColumn());
 
                     if (count($exploded) === 2) {
-                        list($alias, $column) = $exploded   ;
+                        list($alias, $column) = $exploded;
 
                         if ($alias === $this->query->getTableAlias()->getTo() && $table->columnExists($column)) {
                             $this->result = $this->doWhere($this->result, $whereCondition);
