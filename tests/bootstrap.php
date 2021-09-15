@@ -8,7 +8,7 @@ require __DIR__ . $sep . '..' . $sep . 'vendor' . $sep . 'autoload.php';
 
 $loader = new RobotLoader();
 $loader->addDirectory(__DIR__ . $sep . '..' . $sep);
-$loader->setTempDirectory(__DIR__ . $sep . '..' . $sep . 'temp');
+$loader->setTempDirectory(__DIR__ . $sep . 'temp');
 $loader->setAutoRefresh();
 $loader->register();
 

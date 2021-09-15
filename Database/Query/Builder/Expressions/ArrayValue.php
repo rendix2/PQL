@@ -21,14 +21,13 @@ class ArrayValue implements IValue
         $this->values = $values;
     }
 
-    public function evaluate()
+    public function evaluate() : array
     {
-        //return $this->values;
-        throw new NotImplementedException();
+        return $this->values;
     }
 
     public function print(?int $level = null): string
     {
-        throw new NotImplementedException();
+        return sprintf('(%s)', implode(', ', $this->values));
     }
 }

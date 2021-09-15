@@ -27,31 +27,64 @@ class ConditionExecutor
      * @param WhereCondition $whereCondition
      *
      * @return bool
+     * @throws Exception
      */
     public function where(stdClass $row, WhereCondition $whereCondition) : bool
     {
-        if ($whereCondition->getLeft() instanceof IExpression) {
-            $left = $whereCondition->getLeft()->evaluate();
-        } else {
-            throw new Exception('');
-        }
-
-        if ($whereCondition->getRight() instanceof IExpression) {
-            $right = $whereCondition->getRight()->evaluate();
-        } elseif($whereCondition->getRight() === null) {
-            $right = null;
-        } else {
-            throw new Exception('');
-        }
-
+        $left = $whereCondition->getLeft()->evaluate();
         $operator = $whereCondition->getOperator()->getOperator();
+        $right = $whereCondition->getRight()?->evaluate();
 
-        if ($operator === '=' && isset($row->{$left}) && $row->{$left} === $right) {
-            return true;
-        }
-
-        if ($operator === 'IS NOT NULL' && $row->{$left} !== null) {
-            return true;
+        if ($operator === '=') {
+            if ($row->{$left} === $right) {
+                return true;
+            }
+        } elseif($operator === '>') {
+            if ($row->{$left} > $right) {
+                return true;
+            }
+        } elseif($operator === '>=') {
+            if ($row->{$left} >= $right) {
+                return true;
+            }
+        } elseif($operator === '<') {
+            if ($row->{$left} < $right) {
+                return true;
+            }
+        } elseif($operator === '<=') {
+            if ($row->{$left} <= $right) {
+                return true;
+            }
+        } elseif ($operator === '!=' || $operator === '<>') {
+            if ($row->{$left} !== $right) {
+                return true;
+            }
+        } elseif ($operator === 'IN') {
+            if (in_array($row->{$left}, $right, true)) {
+                return true;
+            }
+        } elseif ($operator === 'NOT IN') {
+            if (!in_array($row->{$left}, $right, true)) {
+                return true;
+            }
+        } elseif ($operator === 'IS NULL') {
+            if (is_null($row->{$left})) {
+                return true;
+            }
+        } elseif ($operator === 'IS NOT NULL') {
+            if (!is_null($row->{$left})) {
+                return true;
+            }
+        } elseif ($operator === 'BETWEEN') {
+            if ($row->{$left} > $right[0] && $row->{$left} < $right[1]) {
+                return true;
+            }
+        }  elseif ($operator === 'BETWEEN_INCLUSIVE') {
+            if ($row->{$left} >= $right[0] && $row->{$left} <= $right[1]) {
+                return true;
+            }
+        } else {
+            throw new Exception('Unknown operator');
         }
 
         return false;

@@ -13,7 +13,7 @@ namespace PQL;
 use Nette\PhpGenerator\PhpFile;
 use Nette\PhpGenerator\PhpNamespace;
 use PQL\Tests\InputData\Create\TestDataCreator;
-use PQL\Tests\PrepareSelect;
+use PQL\Tests\SelectTestQueryFactory;
 use ReflectionClass;
 
 class CreateTestData
@@ -24,7 +24,7 @@ class CreateTestData
 
     public function run() : void
     {
-        $selectTest = new \PQL\Tests\PrepareSelect();
+        $selectTest = new SelectTestQueryFactory();
 
         $classReflection = new ReflectionClass($selectTest);
         $methods = $classReflection->getMethods();
@@ -33,8 +33,8 @@ class CreateTestData
             $isTestMethod = str_starts_with($method->getName(), 'test');
 
             if ($isTestMethod) {
-                $rows = $selectTest->{$method->getName()}();
-
+                $query = $selectTest->{$method->getName()}();
+                $rows = $query->execute();
 
                 $this->writeFunctionWithData($rows, ucfirst($method->getName()));
             }
@@ -43,7 +43,7 @@ class CreateTestData
 
     private function writeFunctionWithData(array $rows, string $className): void
     {
-        $nameSpace = new PhpNamespace(PrepareSelect::$nameSpace);
+        $nameSpace = new PhpNamespace(SelectTestQueryFactory::$nameSpace);
 
         $class = $nameSpace->addClass($className);
         $class->addImplement('\PQL\Tests\InputData\ITestData');

@@ -2,7 +2,7 @@
 /**
  *
  * Created by PhpStorm.
- * Filename: PrepareSelect.php
+ * Filename: SelectTestQueryFactory.php
  * User: Tomáš Babický
  * Date: 15.09.2021
  * Time: 1:43
@@ -12,6 +12,7 @@ namespace PQL\Tests;
 
 use PQL\Database;
 use PQL\Query\Builder\Expressions\AggregateFunctionExpression;
+use PQL\Query\Builder\Expressions\ArrayValue;
 use PQL\Query\Builder\Expressions\Column;
 use PQL\Query\Builder\Expressions\FunctionExpression;
 use PQL\Query\Builder\Expressions\HavingCondition;
@@ -24,9 +25,8 @@ use PQL\Query\Builder\Expressions\TableExpression;
 use PQL\Query\Builder\Expressions\WhereCondition;
 use PQL\Query\Builder\Select as SelectBuilder;
 use PQL\Server;
-use Tester\Assert;
 
-class PrepareSelect
+class SelectTestQueryFactory
 {
     private SelectBuilder $query;
 
@@ -42,8 +42,7 @@ class PrepareSelect
         $this->query = $this->database->selectQuery();
     }
 
-
-    public function testColumnsFrom(): array
+    public function testColumnsFrom() : SelectBuilder
     {
         $query = clone $this->query;
 
@@ -56,39 +55,22 @@ class PrepareSelect
 
         $query->from($commentTable);
 
-        $stdRows = $query->execute();
-
-        $arrayRows = [];
-
-        foreach ($stdRows as $stdRow) {
-            $arrayRows[] = (array)$stdRow;
-        }
-
-        return $arrayRows;
+        return $query;
     }
 
-    public function testDistinctColumn() : array
+    public function testDistinctColumn() : SelectBuilder
     {
         $query = clone $this->query;
 
         $commentTable = new TableExpression($this->database, 'comments');
 
         $query->distinct(new Column('rok', $commentTable));
-
         $query->from($commentTable);
 
-        $stdRows = $query->execute();
-
-        $arrayRows = [];
-
-        foreach ($stdRows as $stdRow) {
-            $arrayRows[] = (array)$stdRow;
-        }
-
-        return $arrayRows;
+        return $query;
     }
 
-    public function testInnerJoinTableOnCondition(): array
+    public function testInnerJoinTableOnCondition() : SelectBuilder
     {
         $query = clone $this->query;
 
@@ -114,18 +96,10 @@ class PrepareSelect
         ],
         );
 
-        $stdRows = $query->execute();
-
-        $arrayRows = [];
-
-        foreach ($stdRows as $stdRow) {
-            $arrayRows[] = (array)$stdRow;
-        }
-
-        return $arrayRows;
+        return $query;
     }
 
-    public function testCrossJoin(): array
+    public function testCrossJoin() : SelectBuilder
     {
         $query = clone $this->query;
 
@@ -142,18 +116,10 @@ class PrepareSelect
         $query->from($commentTable);
         $query->crossJoin($userTable);
 
-        $stdRows = $query->execute();
-
-        $arrayRows = [];
-
-        foreach ($stdRows as $stdRow) {
-            $arrayRows[] = (array)$stdRow;
-        }
-
-        return $arrayRows;
+        return $query;
     }
 
-    public function testLeftJoinTableOnCondition(): array
+    public function testLeftJoinTableOnCondition() : SelectBuilder
     {
         $query = clone $this->query;
 
@@ -178,18 +144,10 @@ class PrepareSelect
         ],
         );
 
-        $stdRows = $query->execute();
-
-        $arrayRows = [];
-
-        foreach ($stdRows as $stdRow) {
-            $arrayRows[] = (array)$stdRow;
-        }
-
-        return $arrayRows;
+        return $query;
     }
 
-    public function testSingleArgumentFunction() : array
+    public function testSingleArgumentFunction() : SelectBuilder
     {
         $query = clone $this->query;
 
@@ -203,18 +161,10 @@ class PrepareSelect
 
         $query->from($commentTable);
 
-        $stdRows = $query->execute();
-
-        $arrayRows = [];
-
-        foreach ($stdRows as $stdRow) {
-            $arrayRows[] = (array)$stdRow;
-        }
-
-        return $arrayRows;
+        return $query;
     }
 
-    public function testExpressions() : array
+    public function testExpressions() : SelectBuilder
     {
         $query = clone $this->query;
 
@@ -240,15 +190,7 @@ class PrepareSelect
 
         $query->from($commentTable);
 
-        $stdRows = $query->execute();
-
-        $arrayRows = [];
-
-        foreach ($stdRows as $stdRow) {
-            $arrayRows[] = (array)$stdRow;
-        }
-
-        return $arrayRows;
+        return $query;
     }
 
     /*    public function testAloneExpressions()
@@ -271,7 +213,7 @@ class PrepareSelect
             return $query;
         }*/
 
-    public function testWhereSingleCondition() : array
+    public function testWhereSingleCondition() : SelectBuilder
     {
         $query = clone $this->query;
 
@@ -292,18 +234,10 @@ class PrepareSelect
             )
         );
 
-        $stdRows = $query->execute();
-
-        $arrayRows = [];
-
-        foreach ($stdRows as $stdRow) {
-            $arrayRows[] = (array)$stdRow;
-        }
-
-        return $arrayRows;
+        return $query;
     }
 
-    public function testWhereDualCondition() : array
+    public function testWhereDualCondition() : SelectBuilder
     {
         $query = clone $this->query;
 
@@ -332,18 +266,322 @@ class PrepareSelect
             )
         );
 
-        $stdRows = $query->execute();
-
-        $arrayRows = [];
-
-        foreach ($stdRows as $stdRow) {
-            $arrayRows[] = (array)$stdRow;
-        }
-
-        return $arrayRows;
+        return $query;
     }
 
-    public function testSingleGroupBy() : array
+    public function testWhereEquals() : SelectBuilder
+    {
+        $query = clone $this->query;
+
+        $commentTable = new TableExpression($this->database, 'comments');
+
+        $query->select(new Column('id', $commentTable));
+        $query->select(new Column('text', $commentTable));
+        $query->select(new Column('rok', $commentTable));
+        $query->select(new Column('userId', $commentTable));
+
+        $query->from($commentTable);
+
+        $query->where(
+            new WhereCondition(
+                new Column('rok', $commentTable),
+                new Operator('='),
+                new IntegerValue(2020)
+            )
+        );
+
+        return $query;
+    }
+
+    public function testWhereNotEquals1() : SelectBuilder
+    {
+        $query = clone $this->query;
+
+        $commentTable = new TableExpression($this->database, 'comments');
+
+        $query->select(new Column('id', $commentTable));
+        $query->select(new Column('text', $commentTable));
+        $query->select(new Column('rok', $commentTable));
+        $query->select(new Column('userId', $commentTable));
+
+        $query->from($commentTable);
+
+        $query->where(
+            new WhereCondition(
+                new Column('rok', $commentTable),
+                new Operator('!='),
+                new IntegerValue(2020)
+            )
+        );
+
+        return $query;
+    }
+
+    public function testWhereNotEquals2() : SelectBuilder
+    {
+        $query = clone $this->query;
+
+        $commentTable = new TableExpression($this->database, 'comments');
+
+        $query->select(new Column('id', $commentTable));
+        $query->select(new Column('text', $commentTable));
+        $query->select(new Column('rok', $commentTable));
+        $query->select(new Column('userId', $commentTable));
+
+        $query->from($commentTable);
+
+        $query->where(
+            new WhereCondition(
+                new Column('rok', $commentTable),
+                new Operator('<>'),
+                new IntegerValue(2020)
+            )
+        );
+
+        return $query;
+    }
+
+    public function testWhereGreater() : SelectBuilder
+    {
+        $query = clone $this->query;
+
+        $commentTable = new TableExpression($this->database, 'comments');
+
+        $query->select(new Column('id', $commentTable));
+        $query->select(new Column('text', $commentTable));
+        $query->select(new Column('rok', $commentTable));
+        $query->select(new Column('userId', $commentTable));
+
+        $query->from($commentTable);
+
+        $query->where(
+            new WhereCondition(
+                new Column('rok', $commentTable),
+                new Operator('>'),
+                new IntegerValue(2020)
+            )
+        );
+
+        return $query;
+    }
+
+    public function testWhereLess() : SelectBuilder
+    {
+        $query = clone $this->query;
+
+        $commentTable = new TableExpression($this->database, 'comments');
+
+        $query->select(new Column('id', $commentTable));
+        $query->select(new Column('text', $commentTable));
+        $query->select(new Column('rok', $commentTable));
+        $query->select(new Column('userId', $commentTable));
+
+        $query->from($commentTable);
+
+        $query->where(
+            new WhereCondition(
+                new Column('rok', $commentTable),
+                new Operator('<'),
+                new IntegerValue(2020)
+            )
+        );
+
+        return $query;
+    }
+
+    public function testWhereLessInc() : SelectBuilder
+    {
+        $query = clone $this->query;
+
+        $commentTable = new TableExpression($this->database, 'comments');
+
+        $query->select(new Column('id', $commentTable));
+        $query->select(new Column('text', $commentTable));
+        $query->select(new Column('rok', $commentTable));
+        $query->select(new Column('userId', $commentTable));
+
+        $query->from($commentTable);
+
+        $query->where(
+            new WhereCondition(
+                new Column('rok', $commentTable),
+                new Operator('<='),
+                new IntegerValue(2020)
+            )
+        );
+
+        return $query;
+    }
+
+    public function testWhereGreaterInc() : SelectBuilder
+    {
+        $query = clone $this->query;
+
+        $commentTable = new TableExpression($this->database, 'comments');
+
+        $query->select(new Column('id', $commentTable));
+        $query->select(new Column('text', $commentTable));
+        $query->select(new Column('rok', $commentTable));
+        $query->select(new Column('userId', $commentTable));
+
+        $query->from($commentTable);
+
+        $query->where(
+            new WhereCondition(
+                new Column('rok', $commentTable),
+                new Operator('>='),
+                new IntegerValue(2020)
+            )
+        );
+
+        return $query;
+    }
+
+    public function testWhereIn() : SelectBuilder
+    {
+        $query = clone $this->query;
+
+        $commentTable = new TableExpression($this->database, 'comments');
+
+        $query->select(new Column('id', $commentTable));
+        $query->select(new Column('text', $commentTable));
+        $query->select(new Column('rok', $commentTable));
+        $query->select(new Column('userId', $commentTable));
+
+        $query->from($commentTable);
+
+        $query->where(
+            new WhereCondition(
+                new Column('rok', $commentTable),
+                new Operator('IN'),
+                new ArrayValue([2020, 2021])
+            )
+        );
+
+        return $query;
+    }
+
+    public function testWhereNotIn() : SelectBuilder
+    {
+        $query = clone $this->query;
+
+        $commentTable = new TableExpression($this->database, 'comments');
+
+        $query->select(new Column('id', $commentTable));
+        $query->select(new Column('text', $commentTable));
+        $query->select(new Column('rok', $commentTable));
+        $query->select(new Column('userId', $commentTable));
+
+        $query->from($commentTable);
+
+        $query->where(
+            new WhereCondition(
+                new Column('rok', $commentTable),
+                new Operator('NOT IN'),
+                new ArrayValue([2020, 2021])
+            )
+        );
+
+        return $query;
+    }
+
+    public function testWhereIsNull() : SelectBuilder
+    {
+        $query = clone $this->query;
+
+        $commentTable = new TableExpression($this->database, 'comments');
+
+        $query->select(new Column('id', $commentTable));
+        $query->select(new Column('text', $commentTable));
+        $query->select(new Column('rok', $commentTable));
+        $query->select(new Column('userId', $commentTable));
+
+        $query->from($commentTable);
+
+        $query->where(
+            new WhereCondition(
+                new Column('rok', $commentTable),
+                new Operator('IS NULL'),
+                null
+            )
+        );
+
+        return $query;
+    }
+
+    public function testWhereIsNotNull() : SelectBuilder
+    {
+        $query = clone $this->query;
+
+        $commentTable = new TableExpression($this->database, 'comments');
+
+        $query->select(new Column('id', $commentTable));
+        $query->select(new Column('text', $commentTable));
+        $query->select(new Column('rok', $commentTable));
+        $query->select(new Column('userId', $commentTable));
+
+        $query->from($commentTable);
+
+        $query->where(
+            new WhereCondition(
+                new Column('rok', $commentTable),
+                new Operator('IS NOT NULL'),
+                null
+            )
+        );
+
+        return $query;
+    }
+
+    public function testWhereBetween() : SelectBuilder
+    {
+        $query = clone $this->query;
+
+        $commentTable = new TableExpression($this->database, 'comments');
+
+        $query->select(new Column('id', $commentTable));
+        $query->select(new Column('text', $commentTable));
+        $query->select(new Column('rok', $commentTable));
+        $query->select(new Column('userId', $commentTable));
+
+        $query->from($commentTable);
+
+        $query->where(
+            new WhereCondition(
+                new Column('rok', $commentTable),
+                new Operator('BETWEEN'),
+                new ArrayValue([2017, 2020])
+            )
+        );
+
+        return $query;
+    }
+
+    public function testWhereBetweenInclusive() : SelectBuilder
+    {
+        $query = clone $this->query;
+
+        $commentTable = new TableExpression($this->database, 'comments');
+
+        $query->select(new Column('id', $commentTable));
+        $query->select(new Column('text', $commentTable));
+        $query->select(new Column('rok', $commentTable));
+        $query->select(new Column('userId', $commentTable));
+
+        $query->from($commentTable);
+
+        $query->where(
+            new WhereCondition(
+                new Column('rok', $commentTable),
+                new Operator('BETWEEN_INCLUSIVE'),
+                new ArrayValue([2017, 2020])
+            )
+        );
+
+        return $query;
+    }
+
+    public function testSingleGroupBy() : SelectBuilder
     {
         $query = clone $this->query;
 
@@ -358,18 +596,10 @@ class PrepareSelect
 
         $query->groupBy(new Column('userId', $commentTable));
 
-        $stdRows = $query->execute();
-
-        $arrayRows = [];
-
-        foreach ($stdRows as $stdRow) {
-            $arrayRows[] = (array)$stdRow;
-        }
-
-        return $arrayRows;
+        return $query;
     }
 
-    public function testAggregateFunctionWithoutGroupBy() : array
+    public function testAggregateFunctionWithoutGroupBy() : SelectBuilder
     {
         $query = clone $this->query;
 
@@ -384,18 +614,10 @@ class PrepareSelect
 
         $query->from($commentTable);
 
-        $stdRows = $query->execute();
-
-        $arrayRows = [];
-
-        foreach ($stdRows as $stdRow) {
-            $arrayRows[] = (array)$stdRow;
-        }
-
-        return $arrayRows;
+        return $query;
     }
 
-    public function testAggregateFunctionWithGroupBy() : array
+    public function testAggregateFunctionWithGroupBy() : SelectBuilder
     {
         $query = clone $this->query;
 
@@ -412,18 +634,10 @@ class PrepareSelect
 
         $query->groupBy(new Column('rok', $commentTable));
 
-        $stdRows = $query->execute();
-
-        $arrayRows = [];
-
-        foreach ($stdRows as $stdRow) {
-            $arrayRows[] = (array)$stdRow;
-        }
-
-        return $arrayRows;
+        return $query;
     }
 
-    public function testSingleHaving() : array
+    public function testSingleHaving() : SelectBuilder
     {
         $query = clone $this->query;
 
@@ -447,20 +661,11 @@ class PrepareSelect
                 new IntegerValue(3)
             )
         );
-        //$query->having(new HavingCondition(new AggregateFunctionExpression('count', [new Column('rok', $commentTable)]), new Operator('>='), new IntegerValue(1)));
 
-        $stdRows = $query->execute();
-
-        $arrayRows = [];
-
-        foreach ($stdRows as $stdRow) {
-            $arrayRows[] = (array)$stdRow;
-        }
-
-        return $arrayRows;
+        return $query;
     }
 
-    public function testDualHaving() : array
+    public function testDualHaving() : SelectBuilder
     {
         $query = clone $this->query;
 
@@ -492,18 +697,10 @@ class PrepareSelect
             )
         );
 
-        $stdRows = $query->execute();
-
-        $arrayRows = [];
-
-        foreach ($stdRows as $stdRow) {
-            $arrayRows[] = (array)$stdRow;
-        }
-
-        return $arrayRows;
+        return $query;
     }
 
-    public function testSingleOrderByColumnAsc() : array
+    public function testSingleOrderByColumnAsc() : SelectBuilder
     {
         $query = clone $this->query;
 
@@ -517,18 +714,10 @@ class PrepareSelect
         $query->from($commentTable);
         $query->orderBy(new Column('rok', $commentTable));
 
-        $stdRows = $query->execute();
-
-        $arrayRows = [];
-
-        foreach ($stdRows as $stdRow) {
-            $arrayRows[] = (array)$stdRow;
-        }
-
-        return $arrayRows;
+        return $query;
     }
 
-    public function testSingleOrderByColumnDesc() : array
+    public function testSingleOrderByColumnDesc() : SelectBuilder
     {
         $query = clone $this->query;
 
@@ -542,18 +731,10 @@ class PrepareSelect
         $query->from($commentTable);
         $query->orderBy(new Column('rok', $commentTable), 'DESC');
 
-        $stdRows = $query->execute();
-
-        $arrayRows = [];
-
-        foreach ($stdRows as $stdRow) {
-            $arrayRows[] = (array)$stdRow;
-        }
-
-        return $arrayRows;
+        return $query;
     }
 
-    public function testSingleOrderByFunctionAsc() : array
+    public function testSingleOrderByFunctionAsc() : SelectBuilder
     {
         $query = clone $this->query;
 
@@ -568,18 +749,10 @@ class PrepareSelect
         $query->from($commentTable);
         $query->orderBy(new FunctionExpression('strtoupper', [new Column('text', $commentTable)]));
 
-        $stdRows = $query->execute();
-
-        $arrayRows = [];
-
-        foreach ($stdRows as $stdRow) {
-            $arrayRows[] = (array)$stdRow;
-        }
-
-        return $arrayRows;
+        return $query;
     }
 
-    public function testSingleOrderByAggregateFunctionAsc() : array
+    public function testSingleOrderByAggregateFunctionAsc() : SelectBuilder
     {
         $query = clone $this->query;
 
@@ -597,18 +770,10 @@ class PrepareSelect
         $query->groupBy(new Column('rok', $commentTable));
         $query->orderBy(new AggregateFunctionExpression('sum', [new Column('rok', $commentTable)]));
 
-        $stdRows = $query->execute();
-
-        $arrayRows = [];
-
-        foreach ($stdRows as $stdRow) {
-            $arrayRows[] = (array)$stdRow;
-        }
-
-        return $arrayRows;
+        return $query;
     }
 
-    public function testLimit() : array
+    public function testLimit() : SelectBuilder
     {
         $query = clone $this->query;
 
@@ -628,18 +793,10 @@ class PrepareSelect
 
         $query->limit(1);
 
-        $stdRows = $query->execute();
-
-        $arrayRows = [];
-
-        foreach ($stdRows as $stdRow) {
-            $arrayRows[] = (array)$stdRow;
-        }
-
-        return $arrayRows;
+        return $query;
     }
 
-    public function testOffset() : array
+    public function testOffset() : SelectBuilder
     {
         $query = clone $this->query;
 
@@ -659,18 +816,10 @@ class PrepareSelect
 
         $query->offset(1);
 
-        $stdRows = $query->execute();
-
-        $arrayRows = [];
-
-        foreach ($stdRows as $stdRow) {
-            $arrayRows[] = (array)$stdRow;
-        }
-
-        return $arrayRows;
+        return $query;
     }
 
-    public function testLimitOffset() : array
+    public function testLimitOffset() : SelectBuilder
     {
         $query = clone $this->query;
 
@@ -691,15 +840,7 @@ class PrepareSelect
         $query->limit(1);
         $query->offset(1);
 
-        $stdRows = $query->execute();
-
-        $arrayRows = [];
-
-        foreach ($stdRows as $stdRow) {
-            $arrayRows[] = (array)$stdRow;
-        }
-
-        return $arrayRows;
+        return $query;
     }
 
 }

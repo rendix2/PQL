@@ -28,6 +28,8 @@ class Operator implements IExpression
         'NOT IN',
         'IS NULL',
         'IS NOT NULL',
+        'BETWEEN',
+        'BETWEEN_INCLUSIVE',
     ];
 
     private string $operator;
@@ -38,7 +40,7 @@ class Operator implements IExpression
     public function __construct($operator)
     {
         if (!in_array($operator, static::$operators, true)) {
-            $message = sprintf('Unknown operator %s.', $operator);
+            $message = sprintf('Unknown operator %s. Allowed operators are: %s', $operator, implode(', ', static::$operators));
 
             throw new Exception($message);
         }

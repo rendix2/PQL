@@ -4,7 +4,6 @@ use Netpromotion\Profiler\Adapter\TracyBarAdapter;
 use Netpromotion\Profiler\Profiler;
 use Nette\Loaders\RobotLoader;
 use PQL\Server;
-use PQL\Starter;
 use Tracy\Debugger;
 
 $sep = DIRECTORY_SEPARATOR;
@@ -44,8 +43,8 @@ function run(\PQL\Query\Builder\Select $query)
 }
 
 
-$c = new \PQL\CreateTestData();
-$c->run();
+/*$c = new \PQL\CreateTestData();
+$c->run();*/
 
 
 
