@@ -3,22 +3,27 @@
 
 namespace PQL\Tests;
 
-use Nette\PhpGenerator\PhpFile;
-use PQL\Database;
-use PQL\Query\Builder\Expressions\AggregateFunctionExpression;
-use PQL\Query\Builder\Expressions\Column;
-use PQL\Query\Builder\Expressions\FunctionExpression;
-use PQL\Query\Builder\Expressions\HavingCondition;
-use PQL\Query\Builder\Expressions\IntegerValue;
-use PQL\Query\Builder\Expressions\JoinConditionExpression;
-use PQL\Query\Builder\Expressions\Minus;
-use PQL\Query\Builder\Expressions\Operator;
-use PQL\Query\Builder\Expressions\Plus;
-use PQL\Query\Builder\Expressions\StringValue;
-use PQL\Query\Builder\Expressions\TableExpression;
-use PQL\Query\Builder\Expressions\WhereCondition;
-use PQL\Query\Builder\Select as SelectBuilder;
-use PQL\Server;
+use PQL\Tests\InputData\TestAggregateFunctionWithGroupBy;
+use PQL\Tests\InputData\TestAggregateFunctionWithoutGroupBy;
+use PQL\Tests\InputData\TestColumnsFrom;
+use PQL\Tests\InputData\TestCrossJoin;
+use PQL\Tests\InputData\TestDistinctColumn;
+use PQL\Tests\InputData\TestDualHaving;
+use PQL\Tests\InputData\TestExpressions;
+use PQL\Tests\InputData\TestInnerJoinTableOnCondition;
+use PQL\Tests\InputData\TestLeftJoinTableOnCondition;
+use PQL\Tests\InputData\TestLimit;
+use PQL\Tests\InputData\TestLimitOffset;
+use PQL\Tests\InputData\TestOffset;
+use PQL\Tests\InputData\TestSingleArgumentFunction;
+use PQL\Tests\InputData\TestSingleGroupBy;
+use PQL\Tests\InputData\TestSingleHaving;
+use PQL\Tests\InputData\TestSingleOrderByAggregateFunctionAsc;
+use PQL\Tests\InputData\TestSingleOrderByColumnAsc;
+use PQL\Tests\InputData\TestSingleOrderByColumnDesc;
+use PQL\Tests\InputData\TestSingleOrderByFunctionAsc;
+use PQL\Tests\InputData\TestWhereDualCondition;
+use PQL\Tests\InputData\TestWhereSingleCondition;
 use Tester\Assert;
 use Tester\TestCase;
 
@@ -27,7 +32,7 @@ require_once 'bootstrap.php';
 /**
  *
  * Created by PhpStorm.
- * Filename: Select.php
+ * Filename: SelectTest.php
  * User: Tomáš Babický
  * Date: 13.09.2021
  * Time: 23:28
@@ -44,238 +49,234 @@ class SelectTest extends TestCase
         $this->prepareSelect = new PrepareSelect();
     }
 
-    public function testColumnsFrom(): void
+    public function testColumnsFrom() : void
     {
-        $rows = call_user_func([$this->prepareSelect, __FUNCTION__]);
+        $queryRows = $this->prepareSelect->testColumnsFrom();
 
-        $className = static::$nameSpace . ucfirst(__FUNCTION__ );
-        $testInputRows = call_user_func([new $className, 'getData']);
+        $dataObj = new TestColumnsFrom();
+        $expectedRows = $dataObj->getData();
 
-        Assert::same($testInputRows, $rows);
+        Assert::same($expectedRows, $queryRows);
     }
 
-    public function testDistinctColumn()
+    public function testDistinctColumn() : void
     {
-        $rows = call_user_func([$this->prepareSelect, __FUNCTION__]);
+        $queryRows = $this->prepareSelect->testDistinctColumn();
 
-        $className = static::$nameSpace . ucfirst(__FUNCTION__ );
-        $testInputRows = call_user_func([new $className, 'getData']);
+        $dataObj = new TestDistinctColumn();
+        $expectedRows = $dataObj->getData();
 
-        Assert::same($testInputRows, $rows);
+        Assert::same($expectedRows, $queryRows);
     }
 
     public function testInnerJoinTableOnCondition() : void
     {
-        $rows = call_user_func([$this->prepareSelect, __FUNCTION__]);
+        $queryRows = $this->prepareSelect->testInnerJoinTableOnCondition();
 
-        $className = static::$nameSpace . ucfirst(__FUNCTION__ );
-        $testInputRows = call_user_func([new $className, 'getData']);
+        $dataObj = new TestInnerJoinTableOnCondition();
+        $expectedRows = $dataObj->getData();
 
-        Assert::same($testInputRows, $rows);
+        Assert::same($expectedRows, $queryRows);
     }
 
     public function testCrossJoin() : void
     {
-        $rows = call_user_func([$this->prepareSelect, __FUNCTION__]);
+        $queryRows = $this->prepareSelect->testCrossJoin();
 
-        $className = static::$nameSpace . ucfirst(__FUNCTION__ );
-        $testInputRows = call_user_func([new $className, 'getData']);
+        $dataObj = new TestCrossJoin();
+        $expectedRows = $dataObj->getData();
 
-        Assert::same($testInputRows, $rows);
+        Assert::same($expectedRows, $queryRows);
     }
 
     public function testLeftJoinTableOnCondition() : void
     {
-        $rows = call_user_func([$this->prepareSelect, __FUNCTION__]);
+        $queryRows = $this->prepareSelect->testLeftJoinTableOnCondition();
 
-        $className = static::$nameSpace . ucfirst(__FUNCTION__ );
-        $testInputRows = call_user_func([new $className, 'getData']);
+        $dataObj = new TestLeftJoinTableOnCondition();
+        $expectedRows = $dataObj->getData();
 
-        Assert::same($testInputRows, $rows);
+        Assert::same($expectedRows, $queryRows);
     }
 
-    public function testSingleArgumentFunction()
+    public function testSingleArgumentFunction() : void
     {
-        $rows = call_user_func([$this->prepareSelect, __FUNCTION__]);
+        $queryRows = $this->prepareSelect->testSingleArgumentFunction();
 
-        $className = static::$nameSpace . ucfirst(__FUNCTION__ );
-        $testInputRows = call_user_func([new $className, 'getData']);
+        $dataObj = new TestSingleArgumentFunction();
+        $expectedRows = $dataObj->getData();
 
-        Assert::same($testInputRows, $rows);
+        Assert::same($expectedRows, $queryRows);
     }
 
-    public function testExpressions()
+    public function testExpressions() : void
     {
-        $rows = call_user_func([$this->prepareSelect, __FUNCTION__]);
+        $queryRows = $this->prepareSelect->testExpressions();
 
-        $className = static::$nameSpace . ucfirst(__FUNCTION__ );
-        $testInputRows = call_user_func([new $className, 'getData']);
+        $dataObj = new TestExpressions();
+        $expectedRows = $dataObj->getData();
 
-        Assert::same($testInputRows, $rows);
+        Assert::same($expectedRows, $queryRows);
     }
 
-/*    public function testAloneExpressions()
-    {
-        $query = clone $this->query;
+    /*    public function testAloneExpressions()
+        {
+            $query = clone $this->query;
 
-        $query->select(
-            new Plus(
-                new IntegerValue(1),
+            $query->select(
                 new Plus(
-                    new IntegerValue(2),
-                    new Minus(
-                        new IntegerValue(3),
-                        new IntegerValue(4),
+                    new IntegerValue(1),
+                    new Plus(
+                        new IntegerValue(2),
+                        new Minus(
+                            new IntegerValue(3),
+                            new IntegerValue(4),
+                        )
                     )
                 )
-            )
-        );
+            );
 
-        return $query;
-    }*/
+            return $query;
+        }*/
 
-    public function testWhereSingleCondition()
+    public function testWhereSingleCondition() : void
     {
-        $rows = call_user_func([$this->prepareSelect, __FUNCTION__]);
+        $queryRows = $this->prepareSelect->testWhereSingleCondition();
 
-        $className = static::$nameSpace . ucfirst(__FUNCTION__ );
-        $testInputRows = call_user_func([new $className, 'getData']);
+        $dataObj = new TestWhereSingleCondition();
+        $expectedRows = $dataObj->getData();
 
-        Assert::same($testInputRows, $rows);
+        Assert::same($expectedRows, $queryRows);
     }
 
-    public function testWhereDualCondition()
+    public function testWhereDualCondition() : void
     {
-        $rows = call_user_func([$this->prepareSelect, __FUNCTION__]);
+        $queryRows = $this->prepareSelect->testWhereDualCondition();
 
-        $className = static::$nameSpace . ucfirst(__FUNCTION__ );
-        $testInputRows = call_user_func([new $className, 'getData']);
+        $dataObj = new TestWhereDualCondition();
+        $expectedRows = $dataObj->getData();
 
-        Assert::same($testInputRows, $rows);
+        Assert::same($expectedRows, $queryRows);
     }
 
-    public function testSingleGroupBy()
+    public function testSingleGroupBy() : void
     {
-        $rows = call_user_func([$this->prepareSelect, __FUNCTION__]);
+        $queryRows = $this->prepareSelect->testSingleGroupBy();
 
-        $className = static::$nameSpace . ucfirst(__FUNCTION__ );
-        $testInputRows = call_user_func([new $className, 'getData']);
+        $dataObj = new TestSingleGroupBy();
+        $expectedRows = $dataObj->getData();
 
-        Assert::same($testInputRows, $rows);
+        Assert::same($expectedRows, $queryRows);
     }
 
-    public function testAggregateFunctionWithoutGroupBy()
+    public function testAggregateFunctionWithoutGroupBy() : void
     {
-        $rows = call_user_func([$this->prepareSelect, __FUNCTION__]);
+        $queryRows = $this->prepareSelect->testAggregateFunctionWithoutGroupBy();
 
-        $className = static::$nameSpace . ucfirst(__FUNCTION__ );
-        $testInputRows = call_user_func([new $className, 'getData']);
+        $dataObj = new TestAggregateFunctionWithoutGroupBy();
+        $expectedRows = $dataObj->getData();
 
-        Assert::same($testInputRows, $rows);
+        Assert::same($expectedRows, $queryRows);
     }
 
-    public function testAggregateFunctionWithGroupBy()
+    public function testAggregateFunctionWithGroupBy() : void
     {
-        $rows = call_user_func([$this->prepareSelect, __FUNCTION__]);
+        $queryRows = $this->prepareSelect->testAggregateFunctionWithGroupBy();
 
-        $className = static::$nameSpace . ucfirst(__FUNCTION__ );
-        $testInputRows = call_user_func([new $className, 'getData']);
+        $dataObj = new TestAggregateFunctionWithGroupBy();
+        $expectedRows = $dataObj->getData();
 
-        Assert::same($testInputRows, $rows);
+        Assert::same($expectedRows, $queryRows);
     }
 
-    public function testSingleHaving()
+    public function testSingleHaving() : void
     {
-        $rows = call_user_func([$this->prepareSelect, __FUNCTION__]);
+        $queryRows = $this->prepareSelect->testSingleHaving();
 
-        $className = static::$nameSpace . ucfirst(__FUNCTION__ );
-        $testInputRows = call_user_func([new $className, 'getData']);
+        $dataObj = new TestSingleHaving();
+        $expectedRows = $dataObj->getData();
 
-        Assert::same($testInputRows, $rows);
+        Assert::same($expectedRows, $queryRows);
     }
 
-    public function testDualHaving()
+    public function testDualHaving() : void
     {
-        $rows = call_user_func([$this->prepareSelect, __FUNCTION__]);
+        $queryRows = $this->prepareSelect->testDualHaving();
 
-        $className = static::$nameSpace . ucfirst(__FUNCTION__ );
-        $testInputRows = call_user_func([new $className, 'getData']);
+        $dataObj = new TestDualHaving();
+        $expectedRows = $dataObj->getData();
 
-        Assert::same($testInputRows, $rows);
+        Assert::same($expectedRows, $queryRows);
     }
 
-    public function testSingleOrderByColumnAsc()
+    public function testSingleOrderByColumnAsc() : void
     {
-        $rows = call_user_func([$this->prepareSelect, __FUNCTION__]);
+        $queryRows = $this->prepareSelect->testSingleOrderByColumnAsc();
 
-        $className = static::$nameSpace . ucfirst(__FUNCTION__ );
-        $testInputRows = call_user_func([new $className, 'getData']);
+        $dataObj = new TestSingleOrderByColumnAsc();
+        $expectedRows = $dataObj->getData();
 
-        Assert::same($testInputRows, $rows);
+        Assert::same($expectedRows, $queryRows);
     }
 
-    public function testSingleOrderByColumnDesc()
+    public function testSingleOrderByColumnDesc() : void
     {
-        $rows = call_user_func([$this->prepareSelect, __FUNCTION__]);
+        $queryRows = $this->prepareSelect->testSingleOrderByColumnDesc();
 
-        $className = static::$nameSpace . ucfirst(__FUNCTION__ );
-        $testInputRows = call_user_func([new $className, 'getData']);
+        $dataObj = new TestSingleOrderByColumnDesc();
+        $expectedRows = $dataObj->getData();
 
-        Assert::same($testInputRows, $rows);
+        Assert::same($expectedRows, $queryRows);
     }
 
-    public function testSingleOrderByFunctionAsc()
+    public function testSingleOrderByFunctionAsc() : void
     {
-        $rows = call_user_func([$this->prepareSelect, __FUNCTION__]);
+        $queryRows = $this->prepareSelect->testSingleOrderByFunctionAsc();
 
-        dump($rows);
+        $dataObj = new TestSingleOrderByFunctionAsc();
+        $expectedRows = $dataObj->getData();
 
-        $className = static::$nameSpace . ucfirst(__FUNCTION__ );
-        $testInputRows = call_user_func([new $className, 'getData']);
-
-        dump($testInputRows);
-
-        Assert::same($testInputRows, $rows);
+        Assert::same($expectedRows, $queryRows);
     }
 
-    public function testSingleOrderByAggregateFunctionAsc()
+    public function testSingleOrderByAggregateFunctionAsc() : void
     {
-        $rows = call_user_func([$this->prepareSelect, __FUNCTION__]);
+        $queryRows = $this->prepareSelect->testSingleOrderByAggregateFunctionAsc();
 
-        $className = static::$nameSpace . ucfirst(__FUNCTION__ );
-        $testInputRows = call_user_func([new $className, 'getData']);
+        $dataObj = new TestSingleOrderByAggregateFunctionAsc();
+        $expectedRows = $dataObj->getData();
 
-        Assert::same($testInputRows, $rows);
+        Assert::same($expectedRows, $queryRows);
     }
 
-    public function testLimit()
+    public function testLimit() : void
     {
-        $rows = call_user_func([$this->prepareSelect, __FUNCTION__]);
+        $queryRows = $this->prepareSelect->testLimit();
 
-        $className = static::$nameSpace . ucfirst(__FUNCTION__ );
-        $testInputRows = call_user_func([new $className, 'getData']);
+        $dataObj = new TestLimit();
+        $expectedRows = $dataObj->getData();
 
-        Assert::same($testInputRows, $rows);
+        Assert::same($expectedRows, $queryRows);
     }
 
-    public function testOffset()
+    public function testOffset() : void
     {
-        $rows = call_user_func([$this->prepareSelect, __FUNCTION__]);
+        $queryRows = $this->prepareSelect->testOffset();
 
-        $className = static::$nameSpace . ucfirst(__FUNCTION__ );
-        $testInputRows = call_user_func([new $className, 'getData']);
+        $dataObj = new TestOffset();
+        $expectedRows = $dataObj->getData();
 
-        Assert::same($testInputRows, $rows);
+        Assert::same($expectedRows, $queryRows);
     }
 
-    public function testLimitOffset()
+    public function testLimitOffset() : void
     {
-        $rows = call_user_func([$this->prepareSelect, __FUNCTION__]);
+        $queryRows = $this->prepareSelect->testLimitOffset();
 
-        $className = static::$nameSpace . ucfirst(__FUNCTION__ );
-        $testInputRows = call_user_func([new $className, 'getData']);
+        $dataObj = new TestLimitOffset();
+        $expectedRows = $dataObj->getData();
 
-        Assert::same($testInputRows, $rows);
+        Assert::same($expectedRows, $queryRows);
     }
 }
 

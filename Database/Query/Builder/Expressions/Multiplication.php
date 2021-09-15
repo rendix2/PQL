@@ -19,6 +19,7 @@ class Multiplication extends AbstractExpression implements IMathOperator
     /**
      * @param IMathExpression $left
      * @param IMathExpression $right
+     * @param string|null     $alias
      */
     public function __construct(IMathExpression $left, IMathExpression $right, ?string $alias = null)
     {

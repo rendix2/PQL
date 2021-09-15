@@ -65,7 +65,7 @@ class Table implements ITable
 
         if (file_exists($columnsFilePath)) {
             $columnsFileContent = FileSystem::read($columnsFilePath);
-            $columns = json_decode($columnsFileContent);
+            $columns = Json::decode($columnsFileContent);
 
             $this->columns = $columns;
 
@@ -98,7 +98,7 @@ class Table implements ITable
         }
     }
 
-    public function getAllData()
+    public function getAllData() : array
     {
         $sep = DIRECTORY_SEPARATOR;
 
@@ -109,9 +109,7 @@ class Table implements ITable
         $rows = [];
 
         foreach ($stdClassResult as $row) {
-            $className = "\\PQL\\Database\\Entity\\" . $this->name;
-
-            $entity = new $className();
+            $entity = new stdClass();
 
             foreach ($this->columns as $column) {
                 $entity->{$column->tableName} = $row->{$column->name};
@@ -125,9 +123,10 @@ class Table implements ITable
 
     /**
      * @return array
-     */ public  function getColumnNames(): array
+     */
+    public function getColumnNames() : array
     {
-    return $this->columnNames;
+        return $this->columnNames;
     }
 
     public function getName() : string
@@ -136,9 +135,9 @@ class Table implements ITable
     }
 
     /**
-     * @return array|mixed
+     * @return array
      */
-    public function getColumns(): mixed
+    public function getColumns() : array
     {
         return $this->columns;
     }

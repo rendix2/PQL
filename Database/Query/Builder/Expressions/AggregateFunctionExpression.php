@@ -25,6 +25,9 @@ class AggregateFunctionExpression extends AbstractExpression implements IFunctio
      */
     private string $name;
 
+    /**
+     * @var string[] $availableFunctions
+     */
     private static array $availableFunctions = [
         'min',
         'max',

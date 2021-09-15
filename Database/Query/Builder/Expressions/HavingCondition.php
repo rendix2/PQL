@@ -10,12 +10,23 @@
 
 namespace PQL\Query\Builder\Expressions;
 
-class HavingCondition
+use Nette\NotImplementedException;
+
+class HavingCondition implements ICondition
 {
+    /**
+     * @var AggregateFunctionExpression $left
+     */
     private AggregateFunctionExpression $left;
 
+    /**
+     * @var Operator $operator
+     */
     private Operator $operator;
 
+    /**
+     * @var IExpression $right
+     */
     private IExpression $right;
 
     /**
@@ -54,7 +65,8 @@ class HavingCondition
         return $this->right;
     }
 
-
-
-
+    public function evaluate() : string
+    {
+        throw new NotImplementedException();
+    }
 }

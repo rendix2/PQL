@@ -10,12 +10,15 @@
 
 namespace PQL\Query\Builder\Expressions;
 
+use Nette\NotImplementedException;
+
 class FloatValue extends AbstractExpression implements INumberValue
 {
     private float $value;
 
     /**
-     * @param float $value
+     * @param float       $value
+     * @param null|string $alias
      */
     public function __construct(float $value, ?string $alias = null)
     {
@@ -36,8 +39,8 @@ class FloatValue extends AbstractExpression implements INumberValue
         return $this->value;
     }
 
-    public function print(): string
+    public function print(?int $level = null) : string
     {
-        return $this->value;
+        return (string)$this->value;
     }
 }

@@ -43,11 +43,6 @@ class IntegerValue extends AbstractExpression implements INumberValue
         return $this->value;
     }
 
-    public function getName(): string
-    {
-        throw new NotImplementedException();
-    }
-
     public function print(?int $level = null): string
     {
         return $this->value;

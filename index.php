@@ -3,20 +3,8 @@
 use Netpromotion\Profiler\Adapter\TracyBarAdapter;
 use Netpromotion\Profiler\Profiler;
 use Nette\Loaders\RobotLoader;
-use PQL\Query\Builder\Expressions\Column;
-use PQL\Query\Builder\Expressions\AggregateFunctionExpression;
-use PQL\Query\Builder\Expressions\FunctionExpression;
-use PQL\Query\Builder\Expressions\HavingCondition;
-use PQL\Query\Builder\Expressions\IntegerValue;
-use PQL\Query\Builder\Expressions\JoinConditionExpression;
-use PQL\Query\Builder\Expressions\Minus;
-use PQL\Query\Builder\Expressions\Operator;
-use PQL\Query\Builder\Expressions\Plus;
-use PQL\Query\Builder\Expressions\QueryExpression;
-use PQL\Query\Builder\Expressions\StringValue;
-use PQL\Query\Builder\Expressions\TableExpression;
-use PQL\Query\Builder\Expressions\WhereCondition;
 use PQL\Server;
+use PQL\Starter;
 use Tracy\Debugger;
 
 $sep = DIRECTORY_SEPARATOR;
@@ -41,11 +29,55 @@ $server = new Server();
 //dump($server);
 
 
-$database = $server->getDatabase('test');
+/*$database = $server->getDatabase('tests');
 
 $commentTable = new TableExpression($database, 'comments', 'ic');
-$userTable = new TableExpression($database, 'User', 'u');
+$userTable = new TableExpression($database, 'User', 'u');*/
 
+function run(\PQL\Query\Builder\Select $query)
+{
+    echo $query->printQuery();
+    bdump($query->execute());
+    echo '<br><br>';
+    echo $query->printResult();
+    echo '<br><br>';
+}
+
+
+$c = new \PQL\CreateTestData();
+$c->run();
+
+
+
+
+
+
+/*$test = new \PQL\Test\SelectTest();
+
+run($test->testColumnsFrom());
+run($test->testDistinctColumn());
+run($test->testInnerJoinTableOnCondition());
+run($test->testLeftJoinTableOnCondition());
+run($test->testCrossJoin());
+run($test->testSingleArgumentFunction());
+run($test->testExpressions());
+run($test->testWhereSingleCondition());
+run($test->testWhereDualCondition());
+run($test->testSingleGroupBy());
+run($test->testAggregateFunctionWithoutGroupBy());
+run($test->testAggregateFunctionWithGroupBy());
+run($test->testSingleHaving());
+run($test->testDualHaving());
+run($test->testSingleOrderByColumnAsc());
+run($test->testSingleOrderByColumnDesc());
+run($test->testSingleOrderByFunctionAsc());
+run($test->testSingleOrderByAggregateFunctionAsc());
+run($test->testLimit());
+run($test->testOffset());
+run($test->testLimitOffset());*/
+//run($tests->testAloneExpressions());
+
+/*
 $fromQuery = $database->selectQuery();
 $fromQuery->select(new Column('id', $commentTable));
 $fromQuery->select(new Column('text', $commentTable));
@@ -55,13 +87,15 @@ $fromQuery->from($commentTable);
 
 $query = $database->selectQuery();
 
-$query->select(new Column('id', $commentTable));
-/*$query->select(new Column('id', $userTable));
-$query->select(new Column('username', $userTable));*/
-$query->select(new Column('text', $commentTable));
-$query->select(new Column('rok', $commentTable));
-$query->select(new AggregateFunctionExpression('sum', [new Column('rok', $commentTable)]));
-$query->select(new FunctionExpression('strtolower', [new Column('text', $commentTable)]));
+$query->distinct(new Column('rok', $commentTable));
+
+//$query->select(new Column('id', $commentTable));
+///*$query->select(new Column('id', $userTable));
+//$query->select(new Column('username', $userTable));*/
+//$query->select(new Column('text', $commentTable));
+//$query->select(new Column('rok', $commentTable));
+//$query->select(new AggregateFunctionExpression('sum', [new Column('rok', $commentTable)]));
+//$query->select(new FunctionExpression('strtolower', [new Column('text', $commentTable)]));
 /*$query->select(
     new Plus(
         new IntegerValue(1),
@@ -75,7 +109,7 @@ $query->select(new FunctionExpression('strtolower', [new Column('text', $comment
         'k'
     )
 );*/
-
+/*
 $query->from($commentTable);
 /*$query->leftJoin(
     $userTable, [
@@ -91,7 +125,7 @@ $query->from($commentTable);
         ),
     ],
 );*/
-
+/*
 $query->groupBy(new Column('rok', $commentTable));
 //$query->groupBy(new Column('id', $userTable));
 //$query->groupBy(new Column('text', $commentTable));
@@ -105,11 +139,25 @@ $query->groupBy(new Column('rok', $commentTable));
 //$query->offset(35);
 
 //$query->having(new HavingCondition(new AggregateFunctionExpression('count', [new Column('rok', $commentTable)]), new Operator('='), new IntegerValue(2)));
-$query->having(new HavingCondition(new AggregateFunctionExpression('count', [new Column('rok', $commentTable)]), new Operator('>='), new IntegerValue(1)));
+//$query->having(new HavingCondition(new AggregateFunctionExpression('count', [new Column('rok', $commentTable)]), new Operator('>='), new IntegerValue(1)));
 
 dump($query);
 
-echo $query->printQuery();
+$intersectQuery = clone $query;
+$intersectQuery->where(new WhereCondition(new Column('rok', $commentTable), new Operator('='), new IntegerValue(2020)));
+
+//$query->except($intersectQuery);
+/*$query->where(new WhereCondition(
+    new FunctionExpression('strtolower', [new Column('text', $commentTable)]),
+    new Operator('='),
+    new StringValue('wda2021')
+));*/
+
+/*echo $query->printQuery();
 $query->execute();
 echo '<br><br>';
-echo $query->printResult();
+echo $query->printResult();*/
+
+
+/*$intersectQuery->execute();
+echo $intersectQuery->printResult();*/

@@ -46,7 +46,7 @@ class Server
         }
     }
 
-    public function getDatabase(string $name)
+    public function getDatabase(string $name) : Database
     {
         if (isset($this->databases[$name])) {
             return $this->databases[$name];
@@ -64,6 +64,4 @@ class Server
     {
         return $this->databases;
     }
-
-
 }

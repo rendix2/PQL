@@ -40,9 +40,4 @@ class Minus extends AbstractExpression implements IMathOperator
     {
         return sprintf('(%s - %s)', $this->left->print(), $this->right->print());
     }
-
-    public function getName(): string
-    {
-        throw new NotImplementedException();
-    }
 }

@@ -112,6 +112,5 @@ class AggregateFunctionsPreGroupByExecutor implements IExecutor
         $count = count($array_column);
 
         return $this->setValue($function, $count);
-
     }
 }

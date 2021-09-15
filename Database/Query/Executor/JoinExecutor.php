@@ -11,7 +11,7 @@
 namespace PQL\Query\Runner;
 
 
-use PQL\Query\Builder\Expressions\JoinConditionExpression;
+use PQL\Query\Builder\Expressions\JoinCondition;
 use PQL\Query\Builder\Expressions\WhereCondition;
 use PQL\Query\Builder\Select;
 
@@ -52,7 +52,7 @@ class JoinExecutor
             $entity = $leftJoinedTable->getJoinExpression()->getNullEntity();
 
             foreach ($leftJoinedTable->getJoinConditions() as $joinCondition) {
-                if ($joinCondition instanceof JoinConditionExpression) {
+                if ($joinCondition instanceof JoinCondition) {
                     $rows = $this->optimizer->leftJoin($rows, $tableRows, $joinCondition, $entity);
                 } elseif ($joinCondition instanceof WhereCondition) {
                     $rows = $this->whereExecutor->innerWhere($rows, $joinCondition);
@@ -74,7 +74,7 @@ class JoinExecutor
             $tableRows = $innerJoinedTable->getJoinExpression()->getData();
 
             foreach ($innerJoinedTable->getJoinConditions() as $joinCondition) {
-                if ($joinCondition instanceof JoinConditionExpression) {
+                if ($joinCondition instanceof JoinCondition) {
                     $rows = $this->optimizer->innerJoin($rows, $tableRows, $joinCondition);
                 } elseif ($joinCondition instanceof WhereCondition) {
                     $rows = $this->whereExecutor->innerWhere($rows, $joinCondition);

@@ -10,7 +10,6 @@
 
 namespace PQL\Query\Runner;
 
-
 use Exception;
 use PQL\Query\Builder\Expressions\AggregateFunctionExpression;
 use PQL\Query\Builder\Expressions\HavingCondition;
@@ -19,31 +18,36 @@ use PQL\Query\Builder\Select;
 
 class HavingExecutor implements IExecutor
 {
-    private AggregateFunctionsPreGroupByExecutor $aggregateFunctionsExecutor;
-
+    /**
+     * @var ConditionExecutor $conditionExecutor
+     */
     private ConditionExecutor $conditionExecutor;
 
+    /**
+     * @var GroupByExecutor $groupByExecutor
+     */
     private GroupByExecutor $groupByExecutor;
 
+    /**
+     * @var Select $query
+     */
     private Select $query;
 
     /**
      * HavingExecutor constructor.
      *
-     * @param Select                               $query
-     * @param AggregateFunctionsPreGroupByExecutor $aggregateFunctionsExecutor
-     * @param GroupByExecutor                      $groupByExecutor
+     * @param Select            $query
+     * @param GroupByExecutor   $groupByExecutor
+     * @param ConditionExecutor $conditionExecutor
      */
     public function __construct(
-        Select                               $query,
-        AggregateFunctionsPreGroupByExecutor $aggregateFunctionsExecutor,
-        GroupByExecutor                      $groupByExecutor,
-        ConditionExecutor                    $conditionExecutor
+        Select            $query,
+        GroupByExecutor   $groupByExecutor,
+        ConditionExecutor $conditionExecutor
     ) {
-        $this->aggregateFunctionsExecutor = $aggregateFunctionsExecutor;
         $this->query = $query;
-        $this->groupByExecutor = $groupByExecutor;
 
+        $this->groupByExecutor = $groupByExecutor;
         $this->conditionExecutor = $conditionExecutor;
     }
 
@@ -150,6 +154,9 @@ class HavingExecutor implements IExecutor
         return $rows;
     }
 
+    /**
+     * @throws Exception
+     */
     private function sum(HavingCondition $havingCondition) : array
     {
         $argument = $havingCondition->getLeft()->getArguments()[0]->evaluate();

@@ -23,7 +23,7 @@ class JoinExpression extends AbstractExpression implements IExpression
     private IFromExpression $joinExpression;
 
     /**
-     * @var WhereCondition[] $joinConditions
+     * @var ICondition[] $joinConditions
      */
     private array $joinConditions;
 
@@ -36,8 +36,11 @@ class JoinExpression extends AbstractExpression implements IExpression
      *
      * @throws Exception
      */
-    public function __construct(IFromExpression $joinExpression, array $joinConditions, ?string $alias = null)
-    {
+    public function __construct(
+        IFromExpression $joinExpression,
+        array $joinConditions,
+        ?string $alias = null
+    ) {
         parent::__construct($alias);
 
         foreach ($joinConditions as $joinCondition) {
@@ -62,20 +65,20 @@ class JoinExpression extends AbstractExpression implements IExpression
     /**
      * @return IFromExpression
      */
-    public function getJoinExpression(): IFromExpression
+    public function getJoinExpression() : IFromExpression
     {
         return $this->joinExpression;
     }
 
     /**
-     * @return WhereCondition[]
+     * @return ICondition[]
      */
-    public function getJoinConditions(): array
+    public function getJoinConditions() : array
     {
         return $this->joinConditions;
     }
 
-    public function evaluate()
+    public function evaluate() : string
     {
         throw new NotImplementedException();
     }

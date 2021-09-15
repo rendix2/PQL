@@ -46,7 +46,7 @@ class OrderByExecutor implements IExecutor
         $sortTemp = [];
 
         foreach ($this->query->getOrderByColumns() as $orderByColumn) {
-            $columnName = $orderByColumn->getColumn()->evaluate();
+            $columnName = $orderByColumn->getExpression()->evaluate();
 
             $sortTemp[] = array_column($resultTemp, $columnName);
             $sortTemp[] = $orderByColumn->getSortingConst();

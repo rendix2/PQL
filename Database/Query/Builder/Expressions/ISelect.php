@@ -15,12 +15,7 @@ use PQL\IPrintable;
 
 interface ISelect extends IExpression, IPrintable
 {
-
-    public function getName() : string;
-
     public function hasAlias() : bool;
 
     public function getAlias() : ?string;
-
-
 }

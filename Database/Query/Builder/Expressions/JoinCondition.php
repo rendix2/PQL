@@ -10,8 +10,7 @@
 
 namespace PQL\Query\Builder\Expressions;
 
-
-class JoinConditionExpression implements ICondition
+class JoinCondition implements ICondition
 {
     private IExpression $left;
 

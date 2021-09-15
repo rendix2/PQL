@@ -14,6 +14,9 @@ namespace PQL\Query\Builder\Expressions;
 class StringValue extends AbstractExpression implements IValue
 {
 
+    /**
+     * @var string $value
+     */
     private string $value;
 
     /**
@@ -39,5 +42,10 @@ class StringValue extends AbstractExpression implements IValue
     public function evaluate() : string
     {
         return $this->value;
+    }
+
+    public function print(?int $level = null) : string
+    {
+        return sprintf('"%s"', $this->value);
     }
 }

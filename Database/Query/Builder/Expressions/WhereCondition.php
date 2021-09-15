@@ -70,7 +70,7 @@ class WhereCondition implements ICondition
         return $this->right;
     }
 
-    public function evaluate()
+    public function evaluate() : string
     {
         throw new NotImplementedException();
     }

@@ -16,7 +16,7 @@ use PQL\Query\Builder\Expressions\Column;
 use PQL\Query\Builder\Expressions\FunctionExpression;
 use PQL\Query\Builder\Expressions\HavingCondition;
 use PQL\Query\Builder\Expressions\IntegerValue;
-use PQL\Query\Builder\Expressions\JoinConditionExpression;
+use PQL\Query\Builder\Expressions\JoinCondition;
 use PQL\Query\Builder\Expressions\Minus;
 use PQL\Query\Builder\Expressions\Operator;
 use PQL\Query\Builder\Expressions\Plus;
@@ -106,7 +106,7 @@ class PrepareSelect
         $query->from($commentTable);
         $query->innerJoin(
             $userTable, [
-            new JoinConditionExpression(
+            new JoinCondition(
                 new Column('id', $userTable),
                 new Operator('='),
                 new Column('userId', $commentTable)
@@ -170,7 +170,7 @@ class PrepareSelect
         $query->from($commentTable);
         $query->leftJoin(
             $userTable, [
-            new JoinConditionExpression(
+            new JoinCondition(
                 new Column('id', $userTable),
                 new Operator('='),
                 new Column('userId', $commentTable)

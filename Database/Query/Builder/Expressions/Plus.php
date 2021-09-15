@@ -41,13 +41,8 @@ class Plus extends AbstractExpression implements IMathOperator
         return $this->left->evaluate() + $this->right->evaluate();
     }
 
-    public function print(?int $level = null): string
+    public function print(?int $level = null) : string
     {
         return sprintf('%s + %s', $this->left->print(), $this->right->print());
-    }
-
-    public function getName(): string
-    {
-        // TODO: Implement getName() method.
     }
 }

@@ -47,6 +47,11 @@ class Select
     private array $aggregateFunctions;
 
     /**
+     * @var Select[] $exceptedQueries
+     */
+    private array $exceptedQueries;
+
+    /**
      * @var FunctionExpression[] $functions
      */
     private array $functions;
@@ -62,12 +67,17 @@ class Select
     private array $havingConditions;
 
     /**
+     * @var Select[] $intersected
+     */
+    private array $intersected;
+
+    /**
      * @var JoinExpression[] $leftJoinedTables
      */
     private array $leftJoinedTables;
 
     /**
-     * @var OrderByColumnExpression[] $orderByColumns
+     * @var OrderByExpression[] $orderByColumns
      */
     private array $orderByColumns;
 
@@ -87,9 +97,19 @@ class Select
     private array $crossJoinedTables;
 
     /**
-     * @var IFromExpression $fromClause
+     * @var ?IFromExpression $fromClause
      */
-    private IFromExpression $fromClause;
+    private ?IFromExpression $fromClause;
+
+    /**
+     * @var Select[] $unionedAllQueries
+     */
+    private array $unionedAllQueries;
+
+    /**
+     * @var Select[] $unionedQueries
+     */
+    private array $unionedQueries;
 
     /**
      * @var IValue[] $values
@@ -114,6 +134,8 @@ class Select
     {
         $this->database = $database;
 
+        $this->fromClause = null;
+
         $this->whereConditions = [];
         $this->havingConditions = [];
 
@@ -134,6 +156,11 @@ class Select
 
         $this->columns = [];
         $this->distinct = null;
+
+        $this->intersected = [];
+        $this->exceptedQueries = [];
+        $this->unionedAllQueries = [];
+        $this->unionedQueries = [];
 
         $this->result = [];
     }
@@ -238,9 +265,9 @@ class Select
         return $this;
     }
 
-    public function orderBy(Column $column, $order = 'ASC') : static
+    public function orderBy(IExpression $expression, $order = 'ASC') : static
     {
-        $this->orderByColumns[] = new OrderByColumnExpression($column, $order === 'ASC');
+        $this->orderByColumns[] = new OrderByExpression($expression, $order === 'ASC');
 
         return $this;
     }
@@ -263,6 +290,34 @@ class Select
     {
         $this->limit($limit);
         $this->offset($offset);
+
+        return $this;
+    }
+
+    public function intersect(Select $select) : static
+    {
+        $this->intersected[] = $select;
+
+        return $this;
+    }
+
+    public function except(Select $select) : static
+    {
+        $this->exceptedQueries[] = $select;
+
+        return $this;
+    }
+
+    public function union(Select $select) : static
+    {
+        $this->unionedQueries[] = $select;
+
+        return $this;
+    }
+
+    public function unionAll(Select $select) : static
+    {
+        $this->unionedAllQueries[] = $select;
 
         return $this;
     }
@@ -291,7 +346,7 @@ class Select
     /// GETTERS
 
     /**
-     * @return OrderByColumnExpression[]
+     * @return OrderByExpression[]
      */
     public function getOrderByColumns(): array
     {
@@ -323,9 +378,9 @@ class Select
     }
 
     /**
-     * @return IFromExpression
+     * @return ?IFromExpression
      */
-    public function getFromClause(): IFromExpression
+    public function getFromClause(): ?IFromExpression
     {
         return $this->fromClause;
     }
@@ -418,5 +473,34 @@ class Select
     public function getDistinct(): ?Column
     {
         return $this->distinct;
+    }
+
+    /**
+     * @return Select[]
+     */
+    public function getIntersected(): array
+    {
+        return $this->intersected;
+    }
+
+    /**
+     * @return Select[]
+     */
+    public function getExceptedQueries(): array
+    {
+        return $this->exceptedQueries;
+    }
+
+    public function getUnionedAllQueries() : array
+    {
+        return $this->unionedAllQueries;
+    }
+
+    /**
+     * @return Select[]
+     */
+    public function getUnionedQueries(): array
+    {
+        return $this->unionedQueries;
     }
 }

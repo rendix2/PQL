@@ -10,27 +10,31 @@
 
 namespace PQL\Query\Builder;
 
-
 use Nette\NotImplementedException;
 use PQL\Query\Builder\Expressions\Column;
 use PQL\Query\Builder\Expressions\IExpression;
 
-class OrderByColumnExpression implements IExpression
+class OrderByExpression implements IExpression
 {
+    /**
+     * @var IExpression $expression
+     */
+    private IExpression $expression;
 
-    private Column $column;
-
+    /**
+     * @var bool $asc
+     */
     private bool $asc;
 
     /**
      * OrderByColumn constructor.
      *
-     * @param Column $column
-     * @param bool   $asc
+     * @param IExpression $expression
+     * @param bool        $asc
      */
-    public function __construct(Column $column, bool $asc)
+    public function __construct(IExpression $expression, bool $asc)
     {
-        $this->column = $column;
+        $this->expression = $expression;
         $this->asc = $asc;
     }
 
@@ -42,27 +46,27 @@ class OrderByColumnExpression implements IExpression
     }
 
     /**
-     * @return Column
+     * @return IExpression
      */
-    public function getColumn(): Column
+    public function getExpression() : IExpression
     {
-        return $this->column;
+        return $this->expression;
     }
 
     /**
      * @return bool
      */
-    public function isAsc(): bool
+    public function isAsc() : bool
     {
         return $this->asc;
     }
 
-    public function getSortingConst()
+    public function getSortingConst() : int
     {
         return $this->asc === true ? SORT_ASC : SORT_DESC;
     }
 
-    public function evaluate()
+    public function evaluate() : string
     {
         throw new NotImplementedException();
     }

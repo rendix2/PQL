@@ -19,4 +19,8 @@ class NullValue implements IValue
         return null;
     }
 
+    public function print(?int $level = null): string
+    {
+        return 'null';
+    }
 }

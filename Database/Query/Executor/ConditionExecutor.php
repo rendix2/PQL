@@ -16,7 +16,7 @@ use PQL\Query\Builder\Expressions\Column;
 use PQL\Query\Builder\Expressions\HavingCondition;
 use PQL\Query\Builder\Expressions\IExpression;
 use PQL\Query\Builder\Expressions\IValue;
-use PQL\Query\Builder\Expressions\JoinConditionExpression;
+use PQL\Query\Builder\Expressions\JoinCondition;
 use PQL\Query\Builder\Expressions\WhereCondition;
 use stdClass;
 
@@ -57,7 +57,7 @@ class ConditionExecutor
         return false;
     }
 
-    public function join(stdClass $rowA, stdClass $rowB, JoinConditionExpression $whereCondition) : bool
+    public function join(stdClass $rowA, stdClass $rowB, JoinCondition $whereCondition) : bool
     {
         if ($whereCondition->getLeft() instanceof Column) {
             $leftColumn = $whereCondition->getLeft()->evaluate();

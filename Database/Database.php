@@ -52,10 +52,9 @@ class Database
          * @var SplFileInfo $directoryTable
          */
         foreach ($directoryTables as $directoryTable) {
-            $this->tables[$directoryTable->getFilename()] = new Table($this, $directoryTable->getFilename(), $directoryTable->getPathname());
+            $tableName = $directoryTable->getFilename();
 
-            $entityGenerator = new EntityGenerator($this->tables[$directoryTable->getFilename()]);
-            $entityGenerator->run();
+            $this->tables[$tableName] = new Table($this, $tableName, $directoryTable->getPathname());
         }
     }
 

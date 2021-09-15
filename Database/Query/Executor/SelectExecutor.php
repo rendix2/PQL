@@ -12,8 +12,6 @@ namespace PQL\Query\Runner;
 
 use Exception;
 use Netpromotion\Profiler\Profiler;
-use PQL\Query\Builder\Expressions\Column;
-use PQL\Query\Builder\Expressions\StringValue;
 use PQL\Query\Builder\Select;
 use PQL\Query\Container;
 use stdClass;
@@ -33,6 +31,16 @@ class SelectExecutor
     private AggregateFunctionsPreGroupByExecutor $aggregateFunctionsPreGroupByExecutor;
 
     /**
+     * @var DistinctExecutor $distinctExecutor
+     */
+    private DistinctExecutor $distinctExecutor;
+
+    /**
+     * @var ExceptExecutor $exceptExecutor
+     */
+    private ExceptExecutor $exceptExecutor;
+
+    /**
      * @var FunctionsExecutor $functionsExecutor
      */
     private FunctionsExecutor $functionsExecutor;
@@ -41,6 +49,11 @@ class SelectExecutor
      * @var HavingExecutor $havingExecutor
      */
     private HavingExecutor $havingExecutor;
+
+    /**
+     * @var IntersectExecutor $intersectExecutor
+     */
+    private IntersectExecutor $intersectExecutor;
 
     /**
      * @var JoinExecutor $joinExecutor
@@ -63,6 +76,16 @@ class SelectExecutor
     private GroupByExecutor $groupByExecutor;
 
     /**
+     * @var UnionAllExecutor $unionAllExecutor
+     */
+    private UnionAllExecutor $unionAllExecutor;
+
+    /**
+     * @var UnionExecutor $unionExecutor
+     */
+    private UnionExecutor $unionExecutor;
+
+    /**
      * @var WhereExecutor $whereExecutor
      */
     private WhereExecutor $whereExecutor;
@@ -81,6 +104,13 @@ class SelectExecutor
         $this->havingExecutor = $container->getHavingExecutor();
         $this->orderByExecutor = $container->getOrderByExecutor();
         $this->functionsExecutor = $container->getFunctionsExecutor();
+
+        $this->intersectExecutor = $container->getIntersectExecutor();
+        $this->exceptExecutor = $container->getExceptExecutor();
+        $this->unionExecutor = $container->getUnionExecutor();
+        $this->unionAllExecutor = $container->getUnionAllExecutor();
+
+        $this->distinctExecutor = $container->getDistinctExecutor();
     }
 
     public function __destruct()
@@ -117,6 +147,14 @@ class SelectExecutor
         //$this->rightJoins();
         Profiler::finish('rightJoins');
 
+        Profiler::start('functions');
+        $this->functions();
+        Profiler::finish('functions');
+
+        Profiler::start('values');
+        $this->values();
+        Profiler::finish('values');
+
         Profiler::start('where');
         $this->where();
         Profiler::finish('where');
@@ -145,14 +183,6 @@ class SelectExecutor
         $this->limit();
         Profiler::finish('limit');
 
-        Profiler::start('functions');
-        $this->functions();
-        Profiler::finish('functions');
-
-        Profiler::start('values');
-        $this->values();
-        Profiler::finish('values');
-
         Profiler::start('columns');
         $this->columns();
         Profiler::finish('columns');
@@ -160,6 +190,22 @@ class SelectExecutor
         Profiler::start('distinct');
         $this->distinct();
         Profiler::finish('distinct');
+
+        Profiler::start('intersect');
+        $this->intersect();
+        Profiler::finish('intersect');
+
+        Profiler::start('except');
+        $this->except();
+        Profiler::finish('except');
+
+        Profiler::start('union');
+        $this->union();
+        Profiler::finish('union');
+
+        Profiler::start('unionAll');
+        $this->unionAll();
+        Profiler::finish('unionAll');
 
         return $this->data;
     }
@@ -172,7 +218,7 @@ class SelectExecutor
             }
 
             if (count($this->query->getColumns()) === 1) {
-                if ($this->query->getDistinct() !==  $this->query->getColumns()[0]){
+                if ($this->query->getDistinct() !== $this->query->getColumns()[0]) {
                     throw new Exception('We have set Distinct column and columns. If distinct column is user, you cannot use normal columns.');
                 }
             }
@@ -219,6 +265,11 @@ class SelectExecutor
         $this->data = $this->groupByExecutor->run($this->data);
     }
 
+    private function aggregateFunctionsPostGroupBy() : void
+    {
+        $this->data = $this->aggregateFunctionsPostGroupByExecutor->run($this->data);
+    }
+
     private function having() : void
     {
         $this->data = $this->havingExecutor->run($this->data);
@@ -243,7 +294,7 @@ class SelectExecutor
     {
         foreach ($this->query->getValues() as $value) {
             foreach ($this->data as $row) {
-                if ($value->getAlias()) {
+                if ($value->hasAlias()) {
                     $row->{$value->getAlias()} = $value->evaluate();
                 } else {
                     $row->{$value->print()} = $value->evaluate();
@@ -256,7 +307,7 @@ class SelectExecutor
     {
         $res = [];
 
-        foreach ($this->query->getColumns() as $column ) {
+        foreach ($this->query->getColumns() as $column) {
             foreach ($this->data as $key => $value) {
                 if ($column->getAlias()) {
                     $columnName = $column->getAlias();
@@ -279,28 +330,28 @@ class SelectExecutor
         $this->data = $objectRows;
     }
 
-    public function distinct() : void
+    private function distinct() : void
     {
-        if (!$this->query->getDistinct()) {
-            return;
-        }
-
-        $rows = array_column($this->data, $this->query->getDistinct()->evaluate());
-
-        $distinctRowsTemp = array_unique($rows);
-        $distinctRowsTempResult = [];
-
-        foreach ($distinctRowsTemp as $distinctRow) {
-            $row = [$this->query->getDistinct()->evaluate() => $distinctRow];
-
-            $distinctRowsTempResult[] = (object)$row;
-        }
-
-        $this->data = $distinctRowsTempResult;
+        $this->data = $this->distinctExecutor->run($this->data);
     }
 
-    private function aggregateFunctionsPostGroupBy() : void
+    private function intersect() : void
     {
-        $this->data = $this->aggregateFunctionsPostGroupByExecutor->run($this->data);
+        $this->data = $this->intersectExecutor->run($this->data);
+    }
+
+    private function except() : void
+    {
+        $this->data = $this->exceptExecutor->run($this->data);
+    }
+
+    private function union() : void
+    {
+        $this->data = $this->unionExecutor->run($this->data);
+    }
+
+    private function unionAll() : void
+    {
+        $this->data = $this->unionAllExecutor->run($this->data);
     }
 }

@@ -13,6 +13,8 @@ namespace PQL\Query\Builder\Expressions;
 interface IFunction extends ISelect
 {
 
+    public function getName() : string;
+
     public function getArguments() : array;
 
 }

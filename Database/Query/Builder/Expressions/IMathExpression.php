@@ -12,6 +12,6 @@ namespace PQL\Query\Builder\Expressions;
 
 use PQL\IPrintable;
 
-interface IMathExpression extends IValue, IPrintable, ISelect
+interface IMathExpression extends IValue, ISelect
 {
 }

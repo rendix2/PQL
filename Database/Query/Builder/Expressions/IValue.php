@@ -10,6 +10,8 @@
 
 namespace PQL\Query\Builder\Expressions;
 
-interface IValue extends IExpression
+use PQL\IPrintable;
+
+interface IValue extends IExpression, IPrintable
 {
 }

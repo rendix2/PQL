@@ -13,7 +13,6 @@ namespace PQL\Query\Printer;
 
 use Exception;
 use Netpromotion\Profiler\Profiler;
-use PetrKnap\Php\Profiler\Profile;
 use PQL\Query\Builder\Expressions\AbstractExpression;
 use PQL\Query\Builder\Expressions\QueryExpression;
 use PQL\Query\Builder\Expressions\TableExpression;
@@ -61,12 +60,12 @@ class Select
         }
     }
 
-    private function alias(AbstractExpression $expression)
+    private function alias(AbstractExpression $expression) : string
     {
         return $expression->getAlias() ? $this->clauseSpan . ' AS ' . $this->closeSpan . $expression->getAlias() : '';
     }
 
-    private function select(): string
+    private function select() : string
     {
         $select = $this->clauseSpan . 'SELECT' . $this->closeSpan . ' ';
 
@@ -89,7 +88,7 @@ class Select
         return $this->indent() . $select;
     }
 
-    private function from(): string
+    private function from() : string
     {
         $fromString = '<br>' . $this->indent() . $this->clauseSpan . 'FROM' . $this->closeSpan . ' ';
 
@@ -108,19 +107,19 @@ class Select
          return $fromString;
     }
 
-    private function leftJoins(): string
+    private function leftJoins() : string
     {
         $leftJoined = '';
 
         foreach ($this->query->getLeftJoinedTables() as $leftJoinedTable) {
             if ($leftJoinedTable->getJoinExpression() instanceof TableExpression) {
-                $leftJoined .= '<br>' . $this->indent() . $this->clauseSpan . 'LEFT JOIN'. $this->closeSpan . ' ' . $this->tableSpan . $leftJoinedTable->getJoinExpression()->getTable()->getName() .$this->closeSpan;
+                $leftJoined .= '<br>' . $this->indent() . $this->clauseSpan . 'LEFT JOIN' . $this->closeSpan . ' ' . $this->tableSpan . $leftJoinedTable->getJoinExpression()->getTable()->getName() . $this->closeSpan;
                 $leftJoined .= $this->alias($leftJoinedTable->getJoinExpression());
                 $leftJoined .= $this->onConditions($leftJoinedTable->getJoinConditions());
             } elseif ($leftJoinedTable->getJoinExpression() instanceof QueryExpression) {
                 $printer = new Select($leftJoinedTable->getJoinExpression()->getQuery(), $this->indent + 1);
 
-                $leftJoined .= '<br>' . $this->indent() . $this->clauseSpan . 'LEFT JOIN'. $this->closeSpan . ' (<br>' . $printer->print() . '<br>' . $this->indent() . ')';
+                $leftJoined .= '<br>' . $this->indent() . $this->clauseSpan . 'LEFT JOIN' . $this->closeSpan . ' (<br>' . $printer->print() . '<br>' . $this->indent() . ')';
                 $leftJoined .= $this->alias($leftJoinedTable->getJoinExpression());
                 $leftJoined .= $this->onConditions($leftJoinedTable->getJoinConditions());
             }
@@ -129,7 +128,7 @@ class Select
         return $leftJoined;
     }
 
-    private function innerJoins(): string
+    private function innerJoins() : string
     {
         $innerJoined = '';
 
@@ -148,7 +147,7 @@ class Select
         return $innerJoined;
     }
 
-    private function crossJoins(): string
+    private function crossJoins() : string
     {
         $crossJoined = '';
 
@@ -170,7 +169,7 @@ class Select
      *
      * @return string
      */
-    private function onConditions(array $joinConditions): string
+    private function onConditions(array $joinConditions) : string
     {
         $onConditions = '';
 
@@ -191,7 +190,7 @@ class Select
         return $onConditions;
     }
 
-    private function where(): string
+    private function where() : string
     {
         $where = '<br>' . $this->indent() . $this->clauseSpan . 'WHERE' . $this->closeSpan . ' ';
 
@@ -200,7 +199,7 @@ class Select
             $operator = $whereCondition->getOperator()->getOperator();
 
             if ($whereCondition->getRight()) {
-                $rightPart = $whereCondition->getRight()->evaluate();
+                $rightPart = $whereCondition->getRight()->print();
             } else {
                 $rightPart = '';
             }
@@ -215,19 +214,19 @@ class Select
         return count($this->query->getWhereConditions()) ? $where : '';
     }
 
-    private function orderBy(): string
+    private function orderBy() : string
     {
         $orderBy = '<br>' . $this->indent() . $this->clauseSpan . 'ORDER BY' . $this->closeSpan;
 
         foreach ($this->query->getOrderByColumns() as $orderByColumn) {
             $asc = $orderByColumn->isAsc() ? 'ASC' : 'DESC';
-            $orderBy .= ' ' . $this->columnSpan . $orderByColumn->getColumn()->evaluate() . $this->closeSpan . ' ' . $asc;
+            $orderBy .= ' ' . $this->columnSpan . $orderByColumn->getExpression()->evaluate() . $this->closeSpan . ' ' . $asc;
         }
 
         return count($this->query->getOrderByColumns()) ? $orderBy : '';
     }
 
-    private function groupBy(): string
+    private function groupBy() : string
     {
         $groupBy = '<br>' . $this->indent() . $this->clauseSpan . 'GROUP BY' . $this->closeSpan;
 
@@ -243,7 +242,7 @@ class Select
         return $count ? $groupBy : '';
     }
 
-    private function having()
+    private function having() : string
     {
         $where = '<br>' . $this->indent() . $this->clauseSpan . 'HAVING' . $this->closeSpan;
 
@@ -267,7 +266,7 @@ class Select
         return count($this->query->getHavingConditions()) ? $where : '';
     }
 
-    private function limit(): string
+    private function limit() : string
     {
         if ($this->query->getLimit()) {
             return '<br>' . $this->indent() . $this->clauseSpan . 'LIMIT ' .$this->closeSpan . $this->query->getLimit();
@@ -276,7 +275,7 @@ class Select
         return '';
     }
 
-    private function offset(): string
+    private function offset() : string
     {
         if ($this->query->getOffset()) {
             return '<br>' . $this->indent() . $this->clauseSpan . 'OFFSET ' . $this->closeSpan . $this->query->getOffset();
@@ -285,7 +284,76 @@ class Select
         return '';
     }
 
-    public function print(): string
+    private function intersect() : string
+    {
+        $intersect = '';
+
+        if (count($this->query->getIntersected())) {
+            $intersect = '<br><br> '.$this->clauseSpan . 'INTERSECT '. $this->closeSpan . '<br><br>';
+
+            foreach ($this->query->getIntersected() as $intersectQuery) {
+                $printer = new Select($intersectQuery, $this->indent);
+
+                $intersect .= $printer->print();
+            }
+        }
+
+        return $intersect;
+    }
+
+    private function except() : string
+    {
+        $excepted = '';
+
+        if (count($this->query->getExceptedQueries())) {
+            $excepted = '<br><br> ' . $this->clauseSpan . 'EXCEPT ' . $this->closeSpan . '<br><br>';
+
+            foreach ($this->query->getExceptedQueries() as $exceptedQuery) {
+                $printer = new Select($exceptedQuery, $this->indent);
+
+                $excepted .= $printer->print();
+            }
+        }
+
+        return $excepted;
+    }
+
+    private function union() : string
+    {
+        $unioned = '';
+
+        if (count($this->query->getUnionedQueries())) {
+            $unioned = '<br><br> ' . $this->clauseSpan . 'UNION ' . $this->closeSpan . '<br><br>';
+
+            foreach ($this->query->getUnionedQueries() as $exceptedQuery) {
+                $printer = new Select($exceptedQuery, $this->indent);
+
+                $unioned .= $printer->print();
+            }
+        }
+
+        return $unioned;
+    }
+
+    private function unionAll() : string
+    {
+        $unioned = '';
+
+        if (count($this->query->getUnionedAllQueries())) {
+            $unioned = '<br><br> '.$this->clauseSpan . 'UNION ALL '. $this->closeSpan . '<br><br>';
+
+            foreach ($this->query->getUnionedAllQueries() as $exceptedQuery) {
+                $printer = new Select($exceptedQuery, $this->indent);
+
+                $unioned .= $printer->print();
+            }
+        }
+
+        return $unioned;
+    }
+
+
+    public function print() : string
     {
         Profiler::start('Print query');
 
@@ -305,6 +373,12 @@ class Select
 
         $query .= $this->limit();
         $query .= $this->offset();
+
+        $query .= $this->intersect();
+        $query .= $this->except();
+        $query .= $this->union();
+        $query .= $this->unionAll();
+
         $query .= '</div>';
         Profiler::finish('Print query');
 
