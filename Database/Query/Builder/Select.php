@@ -10,7 +10,7 @@
 
 namespace PQL\Query\Builder;
 
-
+use Exception;
 use PQL\Database;
 use PQL\Query\Builder\Expressions\Column;
 use PQL\Query\Builder\Expressions\AggregateFunctionExpression;
@@ -50,6 +50,11 @@ class Select
      * @var Select[] $exceptedQueries
      */
     private array $exceptedQueries;
+
+    /**
+     * @var bool $executed
+     */
+    private bool $executed;
 
     /**
      * @var FunctionExpression[] $functions
@@ -163,6 +168,7 @@ class Select
         $this->unionedQueries = [];
 
         $this->result = [];
+        $this->executed = false;
     }
 
     public function __destruct()
@@ -324,9 +330,16 @@ class Select
 
     public function execute() : array
     {
+        if ($this->executed) {
+            return $this->result;
+        }
+
         $executor = new SelectExecutor($this);
 
-        return $this->result = $executor->run();
+        $this->result = $executor->run();
+        $this->executed = true;
+
+        return $this->result;
     }
 
     public function printQuery() : string
@@ -336,8 +349,16 @@ class Select
         return $printer->print();
     }
 
+    /**
+     * @throws Exception
+     * @return string
+     */
     public function printResult() : string
     {
+        if (!$this->executed) {
+            throw new Exception('Query was not executed. Call execute().');
+        }
+
         $tableResult = new TableResult($this, $this->result);
 
         return $tableResult->print();

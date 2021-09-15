@@ -4,6 +4,8 @@ use Netpromotion\Profiler\Adapter\TracyBarAdapter;
 use Netpromotion\Profiler\Profiler;
 use Nette\Loaders\RobotLoader;
 use PQL\Server;
+use PQL\TestDataCreator;
+use PQL\TestRunner;
 use Tracy\Debugger;
 
 $sep = DIRECTORY_SEPARATOR;
@@ -33,48 +35,16 @@ $server = new Server();
 $commentTable = new TableExpression($database, 'comments', 'ic');
 $userTable = new TableExpression($database, 'User', 'u');*/
 
-function run(\PQL\Query\Builder\Select $query)
-{
-    echo $query->printQuery();
-    bdump($query->execute());
-    echo '<br><br>';
-    echo $query->printResult();
-    echo '<br><br>';
-}
-
-
-/*$c = new \PQL\CreateTestData();
-$c->run();*/
 
 
 
+$testDataCreator = new TestDataCreator();
+$testDataCreator->run();
 
 
+$testRunner = new TestRunner();
+$testRunner->run();
 
-/*$test = new \PQL\Test\SelectTest();
-
-run($test->testColumnsFrom());
-run($test->testDistinctColumn());
-run($test->testInnerJoinTableOnCondition());
-run($test->testLeftJoinTableOnCondition());
-run($test->testCrossJoin());
-run($test->testSingleArgumentFunction());
-run($test->testExpressions());
-run($test->testWhereSingleCondition());
-run($test->testWhereDualCondition());
-run($test->testSingleGroupBy());
-run($test->testAggregateFunctionWithoutGroupBy());
-run($test->testAggregateFunctionWithGroupBy());
-run($test->testSingleHaving());
-run($test->testDualHaving());
-run($test->testSingleOrderByColumnAsc());
-run($test->testSingleOrderByColumnDesc());
-run($test->testSingleOrderByFunctionAsc());
-run($test->testSingleOrderByAggregateFunctionAsc());
-run($test->testLimit());
-run($test->testOffset());
-run($test->testLimitOffset());*/
-//run($tests->testAloneExpressions());
 
 /*
 $fromQuery = $database->selectQuery();

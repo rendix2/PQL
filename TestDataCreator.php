@@ -12,11 +12,10 @@ namespace PQL;
 
 use Nette\PhpGenerator\PhpFile;
 use Nette\PhpGenerator\PhpNamespace;
-use PQL\Tests\InputData\Create\TestDataCreator;
 use PQL\Tests\SelectTestQueryFactory;
 use ReflectionClass;
 
-class CreateTestData
+class TestDataCreator
 {
     public function __construct()
     {
