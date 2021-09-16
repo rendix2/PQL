@@ -101,30 +101,27 @@ class FunctionExpression extends AbstractExpression implements IFunction
 
     public function evaluate() : string
     {
-        $function = mb_strtoupper($this->name) . '(';
-        $count = count($this->arguments) - 1;
+        $arguments = array_map(
+            static function (IExpression $expression) {
+                return $expression->evaluate();
+            }, $this->arguments
+        );
 
-        foreach ($this->arguments as $i => $argument) {
-            if ($argument instanceof IntegerValue) {
-                $function .= $argument->evaluate();
-            } elseif ($argument instanceof StringValue) {
-                $function .= '"' . $argument->evaluate() . '"';
-            } else {
-                $function .= $argument->evaluate();
-            }
+        $arguments = implode(', ', $arguments);
 
-            if ($i !== $count) {
-                $function .= ', ';
-            }
-        }
-
-        $function .= ')';
-
-        return $function;
+        return sprintf('%s(%s)', mb_strtoupper($this->name), $arguments);
     }
 
     public function print(?int $level = null): string
     {
-        return $this->evaluate();
+        $arguments = array_map(
+            static function (IExpression $expression) {
+                return $expression->print();
+            }, $this->arguments
+        );
+
+        $arguments = implode(', ', $arguments);
+
+        return sprintf('%s(%s)', mb_strtoupper($this->name), $arguments);
     }
 }

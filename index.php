@@ -26,17 +26,6 @@ Profiler::enable();
 
 echo '<meta charset="UTF-8">';
 
-$server = new Server();
-//dump($server);
-
-
-/*$database = $server->getDatabase('tests');
-
-$commentTable = new TableExpression($database, 'comments', 'ic');
-$userTable = new TableExpression($database, 'User', 'u');*/
-
-
-
 
 $testDataCreator = new TestDataCreator();
 $testDataCreator->run();

@@ -70,6 +70,23 @@ class SelectTestQueryFactory
         return $query;
     }
 
+    public function testDistinctFunctionColumn() : SelectBuilder
+    {
+        $query = clone $this->query;
+
+        $commentTable = new TableExpression($this->database, 'comments');
+
+        $query->distinct(
+            new FunctionExpression(
+                'strtoupper',
+                [new Column('text', $commentTable)]
+            )
+        );
+        $query->from($commentTable);
+
+        return $query;
+    }
+
     public function testInnerJoinTableOnCondition() : SelectBuilder
     {
         $query = clone $this->query;

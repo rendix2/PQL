@@ -37,9 +37,9 @@ class Select
     private array $columns;
 
     /**
-     * @var ?Column $distinct
+     * @var ?IExpression $distinct
      */
-    private ?Column $distinct;
+    private ?IExpression $distinct;
 
     /**
      * @var AggregateFunctionExpression[] $aggregateFunctions
@@ -207,10 +207,22 @@ class Select
         return $this;
     }
 
-    public function distinct(Column $column) : static
+    public function distinct(IExpression $expression) : static
     {
-        $this->distinct = $column;
-        $this->columns = [$column];
+        $this->distinct = $expression;
+        $this->columns = [$expression];
+
+        if ($expression instanceof AggregateFunctionExpression) {
+            $this->aggregateFunctions[] = $expression;
+        }
+
+        if ($expression instanceof FunctionExpression) {
+            $this->functions[] = $expression;
+        }
+
+        if ($expression instanceof IValue) {
+            $this->values[] = $expression;
+        }
 
         return $this;
     }
@@ -489,9 +501,9 @@ class Select
     }
 
     /**
-     * @return ?Column
+     * @return ?IExpression
      */
-    public function getDistinct(): ?Column
+    public function getDistinct(): ?IExpression
     {
         return $this->distinct;
     }

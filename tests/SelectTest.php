@@ -8,6 +8,7 @@ use PQL\Tests\InputData\TestAggregateFunctionWithoutGroupBy;
 use PQL\Tests\InputData\TestColumnsFrom;
 use PQL\Tests\InputData\TestCrossJoin;
 use PQL\Tests\InputData\TestDistinctColumn;
+use PQL\Tests\InputData\TestDistinctFunctionColumn;
 use PQL\Tests\InputData\TestDualHaving;
 use PQL\Tests\InputData\TestExpressions;
 use PQL\Tests\InputData\TestInnerJoinTableOnCondition;
@@ -79,6 +80,17 @@ class SelectTest extends TestCase
         $queryRows = ArrayHelper::createArray($query->execute());
 
         $dataObj = new TestDistinctColumn();
+        $expectedRows = $dataObj->getData();
+
+        Assert::same($expectedRows, $queryRows);
+    }
+
+    public function testDistinctFunctionColumn() : void
+    {
+        $query = $this->selectTestQueryFactory->testDistinctFunctionColumn();
+        $queryRows = ArrayHelper::createArray($query->execute());
+
+        $dataObj = new TestDistinctFunctionColumn();
         $expectedRows = $dataObj->getData();
 
         Assert::same($expectedRows, $queryRows);
