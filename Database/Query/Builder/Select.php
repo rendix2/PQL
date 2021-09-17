@@ -28,7 +28,9 @@ use stdClass;
 
 class Select
 {
-
+    /**
+     * @var Database $database
+     */
     private Database $database;
 
     /**

@@ -244,26 +244,26 @@ class Select
 
     private function having() : string
     {
-        $where = '<br>' . $this->indent() . $this->clauseSpan . 'HAVING' . $this->closeSpan;
+        $having = '<br>' . $this->indent() . $this->clauseSpan . 'HAVING' . $this->closeSpan . ' ';
 
-        foreach ($this->query->getHavingConditions() as $i => $havingCondition) {
-            $leftPart = $havingCondition->getLeft()->evaluate();
-            $operator = $havingCondition->getOperator()->getOperator();
+        foreach ($this->query->getHavingConditions() as $i => $whereCondition) {
+            $leftPart = $whereCondition->getLeft()->evaluate();
+            $operator = $whereCondition->getOperator()->getOperator();
 
-            if ($havingCondition->getRight()) {
-                $rightPart = $havingCondition->getRight()->evaluate();
+            if ($whereCondition->getRight()) {
+                $rightPart = $whereCondition->getRight()->print();
             } else {
                 $rightPart = '';
             }
 
             if ($i !== 0) {
-                $where .= '<br>&nbsp;&nbsp;' . $this->clauseSpan . 'AND' . $this->closeSpan;
+                $having .= '<br>' . $this->indent() . $this->indent()  . $this->clauseSpan . 'AND ' . $this->closeSpan;
             }
 
-            $where .= ' ' . $leftPart . ' ' . $operator . ' ' . $rightPart;
+            $having .= $this->columnSpan . $leftPart . $this->closeSpan . ' ' . $this->operatorSpan . $operator .  $this->closeSpan .' ' . $this->columnSpan . $rightPart . $this->closeSpan;
         }
 
-        return count($this->query->getHavingConditions()) ? $where : '';
+        return count($this->query->getHavingConditions()) ? $having : '';
     }
 
     private function limit() : string

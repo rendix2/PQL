@@ -34,26 +34,31 @@ class SelectTestQueryFactory
 
     public static string $nameSpace = 'PQL\\Tests\\InputData';
 
+    private TableExpression $commentsTable;
+
+    private TableExpression $usersTable;
+
     public function __construct()
     {
         $server = new Server();
         $this->database = $server->getDatabase('test');
 
         $this->query = $this->database->selectQuery();
+
+        $this->commentsTable = new TableExpression($this->database, 'comments');
+        $this->usersTable = new TableExpression($this->database, 'User');
     }
 
     public function testColumnsFrom() : SelectBuilder
     {
         $query = clone $this->query;
 
-        $commentTable = new TableExpression($this->database, 'comments');
+        $query->select(new Column('id', $this->commentsTable));
+        $query->select(new Column('text', $this->commentsTable));
+        $query->select(new Column('rok', $this->commentsTable));
+        $query->select(new Column('userId', $this->commentsTable));
 
-        $query->select(new Column('id', $commentTable));
-        $query->select(new Column('text', $commentTable));
-        $query->select(new Column('rok', $commentTable));
-        $query->select(new Column('userId', $commentTable));
-
-        $query->from($commentTable);
+        $query->from($this->commentsTable);
 
         return $query;
     }
@@ -74,15 +79,13 @@ class SelectTestQueryFactory
     {
         $query = clone $this->query;
 
-        $commentTable = new TableExpression($this->database, 'comments');
-
         $query->distinct(
             new FunctionExpression(
                 'strtoupper',
-                [new Column('text', $commentTable)]
+                [new Column('text', $this->commentsTable)]
             )
         );
-        $query->from($commentTable);
+        $query->from($this->commentsTable);
 
         return $query;
     }
@@ -858,6 +861,205 @@ class SelectTestQueryFactory
         $query->offset(1);
 
         return $query;
+    }
+
+    public function testHavingEquals() : SelectBuilder
+    {
+        $q = clone $this->testAggregateFunctionWithGroupBy();
+
+        $q->having(
+            new HavingCondition(
+                new AggregateFunctionExpression(
+                    'sum',
+                    [new Column('rok', $this->commentsTable)]
+                ),
+                new Operator('='),
+                new IntegerValue('6060')
+            )
+        );
+
+        return $q;
+    }
+
+    public function testHavingLargerThan() : SelectBuilder
+    {
+        $q = clone $this->testAggregateFunctionWithGroupBy();
+
+        $q->having(
+            new HavingCondition(
+                new AggregateFunctionExpression(
+                    'sum',
+                    [new Column('rok', $this->commentsTable)]
+                ),
+                new Operator('>'),
+                new IntegerValue('6060')
+            )
+        );
+
+        return $q;
+    }
+
+    public function testHavingLargerThanEquals() : SelectBuilder
+    {
+        $q = clone $this->testAggregateFunctionWithGroupBy();
+
+        $q->having(
+            new HavingCondition(
+                new AggregateFunctionExpression(
+                    'sum',
+                    [new Column('rok', $this->commentsTable)]
+                ),
+                new Operator('>='),
+                new IntegerValue('6060')
+            )
+        );
+
+        return $q;
+    }
+
+
+    public function testHavingSmallerThan() : SelectBuilder
+    {
+        $q = clone $this->testAggregateFunctionWithGroupBy();
+
+        $q->having(
+            new HavingCondition(
+                new AggregateFunctionExpression(
+                    'sum',
+                    [new Column('rok', $this->commentsTable)]
+                ),
+                new Operator('<'),
+                new IntegerValue('6060')
+            )
+        );
+
+        return $q;
+    }
+
+    public function testHavingSmallerThanEquals() : SelectBuilder
+    {
+        $q = clone $this->testAggregateFunctionWithGroupBy();
+
+        $q->having(
+            new HavingCondition(
+                new AggregateFunctionExpression(
+                    'sum',
+                    [new Column('rok', $this->commentsTable)]
+                ),
+                new Operator('<='),
+                new IntegerValue('6060')
+            )
+        );
+
+        return $q;
+    }
+
+    public function testHavingNotEquals1() : SelectBuilder
+    {
+        $q = clone $this->testAggregateFunctionWithGroupBy();
+
+        $q->having(
+            new HavingCondition(
+                new AggregateFunctionExpression(
+                    'sum',
+                    [new Column('rok', $this->commentsTable)]
+                ),
+                new Operator('!='),
+                new IntegerValue('6060')
+            )
+        );
+
+        return $q;
+    }
+
+    public function testHavingNotEquals2() : SelectBuilder
+    {
+        $q = clone $this->testAggregateFunctionWithGroupBy();
+
+        $q->having(
+            new HavingCondition(
+                new AggregateFunctionExpression(
+                    'sum',
+                    [new Column('rok', $this->commentsTable)]
+                ),
+                new Operator('<>'),
+                new IntegerValue('6060')
+            )
+        );
+
+        return $q;
+    }
+
+    public function testHavingIn() : SelectBuilder
+    {
+        $q = clone $this->testAggregateFunctionWithGroupBy();
+
+        $q->having(
+            new HavingCondition(
+                new AggregateFunctionExpression(
+                    'sum',
+                    [new Column('rok', $this->commentsTable)]
+                ),
+                new Operator('IN'),
+                new ArrayValue([6060, 8060, 2018])
+            )
+        );
+
+        return $q;
+    }
+
+    public function testHavingNotIn() : SelectBuilder
+    {
+        $q = clone $this->testAggregateFunctionWithGroupBy();
+
+        $q->having(
+            new HavingCondition(
+                new AggregateFunctionExpression(
+                    'sum',
+                    [new Column('rok', $this->commentsTable)]
+                ),
+                new Operator('NOT IN'),
+                new ArrayValue([6060, 8060, 2018])
+            )
+        );
+
+        return $q;
+    }
+
+    public function testHavingBetween() : SelectBuilder
+    {
+        $q = $this->testAggregateFunctionWithGroupBy();
+
+        $q->having(
+            new HavingCondition(
+                new AggregateFunctionExpression(
+                    'sum',
+                    [new Column('rok', $this->commentsTable)]
+                ),
+                new Operator('BETWEEN'),
+                new ArrayValue([6060, 8080])
+            )
+        );
+
+        return $q;
+    }
+
+    public function testHavingBetweenInclusive() : SelectBuilder
+    {
+        $q = $this->testAggregateFunctionWithGroupBy();
+
+        $q->having(
+            new HavingCondition(
+                new AggregateFunctionExpression(
+                    'sum',
+                    [new Column('rok', $this->commentsTable)]
+                ),
+                new Operator('BETWEEN_INCLUSIVE'),
+                new ArrayValue([6060, 8080])
+            )
+        );
+
+        return $q;
     }
 
 }

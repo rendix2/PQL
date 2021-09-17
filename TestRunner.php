@@ -30,6 +30,7 @@ class TestRunner
             if ($isTestMethod) {
                 $query = $selectTestQueryFactory->{$methodName}();
 
+                echo $methodName . ':';
                 $this->print($query);
             }
         }
@@ -41,9 +42,12 @@ class TestRunner
     public function print(Select $query) : void
     {
         echo $query->printQuery();
-        $query->execute();
+        $res = $query->execute();
+
+        dump($res);
         echo '<br><br>';
         echo $query->printResult();
         echo '<br><br>';
+        echo '<hr>';
     }
 }

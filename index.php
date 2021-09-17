@@ -14,7 +14,6 @@ require __DIR__ . $sep . 'vendor' . $sep . 'autoload.php';
 
 $loader = new RobotLoader();
 $loader->addDirectory(__DIR__);
-$loader->addDirectory(__DIR__ . $sep . 'temp' . $sep . 'Entity');
 $loader->setTempDirectory(__DIR__ . $sep . 'temp');
 $loader->setAutoRefresh();
 $loader->register();

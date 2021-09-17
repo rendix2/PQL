@@ -142,31 +142,60 @@ class ConditionExecutor
      */
     public function having(float $countedValue, HavingCondition $havingCondition) : bool
     {
-        $conditionValue = (float)$havingCondition->getRight()->evaluate();
+        $conditionValue = $havingCondition->getRight()->evaluate();
+        $floatConditionValue = (float) $conditionValue;
         $operator = $havingCondition->getOperator()->getOperator();
 
         if ($operator === '=') {
-            if ($countedValue === $conditionValue) {
+            if ($countedValue === $floatConditionValue) {
                 return true;
             }
         } elseif ($operator === '>') {
-            if ($countedValue > $conditionValue) {
+            if ($countedValue > $floatConditionValue) {
                 return true;
             }
         } elseif ($operator === '>=') {
-            if ($countedValue >= $conditionValue) {
+            if ($countedValue >= $floatConditionValue) {
                 return true;
             }
         } elseif ($operator === '<') {
-            if ($countedValue < $conditionValue) {
+            if ($countedValue < $floatConditionValue) {
                 return true;
             }
         } elseif ($operator === '<=') {
-            if ($countedValue <= $conditionValue) {
+            if ($countedValue <= $floatConditionValue) {
                 return true;
             }
         } elseif ($operator === '!=' || $operator === '<>') {
-            if ($countedValue !== $conditionValue) {
+            if ($countedValue !== $floatConditionValue) {
+                return true;
+            }
+        } elseif ($operator === 'IN') {
+            $newValues = [];
+
+            foreach ($conditionValue as $value) {
+                $newValues[] = (float) $value;
+            }
+
+            if (in_array($countedValue, $newValues, true)) {
+                return true;
+            }
+        } elseif ($operator === 'NOT IN') {
+            $newValues = [];
+
+            foreach ($conditionValue as $value) {
+                $newValues[] = (float) $value;
+            }
+
+            if (!in_array($countedValue, $newValues, true)) {
+                return true;
+            }
+        }elseif ($operator === 'BETWEEN') {
+            if ($countedValue > $conditionValue[0] && $countedValue < $conditionValue[1]) {
+                return true;
+            }
+        }  elseif ($operator === 'BETWEEN_INCLUSIVE') {
+            if ($countedValue >= $conditionValue[0] && $countedValue <= $conditionValue[1]) {
                 return true;
             }
         } else {
