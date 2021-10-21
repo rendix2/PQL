@@ -1,10 +1,9 @@
 <?php
-/**
- * @testCase
- */
+/** @testCase */
 
 namespace PQL\Tests;
 
+use PQL\Bootstrap;
 use PQL\Tests\InputData\TestDualHaving;
 use PQL\Tests\InputData\TestHavingBetween;
 use PQL\Tests\InputData\TestHavingBetweenInclusive;
@@ -21,7 +20,9 @@ use PQL\Tests\InputData\TestSingleHaving;
 use Tester\Assert;
 use Tester\TestCase;
 
-require_once 'bootstrap.php';
+require_once '../Bootstrap.php';
+$bootstrap = new Bootstrap();
+$bootstrap->test();
 
 class SelectQueryHavingClauseTest extends TestCase
 {

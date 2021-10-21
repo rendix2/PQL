@@ -10,21 +10,23 @@
 
 namespace PQL\Tests;
 
-use PQL\Database;
-use PQL\Query\Builder\Expressions\AggregateFunctionExpression;
-use PQL\Query\Builder\Expressions\ArrayValue;
-use PQL\Query\Builder\Expressions\Column;
-use PQL\Query\Builder\Expressions\FunctionExpression;
-use PQL\Query\Builder\Expressions\HavingCondition;
-use PQL\Query\Builder\Expressions\IntegerValue;
-use PQL\Query\Builder\Expressions\JoinCondition;
-use PQL\Query\Builder\Expressions\Minus;
-use PQL\Query\Builder\Expressions\Operator;
-use PQL\Query\Builder\Expressions\Plus;
-use PQL\Query\Builder\Expressions\TableExpression;
-use PQL\Query\Builder\Expressions\WhereCondition;
-use PQL\Query\Builder\Select as SelectBuilder;
-use PQL\Server;
+use PQL\Database\Database;
+use PQL\Database\Query\Builder\Expressions\AggregateFunctionExpression;
+use PQL\Database\Query\Builder\Expressions\ArrayValue;
+use PQL\Database\Query\Builder\Expressions\Column;
+use PQL\Database\Query\Builder\Expressions\FunctionExpression;
+use PQL\Database\Query\Builder\Expressions\HavingCondition;
+use PQL\Database\Query\Builder\Expressions\IntegerValue;
+use PQL\Database\Query\Builder\Expressions\JoinCondition;
+use PQL\Database\Query\Builder\Expressions\Minus;
+use PQL\Database\Query\Builder\Expressions\WhereOperator;
+use PQL\Database\Query\Builder\Expressions\Plus;
+use PQL\Database\Query\Builder\Expressions\TableExpression;
+use PQL\Database\Query\Builder\Expressions\WhereCondition;
+use PQL\Database\Query\Builder\JoinOperator;
+use PQL\Database\Query\Builder\SelectBuilder as SelectBuilder;
+use PQL\Database\Server;
+
 
 class SelectTestQueryFactory
 {
@@ -110,7 +112,7 @@ class SelectTestQueryFactory
             $userTable, [
             new JoinCondition(
                 new Column('id', $userTable),
-                new Operator('='),
+                new JoinOperator('='),
                 new Column('userId', $commentTable)
             ),
         ],
@@ -156,12 +158,272 @@ class SelectTestQueryFactory
         $query->from($commentTable);
         $query->leftJoin(
             $userTable, [
-            new JoinCondition(
-                new Column('id', $userTable),
-                new Operator('='),
-                new Column('userId', $commentTable)
-            ),
-        ],
+                new JoinCondition(
+                    new Column('id', $userTable),
+                    new JoinOperator('='),
+                    new Column('userId', $commentTable)
+                ),
+            ],
+        );
+
+        return $query;
+    }
+
+
+    public function testLeftJoinTableOnConditionGreater() : SelectBuilder
+    {
+        $query = clone $this->query;
+
+        $commentTable = new TableExpression($this->database, 'comments');
+        $userTable = new TableExpression($this->database, 'User');
+
+        $query->select(new Column('id', $commentTable));
+        $query->select(new Column('text', $commentTable));
+        $query->select(new Column('rok', $commentTable));
+        $query->select(new Column('userId', $commentTable));
+        $query->select(new Column('id', $userTable));
+        $query->select(new Column('username', $userTable));
+
+        $query->from($commentTable);
+        $query->leftJoin(
+            $userTable, [
+                new JoinCondition(
+                    new Column('id', $userTable),
+                    new JoinOperator('='),
+                    new Column('userId', $commentTable)
+                ),
+                new WhereCondition(
+                    new Column('id', $userTable),
+                    new WhereOperator('>'),
+                    new IntegerValue(2)
+                ),
+            ],
+        );
+
+        return $query;
+    }
+
+    public function testLeftJoinTableOnConditionGreaterEquals() : SelectBuilder
+    {
+        $query = clone $this->query;
+
+        $commentTable = new TableExpression($this->database, 'comments');
+        $userTable = new TableExpression($this->database, 'User');
+
+        $query->select(new Column('id', $commentTable));
+        $query->select(new Column('text', $commentTable));
+        $query->select(new Column('rok', $commentTable));
+        $query->select(new Column('userId', $commentTable));
+        $query->select(new Column('id', $userTable));
+        $query->select(new Column('username', $userTable));
+
+        $query->from($commentTable);
+        $query->leftJoin(
+            $userTable, [
+                new JoinCondition(
+                    new Column('id', $userTable),
+                    new JoinOperator('='),
+                    new Column('userId', $commentTable)
+                ),
+                new WhereCondition(
+                    new Column('id', $userTable),
+                    new WhereOperator('>='),
+                    new IntegerValue(15)
+                ),
+            ],
+        );
+
+        return $query;
+    }
+
+    public function testLeftJoinTableOnConditionSmaller() : SelectBuilder
+    {
+        $query = clone $this->query;
+
+        $commentTable = new TableExpression($this->database, 'comments');
+        $userTable = new TableExpression($this->database, 'User');
+
+        $query->select(new Column('id', $commentTable));
+        $query->select(new Column('text', $commentTable));
+        $query->select(new Column('rok', $commentTable));
+        $query->select(new Column('userId', $commentTable));
+        $query->select(new Column('id', $userTable));
+        $query->select(new Column('username', $userTable));
+
+        $query->from($commentTable);
+        $query->leftJoin(
+            $userTable, [
+                new JoinCondition(
+                        new Column('id', $userTable),
+                    new JoinOperator('='),
+                    new Column('userId', $commentTable)
+                ),
+                new WhereCondition(
+                    new Column('id', $userTable),
+                    new WhereOperator('<'),
+                    new IntegerValue(15)
+                ),
+            ],
+        );
+
+        return $query;
+    }
+
+    public function testLeftJoinTableOnConditionSmallerEquals() : SelectBuilder
+    {
+        $query = clone $this->query;
+
+        $commentTable = new TableExpression($this->database, 'comments');
+        $userTable = new TableExpression($this->database, 'User');
+
+        $query->select(new Column('id', $commentTable));
+        $query->select(new Column('text', $commentTable));
+        $query->select(new Column('rok', $commentTable));
+        $query->select(new Column('userId', $commentTable));
+        $query->select(new Column('id', $userTable));
+        $query->select(new Column('username', $userTable));
+
+        $query->from($commentTable);
+        $query->leftJoin(
+            $userTable, [
+                new JoinCondition(
+                    new Column('id', $userTable),
+                    new JoinOperator('='),
+                    new Column('userId', $commentTable)
+                ),
+                new WhereCondition(
+                    new Column('id', $userTable),
+                    new WhereOperator('<='),
+                    new IntegerValue(15)
+                ),
+            ],
+        );
+
+        return $query;
+    }
+
+    public function testLeftJoinTableOnConditionNotEquals() : SelectBuilder
+    {
+        $query = clone $this->query;
+
+        $commentTable = new TableExpression($this->database, 'comments');
+        $userTable = new TableExpression($this->database, 'User');
+
+        $query->select(new Column('id', $commentTable));
+        $query->select(new Column('text', $commentTable));
+        $query->select(new Column('rok', $commentTable));
+        $query->select(new Column('userId', $commentTable));
+        $query->select(new Column('id', $userTable));
+        $query->select(new Column('username', $userTable));
+
+        $query->from($commentTable);
+        $query->leftJoin(
+            $userTable, [
+                new JoinCondition(
+                    new Column('id', $userTable),
+                    new JoinOperator('='),
+                    new Column('userId', $commentTable)
+                ),
+                new WhereCondition(
+                    new Column('id', $userTable),
+                    new WhereOperator('!='),
+                    new IntegerValue(15)
+                ),
+            ],
+        );
+
+        return $query;
+    }
+
+    public function testLeftJoinTableOnConditionNotEquals2() : SelectBuilder
+    {
+        $query = clone $this->query;
+
+        $commentTable = new TableExpression($this->database, 'comments');
+        $userTable = new TableExpression($this->database, 'User');
+
+        $query->select(new Column('id', $commentTable));
+        $query->select(new Column('text', $commentTable));
+        $query->select(new Column('rok', $commentTable));
+        $query->select(new Column('userId', $commentTable));
+        $query->select(new Column('id', $userTable));
+        $query->select(new Column('username', $userTable));
+
+        $query->from($commentTable);
+        $query->leftJoin(
+            $userTable, [
+                new JoinCondition(
+                    new Column('id', $userTable),
+                    new JoinOperator('='),
+                    new Column('userId', $commentTable)
+                ),
+                new WhereCondition(
+                    new Column('id', $userTable),
+                    new WhereOperator('!='),
+                    new IntegerValue(15)
+                ),
+            ]
+        );
+
+        return $query;
+    }
+
+    public function testLeftJoinTableOnConditionInArray() : SelectBuilder
+    {
+        $query = clone $this->query;
+
+        $commentTable = new TableExpression($this->database, 'comments');
+        $userTable = new TableExpression($this->database, 'User');
+
+        $query->select(new Column('id', $commentTable));
+        $query->select(new Column('text', $commentTable));
+        $query->select(new Column('rok', $commentTable));
+        $query->select(new Column('userId', $commentTable));
+        $query->select(new Column('id', $userTable));
+        $query->select(new Column('username', $userTable));
+
+        $query->from($commentTable);
+        $query->leftJoin(
+            $userTable, [
+                new JoinCondition(
+                    new Column('id', $userTable),
+                    new JoinOperator('='),
+                    new Column('userId', $commentTable)
+                ),
+            ],
+        );
+
+        return $query;
+    }
+
+    public function testLeftJoinTableOnConditionNotInArray() : SelectBuilder
+    {
+        $query = clone $this->query;
+
+        $commentTable = new TableExpression($this->database, 'comments');
+        $userTable = new TableExpression($this->database, 'User');
+
+        $query->select(new Column('id', $commentTable));
+        $query->select(new Column('text', $commentTable));
+        $query->select(new Column('rok', $commentTable));
+        $query->select(new Column('userId', $commentTable));
+        $query->select(new Column('id', $userTable));
+        $query->select(new Column('username', $userTable));
+
+        $query->from($commentTable);
+        $query->leftJoin(
+            $userTable, [
+                new JoinCondition(
+                    new Column('id', $userTable),
+                    new JoinOperator('='),
+                    new Column('userId', $commentTable)
+                ),
+                new WhereCondition(
+                    new Column('id', $userTable),
+                    new WhereOperator('NOT IN'),
+                    new ArrayValue([1, 10])
+                ),
+            ],
         );
 
         return $query;
@@ -249,7 +511,7 @@ class SelectTestQueryFactory
         $query->where(
             new WhereCondition(
                 new Column('rok', $commentTable),
-                new Operator('='),
+                new WhereOperator('='),
                 new IntegerValue('2015')
             )
         );
@@ -273,7 +535,7 @@ class SelectTestQueryFactory
         $query->where(
             new WhereCondition(
                 new Column('rok', $commentTable),
-                new Operator('='),
+                new WhereOperator('='),
                 new IntegerValue('2015')
             )
         );
@@ -281,7 +543,7 @@ class SelectTestQueryFactory
         $query->where(
             new WhereCondition(
                 new Column('userId', $commentTable),
-                new Operator('='),
+                new WhereOperator('='),
                 new IntegerValue('1')
             )
         );
@@ -305,7 +567,7 @@ class SelectTestQueryFactory
         $query->where(
             new WhereCondition(
                 new Column('rok', $commentTable),
-                new Operator('='),
+                new WhereOperator('='),
                 new IntegerValue(2020)
             )
         );
@@ -329,7 +591,7 @@ class SelectTestQueryFactory
         $query->where(
             new WhereCondition(
                 new Column('rok', $commentTable),
-                new Operator('!='),
+                new WhereOperator('!='),
                 new IntegerValue(2020)
             )
         );
@@ -353,7 +615,7 @@ class SelectTestQueryFactory
         $query->where(
             new WhereCondition(
                 new Column('rok', $commentTable),
-                new Operator('<>'),
+                new WhereOperator('<>'),
                 new IntegerValue(2020)
             )
         );
@@ -377,7 +639,7 @@ class SelectTestQueryFactory
         $query->where(
             new WhereCondition(
                 new Column('rok', $commentTable),
-                new Operator('>'),
+                new WhereOperator('>'),
                 new IntegerValue(2020)
             )
         );
@@ -401,7 +663,7 @@ class SelectTestQueryFactory
         $query->where(
             new WhereCondition(
                 new Column('rok', $commentTable),
-                new Operator('<'),
+                new WhereOperator('<'),
                 new IntegerValue(2020)
             )
         );
@@ -425,7 +687,7 @@ class SelectTestQueryFactory
         $query->where(
             new WhereCondition(
                 new Column('rok', $commentTable),
-                new Operator('<='),
+                new WhereOperator('<='),
                 new IntegerValue(2020)
             )
         );
@@ -449,7 +711,7 @@ class SelectTestQueryFactory
         $query->where(
             new WhereCondition(
                 new Column('rok', $commentTable),
-                new Operator('>='),
+                new WhereOperator('>='),
                 new IntegerValue(2020)
             )
         );
@@ -473,7 +735,7 @@ class SelectTestQueryFactory
         $query->where(
             new WhereCondition(
                 new Column('rok', $commentTable),
-                new Operator('IN'),
+                new WhereOperator('IN'),
                 new ArrayValue([2020, 2021])
             )
         );
@@ -497,7 +759,7 @@ class SelectTestQueryFactory
         $query->where(
             new WhereCondition(
                 new Column('rok', $commentTable),
-                new Operator('NOT IN'),
+                new WhereOperator('NOT IN'),
                 new ArrayValue([2020, 2021])
             )
         );
@@ -521,7 +783,7 @@ class SelectTestQueryFactory
         $query->where(
             new WhereCondition(
                 new Column('rok', $commentTable),
-                new Operator('IS NULL'),
+                new WhereOperator('IS NULL'),
                 null
             )
         );
@@ -545,7 +807,7 @@ class SelectTestQueryFactory
         $query->where(
             new WhereCondition(
                 new Column('rok', $commentTable),
-                new Operator('IS NOT NULL'),
+                new WhereOperator('IS NOT NULL'),
                 null
             )
         );
@@ -569,7 +831,7 @@ class SelectTestQueryFactory
         $query->where(
             new WhereCondition(
                 new Column('rok', $commentTable),
-                new Operator('BETWEEN'),
+                new WhereOperator('BETWEEN'),
                 new ArrayValue([2017, 2020])
             )
         );
@@ -593,7 +855,7 @@ class SelectTestQueryFactory
         $query->where(
             new WhereCondition(
                 new Column('rok', $commentTable),
-                new Operator('BETWEEN_INCLUSIVE'),
+                new WhereOperator('BETWEEN_INCLUSIVE'),
                 new ArrayValue([2017, 2020])
             )
         );
@@ -677,7 +939,7 @@ class SelectTestQueryFactory
         $query->having(
             new HavingCondition(
                 new AggregateFunctionExpression('count', [new Column('rok', $commentTable)]),
-                new Operator('='),
+                new WhereOperator('='),
                 new IntegerValue(3)
             )
         );
@@ -705,14 +967,14 @@ class SelectTestQueryFactory
         $query->having(
             new HavingCondition(
                 new AggregateFunctionExpression('count', [new Column('rok', $commentTable)]),
-                new Operator('='),
+                new WhereOperator('='),
                 new IntegerValue(3)
             )
         );
         $query->having(
             new HavingCondition(
                 new AggregateFunctionExpression('sum', [new Column('rok', $commentTable)]),
-                new Operator('='),
+                new WhereOperator('='),
                 new IntegerValue(6060)
             )
         );
@@ -873,7 +1135,7 @@ class SelectTestQueryFactory
                     'sum',
                     [new Column('rok', $this->commentsTable)]
                 ),
-                new Operator('='),
+                new WhereOperator('='),
                 new IntegerValue('6060')
             )
         );
@@ -891,7 +1153,7 @@ class SelectTestQueryFactory
                     'sum',
                     [new Column('rok', $this->commentsTable)]
                 ),
-                new Operator('>'),
+                new WhereOperator('>'),
                 new IntegerValue('6060')
             )
         );
@@ -909,7 +1171,7 @@ class SelectTestQueryFactory
                     'sum',
                     [new Column('rok', $this->commentsTable)]
                 ),
-                new Operator('>='),
+                new WhereOperator('>='),
                 new IntegerValue('6060')
             )
         );
@@ -928,7 +1190,7 @@ class SelectTestQueryFactory
                     'sum',
                     [new Column('rok', $this->commentsTable)]
                 ),
-                new Operator('<'),
+                new WhereOperator('<'),
                 new IntegerValue('6060')
             )
         );
@@ -946,7 +1208,7 @@ class SelectTestQueryFactory
                     'sum',
                     [new Column('rok', $this->commentsTable)]
                 ),
-                new Operator('<='),
+                new WhereOperator('<='),
                 new IntegerValue('6060')
             )
         );
@@ -964,7 +1226,7 @@ class SelectTestQueryFactory
                     'sum',
                     [new Column('rok', $this->commentsTable)]
                 ),
-                new Operator('!='),
+                new WhereOperator('!='),
                 new IntegerValue('6060')
             )
         );
@@ -982,7 +1244,7 @@ class SelectTestQueryFactory
                     'sum',
                     [new Column('rok', $this->commentsTable)]
                 ),
-                new Operator('<>'),
+                new WhereOperator('<>'),
                 new IntegerValue('6060')
             )
         );
@@ -1000,7 +1262,7 @@ class SelectTestQueryFactory
                     'sum',
                     [new Column('rok', $this->commentsTable)]
                 ),
-                new Operator('IN'),
+                new WhereOperator('IN'),
                 new ArrayValue([6060, 8060, 2018])
             )
         );
@@ -1018,7 +1280,7 @@ class SelectTestQueryFactory
                     'sum',
                     [new Column('rok', $this->commentsTable)]
                 ),
-                new Operator('NOT IN'),
+                new WhereOperator('NOT IN'),
                 new ArrayValue([6060, 8060, 2018])
             )
         );
@@ -1036,7 +1298,7 @@ class SelectTestQueryFactory
                     'sum',
                     [new Column('rok', $this->commentsTable)]
                 ),
-                new Operator('BETWEEN'),
+                new WhereOperator('BETWEEN'),
                 new ArrayValue([6060, 8080])
             )
         );
@@ -1054,7 +1316,7 @@ class SelectTestQueryFactory
                     'sum',
                     [new Column('rok', $this->commentsTable)]
                 ),
-                new Operator('BETWEEN_INCLUSIVE'),
+                new WhereOperator('BETWEEN_INCLUSIVE'),
                 new ArrayValue([6060, 8080])
             )
         );

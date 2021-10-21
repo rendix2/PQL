@@ -1,17 +1,9 @@
 <?php
-/**
- *
- * Created by PhpStorm.
- * Filename: SelectQuerySelectClauseTest.php
- * User: Tomáš Babický
- * Date: 17.09.2021
- * Time: 16:34
- *
- * @testCase
- */
+/** @testCase */
 
 namespace PQL\Tests;
 
+use PQL\Bootstrap;
 use PQL\Tests\InputData\TestColumnsFrom;
 use PQL\Tests\InputData\TestDistinctColumn;
 use PQL\Tests\InputData\TestDistinctFunctionColumn;
@@ -20,7 +12,9 @@ use PQL\Tests\InputData\TestSingleArgumentFunction;
 use Tester\Assert;
 use Tester\TestCase;
 
-require_once 'bootstrap.php';
+require_once '../Bootstrap.php';
+$bootstrap = new Bootstrap();
+$bootstrap->test();
 
 class SelectQuerySelectClauseTest extends TestCase
 {
@@ -108,7 +102,5 @@ class SelectQuerySelectClauseTest extends TestCase
 
 
 }
-
-require_once 'bootstrap.php';
 
 (new SelectQuerySelectClauseTest())->run();

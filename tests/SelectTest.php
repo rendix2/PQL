@@ -3,45 +3,20 @@
 
 namespace PQL\Tests;
 
-use PQL\Tests\InputData\TestAggregateFunctionWithGroupBy;
-use PQL\Tests\InputData\TestAggregateFunctionWithoutGroupBy;
-use PQL\Tests\InputData\TestColumnsFrom;
-use PQL\Tests\InputData\TestCrossJoin;
-use PQL\Tests\InputData\TestDistinctColumn;
-use PQL\Tests\InputData\TestDistinctFunctionColumn;
-use PQL\Tests\InputData\TestDualHaving;
-use PQL\Tests\InputData\TestExpressions;
-use PQL\Tests\InputData\TestInnerJoinTableOnCondition;
-use PQL\Tests\InputData\TestLeftJoinTableOnCondition;
+use PQL\Bootstrap;
 use PQL\Tests\InputData\TestLimit;
 use PQL\Tests\InputData\TestLimitOffset;
 use PQL\Tests\InputData\TestOffset;
-use PQL\Tests\InputData\TestSingleArgumentFunction;
-use PQL\Tests\InputData\TestSingleGroupBy;
-use PQL\Tests\InputData\TestSingleHaving;
 use PQL\Tests\InputData\TestSingleOrderByAggregateFunctionAsc;
 use PQL\Tests\InputData\TestSingleOrderByColumnAsc;
 use PQL\Tests\InputData\TestSingleOrderByColumnDesc;
 use PQL\Tests\InputData\TestSingleOrderByFunctionAsc;
-use PQL\Tests\InputData\TestWhereBetween;
-use PQL\Tests\InputData\TestWhereBetweenInclusive;
-use PQL\Tests\InputData\TestWhereDualCondition;
-use PQL\Tests\InputData\TestWhereEquals;
-use PQL\Tests\InputData\TestWhereGreater;
-use PQL\Tests\InputData\TestWhereGreaterInc;
-use PQL\Tests\InputData\TestWhereIn;
-use PQL\Tests\InputData\TestWhereIsNotNull;
-use PQL\Tests\InputData\TestWhereIsNull;
-use PQL\Tests\InputData\TestWhereLess;
-use PQL\Tests\InputData\TestWhereLessInc;
-use PQL\Tests\InputData\TestWhereNotEquals1;
-use PQL\Tests\InputData\TestWhereNotEquals2;
-use PQL\Tests\InputData\TestWhereNotIn;
-use PQL\Tests\InputData\TestWhereSingleCondition;
 use Tester\Assert;
 use Tester\TestCase;
 
-require_once 'bootstrap.php';
+require_once '../Bootstrap.php';
+$bootstrap = new Bootstrap();
+$bootstrap->test();
 
 /**
  *

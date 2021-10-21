@@ -1,15 +1,7 @@
 <?php
-/**
- *
- * Created by PhpStorm.
- * Filename: SelectQueryWhereClauseTest.php
- * User: Tomáš Babický
- * Date: 17.09.2021
- * Time: 16:44
- *
- * @testCase
- */
+/** @testCase */
 
+use PQL\Bootstrap;
 use PQL\Tests\ArrayHelper;
 use PQL\Tests\InputData\TestWhereBetween;
 use PQL\Tests\InputData\TestWhereBetweenInclusive;
@@ -30,8 +22,9 @@ use PQL\Tests\SelectTestQueryFactory;
 use Tester\Assert;
 use Tester\TestCase;
 
-require_once 'bootstrap.php';
-
+require_once '../Bootstrap.php';
+$bootstrap = new Bootstrap();
+$bootstrap->test();
 
 class SelectQueryWhereClauseTest extends TestCase
 {

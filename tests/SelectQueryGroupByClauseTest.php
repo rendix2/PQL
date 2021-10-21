@@ -1,24 +1,18 @@
 <?php
-/**
- *
- * Created by PhpStorm.
- * Filename: SelectQueryGroupByClauseTest.php
- * User: Tomáš Babický
- * Date: 17.09.2021
- * Time: 16:50
- *
- * @testCase
- */
+/** @testCase */
 
 namespace PQL\Tests;
 
+use PQL\Bootstrap;
 use PQL\Tests\InputData\TestAggregateFunctionWithGroupBy;
 use PQL\Tests\InputData\TestAggregateFunctionWithoutGroupBy;
 use PQL\Tests\InputData\TestSingleGroupBy;
 use Tester\Assert;
 use Tester\TestCase;
 
-require_once 'bootstrap.php';
+require_once '../Bootstrap.php';
+$bootstrap = new Bootstrap();
+$bootstrap->test();
 
 class SelectQueryGroupByClauseTest extends TestCase
 {

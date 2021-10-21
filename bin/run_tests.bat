@@ -1,1 +1,1 @@
-c:\xampp8\htdocs\PQL\vendor\bin\tester c:\xampp8\htdocs\PQL\tests -c C:\xampp8\php\php.ini
+c:\xampp8\htdocs\PQL\vendor\bin\tester c:\xampp8\htdocs\PQL\tests -c C:\xampp8\php\php.ini -o console -j 8
