@@ -8,21 +8,26 @@
  * Time: 2:14
  */
 
-namespace PQL\Query\Builder\Expressions;
+namespace PQL\Database\Query\Builder\Expressions;
 
 use Nette\NotImplementedException;
 
-class HavingCondition implements ICondition
+/**
+ * Class HavingCondition
+ *
+ * @package PQL\Database\Query\Builder\Expressions
+ */
+class HavingCondition implements ICondition, BinaryExpression
 {
     /**
-     * @var AggregateFunctionExpression $left
+     * @var IExpression $left
      */
-    private AggregateFunctionExpression $left;
+    private IExpression $left;
 
     /**
-     * @var Operator $operator
+     * @var WhereOperator $operator
      */
-    private Operator $operator;
+    private WhereOperator $operator;
 
     /**
      * @var IExpression $right
@@ -31,10 +36,10 @@ class HavingCondition implements ICondition
 
     /**
      * @param AggregateFunctionExpression $left
-     * @param Operator                    $operator
+     * @param WhereOperator               $operator
      * @param IExpression                 $right
      */
-    public function __construct(AggregateFunctionExpression $left, Operator $operator, IExpression $right)
+    public function __construct(IExpression $left, WhereOperator $operator, IExpression $right)
     {
         $this->left = $left;
         $this->operator = $operator;
@@ -42,17 +47,17 @@ class HavingCondition implements ICondition
     }
 
     /**
-     * @return AggregateFunctionExpression
+     * @return IExpression
      */
-    public function getLeft(): AggregateFunctionExpression
+    public function getLeft() : IExpression
     {
         return $this->left;
     }
 
     /**
-     * @return Operator
+     * @return WhereOperator
      */
-    public function getOperator(): Operator
+    public function getOperator() : WhereOperator
     {
         return $this->operator;
     }
@@ -60,12 +65,25 @@ class HavingCondition implements ICondition
     /**
      * @return IExpression
      */
-    public function getRight(): IExpression
+    public function getRight() : IExpression
     {
         return $this->right;
     }
 
+    /**
+     * @return string
+     */
     public function evaluate() : string
+    {
+        throw new NotImplementedException();
+    }
+
+    /**
+     * @param int|null $level
+     *
+     * @return string
+     */
+    public function print(?int $level = null) : string
     {
         throw new NotImplementedException();
     }

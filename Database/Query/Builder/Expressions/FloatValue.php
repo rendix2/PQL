@@ -8,17 +8,23 @@
  * Time: 21:21
  */
 
-namespace PQL\Query\Builder\Expressions;
+namespace PQL\Database\Query\Builder\Expressions;
 
-use Nette\NotImplementedException;
-
+/**
+ * Class FloatValue
+ *
+ * @package PQL\Database\Query\Builder\Expressions
+ */
 class FloatValue extends AbstractExpression implements INumberValue
 {
+    /**
+     * @var float $value
+     */
     private float $value;
 
     /**
      * @param float       $value
-     * @param null|string $alias
+     * @param string|null $alias
      */
     public function __construct(float $value, ?string $alias = null)
     {
@@ -27,18 +33,31 @@ class FloatValue extends AbstractExpression implements INumberValue
         $this->value = $value;
     }
 
+    /**
+     *
+     */
     public function __destruct()
     {
         foreach ($this as $key => $value) {
             unset($this->{$key});
         }
+
+        parent::__destruct();
     }
 
+    /**
+     * @return float
+     */
     public function evaluate() : float
     {
         return $this->value;
     }
 
+    /**
+     * @param int|null $level
+     *
+     * @return string
+     */
     public function print(?int $level = null) : string
     {
         return (string)$this->value;

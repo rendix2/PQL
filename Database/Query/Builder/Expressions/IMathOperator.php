@@ -8,9 +8,13 @@
  * Time: 21:41
  */
 
-namespace PQL\Query\Builder\Expressions;
+namespace PQL\Database\Query\Builder\Expressions;
 
+/**
+ * Interafce IMathOperator
+ *
+ * @package PQL\Database\Query\Builder\Expressions
+ */
 interface IMathOperator extends IMathExpression
 {
-
 }

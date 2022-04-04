@@ -2,7 +2,7 @@
 /** @testCase */
 
 use PQL\Bootstrap;
-use PQL\Tests\ArrayHelper;
+use PQL\Query\ArrayHelper;
 use PQL\Tests\InputData\TestWhereBetween;
 use PQL\Tests\InputData\TestWhereBetweenInclusive;
 use PQL\Tests\InputData\TestWhereDualCondition;
@@ -39,7 +39,7 @@ class SelectQueryWhereClauseTest extends TestCase
     public function testWhereSingleCondition() : void
     {
         $query = $this->selectTestQueryFactory->testWhereSingleCondition();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestWhereSingleCondition();
         $expectedRows = $dataObj->getData();
@@ -50,7 +50,7 @@ class SelectQueryWhereClauseTest extends TestCase
     public function testWhereDualCondition() : void
     {
         $query = $this->selectTestQueryFactory->testWhereDualCondition();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestWhereDualCondition();
         $expectedRows = $dataObj->getData();
@@ -61,7 +61,7 @@ class SelectQueryWhereClauseTest extends TestCase
     public function testWhereEquals() : void
     {
         $query = $this->selectTestQueryFactory->testWhereEquals();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestWhereEquals();
         $expectedRows = $dataObj->getData();
@@ -72,7 +72,7 @@ class SelectQueryWhereClauseTest extends TestCase
     public function testWhereNotEquals1() : void
     {
         $query = $this->selectTestQueryFactory->testWhereNotEquals1();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestWhereNotEquals1();
         $expectedRows = $dataObj->getData();
@@ -83,7 +83,7 @@ class SelectQueryWhereClauseTest extends TestCase
     public function testWhereNotEquals2() : void
     {
         $query = $this->selectTestQueryFactory->testWhereNotEquals2();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestWhereNotEquals2();
         $expectedRows = $dataObj->getData();
@@ -94,7 +94,7 @@ class SelectQueryWhereClauseTest extends TestCase
     public function testWhereGreater() : void
     {
         $query = $this->selectTestQueryFactory->testWhereGreater();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestWhereGreater();
         $expectedRows = $dataObj->getData();
@@ -105,7 +105,7 @@ class SelectQueryWhereClauseTest extends TestCase
     public function testWhereLess() : void
     {
         $query = $this->selectTestQueryFactory->testWhereLess();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestWhereLess();
         $expectedRows = $dataObj->getData();
@@ -116,7 +116,7 @@ class SelectQueryWhereClauseTest extends TestCase
     public function testWhereLessInc() : void
     {
         $query = $this->selectTestQueryFactory->testWhereLessInc();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestWhereLessInc();
         $expectedRows = $dataObj->getData();
@@ -127,7 +127,7 @@ class SelectQueryWhereClauseTest extends TestCase
     public function testWhereGreaterInc() : void
     {
         $query = $this->selectTestQueryFactory->testWhereGreaterInc();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestWhereGreaterInc();
         $expectedRows = $dataObj->getData();
@@ -138,7 +138,7 @@ class SelectQueryWhereClauseTest extends TestCase
     public function testWhereIn() : void
     {
         $query = $this->selectTestQueryFactory->testWhereIn();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestWhereIn();
         $expectedRows = $dataObj->getData();
@@ -149,7 +149,7 @@ class SelectQueryWhereClauseTest extends TestCase
     public function testWhereNotIn() : void
     {
         $query = $this->selectTestQueryFactory->testWhereNotIn();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestWhereNotIn();
         $expectedRows = $dataObj->getData();
@@ -160,7 +160,7 @@ class SelectQueryWhereClauseTest extends TestCase
     public function testWhereIsNull() : void
     {
         $query = $this->selectTestQueryFactory->testWhereIsNull();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestWhereIsNull();
         $expectedRows = $dataObj->getData();
@@ -171,7 +171,7 @@ class SelectQueryWhereClauseTest extends TestCase
     public function testWhereIsNotNull() : void
     {
         $query = $this->selectTestQueryFactory->testWhereIsNotNull();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestWhereIsNotNull();
         $expectedRows = $dataObj->getData();
@@ -182,7 +182,7 @@ class SelectQueryWhereClauseTest extends TestCase
     public function testWhereBetween() : void
     {
         $query = $this->selectTestQueryFactory->testWhereBetween();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestWhereBetween();
         $expectedRows = $dataObj->getData();
@@ -193,7 +193,7 @@ class SelectQueryWhereClauseTest extends TestCase
     public function testWhereBetweenInclusive() : void
     {
         $query = $this->selectTestQueryFactory->testWhereBetweenInclusive();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestWhereBetweenInclusive();
         $expectedRows = $dataObj->getData();

@@ -8,9 +8,13 @@
  * Time: 2:36
  */
 
-namespace PQL;
+namespace PQL\Database;
 
+/**
+ * Class User
+ *
+ * @package PQL\Database
+ */
 class User
 {
-
 }

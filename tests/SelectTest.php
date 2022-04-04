@@ -4,6 +4,7 @@
 namespace PQL\Tests;
 
 use PQL\Bootstrap;
+use PQL\Query\ArrayHelper;
 use PQL\Tests\InputData\TestLimit;
 use PQL\Tests\InputData\TestLimitOffset;
 use PQL\Tests\InputData\TestOffset;
@@ -39,7 +40,7 @@ class SelectTest extends TestCase
     public function testSingleOrderByColumnAsc() : void
     {
         $query = $this->selectTestQueryFactory->testSingleOrderByColumnAsc();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestSingleOrderByColumnAsc();
         $expectedRows = $dataObj->getData();
@@ -50,7 +51,7 @@ class SelectTest extends TestCase
     public function testSingleOrderByColumnDesc() : void
     {
         $query = $this->selectTestQueryFactory->testSingleOrderByColumnDesc();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestSingleOrderByColumnDesc();
         $expectedRows = $dataObj->getData();
@@ -61,7 +62,7 @@ class SelectTest extends TestCase
     public function testSingleOrderByFunctionAsc() : void
     {
         $query = $this->selectTestQueryFactory->testSingleOrderByFunctionAsc();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestSingleOrderByFunctionAsc();
         $expectedRows = $dataObj->getData();
@@ -72,7 +73,7 @@ class SelectTest extends TestCase
     public function testSingleOrderByAggregateFunctionAsc() : void
     {
         $query = $this->selectTestQueryFactory->testSingleOrderByAggregateFunctionAsc();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestSingleOrderByAggregateFunctionAsc();
         $expectedRows = $dataObj->getData();
@@ -83,7 +84,7 @@ class SelectTest extends TestCase
     public function testLimit() : void
     {
         $query = $this->selectTestQueryFactory->testLimit();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestLimit();
         $expectedRows = $dataObj->getData();
@@ -94,7 +95,7 @@ class SelectTest extends TestCase
     public function testOffset() : void
     {
         $query = $this->selectTestQueryFactory->testOffset();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestOffset();
         $expectedRows = $dataObj->getData();
@@ -105,7 +106,7 @@ class SelectTest extends TestCase
     public function testLimitOffset() : void
     {
         $query = $this->selectTestQueryFactory->testLimitOffset();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestLimitOffset();
         $expectedRows = $dataObj->getData();

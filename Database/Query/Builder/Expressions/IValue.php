@@ -8,10 +8,13 @@
  * Time: 14:26
  */
 
-namespace PQL\Query\Builder\Expressions;
+namespace PQL\Database\Query\Builder\Expressions;
 
-use PQL\IPrintable;
-
-interface IValue extends IExpression, IPrintable
+/**
+ * Interface IValue
+ *
+ * @package PQL\Database\Query\Builder\Expressions
+ */
+interface IValue extends IExpression, ISelect
 {
 }

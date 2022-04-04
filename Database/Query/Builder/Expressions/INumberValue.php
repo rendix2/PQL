@@ -8,7 +8,7 @@
  * Time: 21:28
  */
 
-namespace PQL\Query\Builder\Expressions;
+namespace PQL\Database\Query\Builder\Expressions;
 
 interface INumberValue extends IValue, IMathExpression
 {

@@ -8,33 +8,52 @@
  * Time: 17:10
  */
 
-namespace PQL\Query\Builder\Expressions;
+namespace PQL\Database\Query\Builder\Expressions;
 
-class JoinCondition implements ICondition
+use PQL\Database\Query\Builder\JoinOperator;
+
+/**
+ * Class JoinCondition
+ *
+ * @package PQL\Database\Query\Builder\Expressions
+ */
+class JoinCondition implements ICondition, BinaryExpression
 {
-    private IExpression $left;
+    /**
+     * @var Column $left
+     */
+    private Column $left;
 
-    private Operator $operator;
+    /**
+     * @var JoinOperator $operator
+     */
+    private JoinOperator $operator;
 
-    private ?IExpression $right;
+    /**
+     * @var Column $right
+     */
+    private Column $right;
 
     /**
      * Where constructor.
      *
-     * @param IExpression $left
-     * @param Operator    $operator
-     * @param ?IExpression $right
+     * @param Column       $left
+     * @param JoinOperator $operator
+     * @param Column       $right
      */
     public function __construct(
-        IExpression $left,
-        Operator $operator,
-        ?IExpression $right = null
+        Column       $left,
+        JoinOperator $operator,
+        Column       $right
     ) {
         $this->left = $left;
         $this->operator = $operator;
         $this->right = $right;
     }
 
+    /**
+     * JoinCondition destructor.
+     */
     public function __destruct()
     {
         foreach ($this as $key => $value) {
@@ -43,29 +62,32 @@ class JoinCondition implements ICondition
     }
 
     /**
-     * @return IExpression
+     * @return Column
      */
-    public function getLeft(): IExpression
+    public function getLeft() : Column
     {
         return $this->left;
     }
 
     /**
-     * @return Operator
+     * @return JoinOperator
      */
-    public function getOperator(): Operator
+    public function getOperator() : JoinOperator
     {
         return $this->operator;
     }
 
     /**
-     * @return ?IExpression
+     * @return Column
      */
-    public function getRight(): ?IExpression
+    public function getRight() : Column
     {
         return $this->right;
     }
 
+    /**
+     * @return string
+     */
     public function evaluate() : string
     {
         return sprintf('%s %s %s',
@@ -73,5 +95,10 @@ class JoinCondition implements ICondition
             $this->operator->evaluate(),
             $this->right->evaluate()
         );
+    }
+
+    public function print(?int $level = null) : string
+    {
+        return $this->evaluate();
     }
 }

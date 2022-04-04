@@ -8,20 +8,36 @@
  * Time: 22:06
  */
 
-namespace PQL;
-
+namespace PQL\Database;
 
 use Exception;
 use Nette\Utils\Finder;
-use PQL\Query\Builder\Select;
+use PQL\Database\Query\Builder\DeleteBuilder;
+use PQL\Database\Query\Builder\InsertBuilder;
+use PQL\Database\Query\Builder\SelectBuilder;
+use PQL\Database\Query\Builder\UpdateBuilder;
 use SplFileInfo;
 
+/**
+ * Class Database
+ *
+ * @package PQL\Database
+ */
 class Database
 {
+    /**
+     * @var string $name
+     */
     private string $name;
 
+    /**
+     * @var string $directory
+     */
     private string $directory;
 
+    /**
+     * @var array $tables
+     */
     private array $tables;
 
     /**
@@ -56,6 +72,8 @@ class Database
 
             $this->tables[$tableName] = new Table($this, $tableName, $directoryTable->getPathname());
         }
+
+        //exit;
     }
 
     public function __destruct()
@@ -65,7 +83,6 @@ class Database
         }
     }
 
-
     /**
      * @return Table[]
      */
@@ -74,19 +91,37 @@ class Database
         return $this->tables;
     }
 
+    /**
+     * @throws Exception
+     */
     public function getTable(string $name) : Table
     {
         if (isset($this->tables[$name])) {
             return $this->tables[$name];
         } else {
-            $message = sprintf('Table "%s" was not found.', $name);
+            $message = sprintf('Table "%s" was not found in database "%s".', $name, $this->name);
 
             throw new Exception($message);
         }
     }
 
-    public function selectQuery() : Select
+    public function selectQuery() : SelectBuilder
     {
-        return new Select($this);
+        return new SelectBuilder($this);
+    }
+    
+    public function insertQuery() : InsertBuilder
+    {
+        return new InsertBuilder($this);
+    }
+
+    public function deleteQuery() : DeleteBuilder
+    {
+        return new DeleteBuilder($this);
+    }
+
+    public function updateQuery() : UpdateBuilder
+    {
+        return new UpdateBuilder($this);
     }
 }

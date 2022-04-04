@@ -8,17 +8,28 @@
  * Time: 14:00
  */
 
-namespace PQL\Query\Builder\Expressions;
+namespace PQL\Database\Query\Builder\Expressions;
 
-
-class NullValue implements IValue
+/**
+ * Class NullValue
+ *
+ * @package PQL\Database\Query\Builder\Expressions
+ */
+class NullValue extends AbstractExpression implements IValue
 {
-
+    /**
+     * @return null
+     */
     public function evaluate()
     {
         return null;
     }
 
+    /**
+     * @param int|null $level
+     *
+     * @return string
+     */
     public function print(?int $level = null): string
     {
         return 'null';

@@ -8,9 +8,13 @@
  * Time: 23:13
  */
 
-namespace PQL;
+namespace PQL\Database;
 
+/**
+ * Class View
+ *
+ * @package PQL\Database
+ */
 class View implements ITable
 {
-
 }

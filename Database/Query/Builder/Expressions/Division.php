@@ -8,23 +8,33 @@
  * Time: 21:25
  */
 
-namespace PQL\Query\Builder\Expressions;
+namespace PQL\Database\Query\Builder\Expressions;
 
 use Exception;
 
+/**
+ * Class Division
+ *
+ * @package PQL\Database\Query\Builder\Expressions
+ */
 class Division extends AbstractExpression implements IMathOperator
 {
-
-    private IMathExpression $left;
-
-    private IMathExpression $right;
+    /**
+     * @var IExpression $left
+     */
+    private IExpression $left;
 
     /**
-     * @param IMathExpression $left
-     * @param IMathExpression $right
-     * @param null|string     $alias
+     * @var IExpression $right
      */
-    public function __construct(IMathExpression $left, IMathExpression $right, ?string $alias = null)
+    private IExpression $right;
+
+    /**
+     * @param IExpression $left
+     * @param IExpression $right
+     * @param string|null     $alias
+     */
+    public function __construct(IExpression $left, IExpression $right, ?string $alias = null)
     {
         parent::__construct($alias);
 
@@ -37,8 +47,29 @@ class Division extends AbstractExpression implements IMathOperator
         foreach ($this as $key => $value) {
             unset($this->{$key});
         }
+
+        parent::__destruct();
     }
 
+    /**
+     * @return IExpression
+     */
+    public function getLeft() : IExpression
+    {
+        return $this->left;
+    }
+
+    /**
+     * @return IExpression
+     */
+    public function getRight() : IExpression
+    {
+        return $this->right;
+    }
+
+    /**
+     * @throws Exception
+     */
     public function evaluate() : float
     {
         $right = $this->right->evaluate();
@@ -47,10 +78,15 @@ class Division extends AbstractExpression implements IMathOperator
             throw new Exception('Division by zero.');
         }
 
-        return $this->left->evaluate() / $this->right->evaluate();
+        return $this->left->evaluate() / $right;
     }
 
-    public function print(): string
+    /**
+     * @param int|null $level
+     *
+     * @return string
+     */
+    public function print(?int $level = null) : string
     {
         return sprintf('%s / %s', $this->left->print(), $this->right->print());
     }

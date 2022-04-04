@@ -8,28 +8,135 @@
  * Time: 2:03
  */
 
-namespace PQL\Query\Builder\Expressions;
+namespace PQL\Database\Query\Builder\Expressions;
 
-class AbstractFunction extends AbstractExpression implements IFunction
+use Exception;
+
+/**
+ * Class AbstractFunction
+ *
+ * @package PQL\Database\Query\Builder\Expressions
+ */
+abstract class AbstractFunction extends AbstractExpression implements IFunction
 {
+    /**
+     * @var IExpression[] $arguments
+     */
+    private array $arguments;
 
-    public function evaluate()
+    /**
+     * @var int $countArguments
+     */
+    private int $countArguments;
+
+    /**
+     * @var string $lowerName
+     */
+    private string $lowerName;
+
+    /**
+     * @var string $upperName
+     */
+    private string $upperName;
+
+    /**
+     * @param string      $name
+     * @param array       $arguments
+     * @param string|null $alias
+     *
+     * @throws Exception
+     */
+    public function __construct(string $name, array $arguments, ?string $alias = null)
     {
-        // TODO: Implement evaluate() method.
+        parent::__construct($alias);
+
+        $this->lowerName = mb_strtolower($name);
+        $this->upperName = mb_strtoupper($name);
+
+        foreach ($arguments as $argument) {
+            if (!($argument instanceof IExpression)) {
+                $message = 'Argument is not Expression';
+
+                throw new Exception($message);
+            }
+        }
+
+        $this->arguments = $arguments;
+        $this->countArguments = count($arguments);
     }
 
-    public function getName() : string
+    public function __destruct()
     {
-        // TODO: Implement getName() method.
+        foreach ($this as $key => $value) {
+            unset($this->{$key});
+        }
+
+        parent::__destruct();
     }
 
-    public function getArguments() : array
+    /**
+     * @return string
+     */
+    public function getLowerName() : string
     {
-        // TODO: Implement getArguments() method.
+        return $this->lowerName;
     }
 
-    public function print(?int $level = null) : string
+    /**
+     * @return string
+     */
+    public function getUpperName() : string
     {
-        // TODO: Implement print() method.
+        return $this->upperName;
+    }
+
+    /**
+     * @return IExpression[]
+     */
+    public function getArguments(): array
+    {
+        return $this->arguments;
+    }
+
+    /**
+     * @return int
+     */
+    public function getCountArguments() : int
+    {
+        return $this->countArguments;
+    }
+
+    /**
+     * @return string
+     */
+    public function evaluate() : string
+    {
+        $arguments = array_map(
+            static function (IExpression $expression) {
+                return $expression->evaluate();
+            }, $this->arguments
+        );
+
+        $arguments = implode(', ', $arguments);
+
+        return sprintf('%s(%s)', $this->upperName, $arguments);
+    }
+
+    /**
+     * @param int|null $level
+     *
+     * @return string
+     */
+    public function print(?int $level = null): string
+    {
+        $arguments = array_map(
+            static function (IExpression $expression) {
+                return $expression->print();
+            }, $this->arguments
+        );
+
+        $arguments = implode(', ', $arguments);
+
+        return sprintf('%s(%s)', $this->upperName, $arguments);
     }
 }

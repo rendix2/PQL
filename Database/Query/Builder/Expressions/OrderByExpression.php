@@ -8,12 +8,16 @@
  * Time: 13:25
  */
 
-namespace PQL\Query\Builder;
+namespace PQL\Database\Query\Builder;
 
 use Nette\NotImplementedException;
-use PQL\Query\Builder\Expressions\Column;
-use PQL\Query\Builder\Expressions\IExpression;
+use PQL\Database\Query\Builder\Expressions\IExpression;
 
+/**
+ * Class OrderByExpression
+ *
+ * @package PQL\Database\Query\Builder
+ */
 class OrderByExpression implements IExpression
 {
     /**
@@ -67,6 +71,11 @@ class OrderByExpression implements IExpression
     }
 
     public function evaluate() : string
+    {
+        throw new NotImplementedException();
+    }
+
+    public function print(?int $level = null) : string
     {
         throw new NotImplementedException();
     }

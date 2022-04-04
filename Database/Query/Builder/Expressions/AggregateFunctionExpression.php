@@ -8,23 +8,17 @@
  * Time: 0:08
  */
 
-namespace PQL\Query\Builder\Expressions;
-
+namespace PQL\Database\Query\Builder\Expressions;
 
 use Exception;
 
-class AggregateFunctionExpression extends AbstractExpression implements IFunction
+/**
+ * Class AggregateFunctionExpression
+ *
+ * @package PQL\Database\Query\Builder\Expressions
+ */
+class AggregateFunctionExpression extends AbstractFunction
 {
-    /**
-     * @var IExpression[] $arguments
-     */
-    private array $arguments;
-
-    /**
-     * @var string $name
-     */
-    private string $name;
-
     /**
      * @var string[] $availableFunctions
      */
@@ -36,71 +30,23 @@ class AggregateFunctionExpression extends AbstractExpression implements IFunctio
         'count',
     ];
 
+    /**
+     * @param string      $name
+     * @param array       $arguments
+     * @param string|null $alias
+     *
+     * @throws Exception
+     */
     public function __construct(string $name, array $arguments, ?string $alias = null)
     {
-        parent::__construct($alias);
+        parent::__construct($name, $arguments, $alias);
 
-        $aggregateFunctionExist = in_array(mb_strtolower($name), static::$availableFunctions, true);
+        $aggregateFunctionExist = in_array($this->getLowerName(), static::$availableFunctions, true);
 
         if (!$aggregateFunctionExist) {
             $message = sprintf('Aggregate function "%s" does not exit.', $name);
 
             throw new Exception($message);
         }
-
-        foreach ($arguments as $argument) {
-            if (!($argument instanceof IExpression)) {
-                $message = 'Argument is not Expression';
-
-                throw new Exception($message);
-            }
-        }
-
-        $this->name = mb_strtoupper($name);
-        $this->arguments = $arguments;
-    }
-
-    public function __destruct()
-    {
-        foreach ($this as $key => $value) {
-            unset($this->{$key});
-        }
-    }
-
-    public function getName() : string
-    {
-        return $this->name;
-    }
-
-    /**
-     * @return IExpression[]
-     */
-    public function getArguments(): array
-    {
-        return $this->arguments;
-    }
-
-    public function evaluate() : string
-    {
-        $function = $this->name . '(';
-
-        $count = count($this->arguments);
-
-        foreach ($this->arguments as $i => $argument) {
-            $function .= $argument->evaluate();
-
-            if ($i !== $count - 1) {
-                $function .= ', ';
-            }
-        }
-
-        $function .= ')';
-
-        return $function;
-    }
-
-    public function print(?int $level = null) : string
-    {
-        return $this->evaluate();
     }
 }

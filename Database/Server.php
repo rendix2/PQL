@@ -8,13 +8,17 @@
  * Time: 13:33
  */
 
-namespace PQL;
-
+namespace PQL\Database;
 
 use Exception;
 use Nette\Utils\Finder;
 use SplFileInfo;
 
+/**
+ * Class Server
+ *
+ * @package PQL\Database
+ */
 class Server
 {
     /**
@@ -46,6 +50,12 @@ class Server
         }
     }
 
+    /**
+     * @param string $name
+     *
+     * @return Database
+     * @throws Exception
+     */
     public function getDatabase(string $name) : Database
     {
         if (isset($this->databases[$name])) {
@@ -53,7 +63,7 @@ class Server
         } else {
             $message = sprintf('Database "%s" was not found.', $name);
 
-          throw new Exception($message);
+            throw new Exception($message);
         }
     }
 

@@ -8,16 +8,21 @@
  * Time: 13:54
  */
 
-namespace PQL\Query\Builder\Expressions;
+namespace PQL\Database\Query\Builder\Expressions;
 
-
+use PQL\Database\Table;
 use stdClass;
 
+/**
+ * Interface IFromExpression
+ *
+ * @package PQL\Database\Query\Builder\Expressions
+ */
 interface IFromExpression extends IExpression
 {
-
     public function getData() : array;
 
     public function getNullEntity() : stdClass;
 
+    public function getTable() : Table;
 }

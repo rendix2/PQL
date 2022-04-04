@@ -8,12 +8,16 @@
  * Time: 0:15
  */
 
-namespace PQL\Query\Builder\Expressions;
+namespace PQL\Database\Query\Builder\Expressions;
 
+use PQL\Database\IPrintable;
 
-use PQL\IPrintable;
-
-interface ISelect extends IExpression, IPrintable
+/**
+ * Interface ISelect
+ *
+ * @package PQL\Database\Query\Builder\Expressions
+ */
+interface ISelect extends IExpression
 {
     public function hasAlias() : bool;
 

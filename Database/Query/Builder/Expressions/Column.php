@@ -8,28 +8,46 @@
  * Time: 10:44
  */
 
-namespace PQL\Query\Builder\Expressions;
+namespace PQL\Database\Query\Builder\Expressions;
 
+use PQL\Database\Table;
 
+/**
+ * Class Column
+ *
+ * @package PQL\Database\Query\Builder\Expressions
+ */
 class Column extends AbstractExpression implements ISelect
 {
+    /**
+     * @var string $name
+     */
     private string $name;
 
-    private TableExpression $table;
+    /**
+     * @var TableExpression $tableExpression
+     */
+    private TableExpression $tableExpression;
+
+    /**
+     * @var Table $table
+     */
+    private Table $table;
 
     /**
      * Column constructor.
      *
      * @param string          $name
-     * @param TableExpression $table
-     * @param null|string     $alias
+     * @param TableExpression $tableExpression
+     * @param string|null     $alias
      */
-    public function __construct(string $name, TableExpression $table, ?string $alias = null)
+    public function __construct(string $name, TableExpression $tableExpression, ?string $alias = null)
     {
         parent::__construct($alias);
 
         $this->name = $name;
-        $this->table = $table;
+        $this->tableExpression = $tableExpression;
+        $this->table = $this->tableExpression->getTable();
     }
 
     public function __destruct()
@@ -37,12 +55,14 @@ class Column extends AbstractExpression implements ISelect
         foreach ($this as $key => $value) {
             unset($this->{$key});
         }
+
+        parent::__destruct();
     }
 
     /**
      * @return string
      */
-    public function getName(): string
+    public function getName() : string
     {
         return $this->name;
     }
@@ -50,23 +70,42 @@ class Column extends AbstractExpression implements ISelect
     /**
      * @return TableExpression
      */
-    public function getTable(): TableExpression
+    public function getTableExpression() : TableExpression
+    {
+        return $this->tableExpression;
+    }
+
+    /**
+     * @return Table
+     */
+    public function getTable() : Table
     {
         return $this->table;
     }
 
+    /**
+     * @return string
+     */
     public function getTableColumnName() : string
     {
-        return $this->table->getTable()->getName() . '.' . $this->name;
+        return $this->tableExpression->getTable()->getName() . '.' . $this->name;
     }
 
+    /**
+     * @return string
+     */
     public function evaluate() : string
     {
-        return $this->table->evaluate() . '.' . $this->name;
+        return $this->tableExpression->evaluate() . '.' . $this->name;
     }
 
+    /**
+     * @param int|null $level
+     *
+     * @return string
+     */
     public function print(?int $level = null) : string
     {
-        return $this->table->evaluate() . '.' . $this->name;
+        return $this->tableExpression->evaluate() . '.' . $this->name;
     }
 }

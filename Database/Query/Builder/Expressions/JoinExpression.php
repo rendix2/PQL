@@ -8,18 +8,25 @@
  * Time: 13:18
  */
 
-namespace PQL\Query\Builder;
+namespace PQL\Database\Query\Builder;
 
 use Exception;
 use Nette\NotImplementedException;
-use PQL\Query\Builder\Expressions\AbstractExpression;
-use PQL\Query\Builder\Expressions\ICondition;
-use PQL\Query\Builder\Expressions\IExpression;
-use PQL\Query\Builder\Expressions\IFromExpression;
-use PQL\Query\Builder\Expressions\WhereCondition;
+use PQL\Database\Query\Builder\Expressions\AbstractExpression;
+use PQL\Database\Query\Builder\Expressions\ICondition;
+use PQL\Database\Query\Builder\Expressions\IFromExpression;
+use PQL\Database\Query\Builder\Expressions\WhereCondition;
 
-class JoinExpression extends AbstractExpression implements IExpression
+/**
+ * Class JoinExpression
+ *
+ * @package PQL\Database\Query\Builder
+ */
+class JoinExpression extends AbstractExpression
 {
+    /**
+     * @var IFromExpression $joinExpression
+     */
     private IFromExpression $joinExpression;
 
     /**
@@ -32,7 +39,7 @@ class JoinExpression extends AbstractExpression implements IExpression
      *
      * @param IFromExpression  $joinExpression
      * @param WhereCondition[] $joinConditions
-     * @param null|string      $alias
+     * @param string|null      $alias
      *
      * @throws Exception
      */
@@ -45,7 +52,7 @@ class JoinExpression extends AbstractExpression implements IExpression
 
         foreach ($joinConditions as $joinCondition) {
             if (!($joinCondition instanceof ICondition)) {
-                $message = sprintf('Join condition id not valid');
+                $message = sprintf('Join "%s" condition id not valid', get_class($joinCondition));
 
                 throw new Exception($message);
             }
@@ -60,6 +67,8 @@ class JoinExpression extends AbstractExpression implements IExpression
         foreach ($this as $key => $value) {
             unset($this->{$key});
         }
+
+        parent::__destruct();
     }
 
     /**
@@ -79,6 +88,11 @@ class JoinExpression extends AbstractExpression implements IExpression
     }
 
     public function evaluate() : string
+    {
+        throw new NotImplementedException();
+    }
+
+    public function print(?int $level = null) : string
     {
         throw new NotImplementedException();
     }

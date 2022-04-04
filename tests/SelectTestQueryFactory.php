@@ -16,18 +16,26 @@ use PQL\Database\Query\Builder\Expressions\ArrayValue;
 use PQL\Database\Query\Builder\Expressions\Column;
 use PQL\Database\Query\Builder\Expressions\FunctionExpression;
 use PQL\Database\Query\Builder\Expressions\HavingCondition;
+use PQL\Database\Query\Builder\Expressions\IntArrayValue;
 use PQL\Database\Query\Builder\Expressions\IntegerValue;
 use PQL\Database\Query\Builder\Expressions\JoinCondition;
 use PQL\Database\Query\Builder\Expressions\Minus;
+use PQL\Database\Query\Builder\Expressions\NullValue;
+use PQL\Database\Query\Builder\Expressions\Power;
 use PQL\Database\Query\Builder\Expressions\WhereOperator;
 use PQL\Database\Query\Builder\Expressions\Plus;
 use PQL\Database\Query\Builder\Expressions\TableExpression;
 use PQL\Database\Query\Builder\Expressions\WhereCondition;
 use PQL\Database\Query\Builder\JoinOperator;
+use PQL\Database\Query\Builder\OrderByExpression;
 use PQL\Database\Query\Builder\SelectBuilder as SelectBuilder;
 use PQL\Database\Server;
 
-
+/**
+ * Class SelectTestQueryFactory
+ *
+ * @package PQL\Tests
+ */
 class SelectTestQueryFactory
 {
     private SelectBuilder $query;
@@ -51,6 +59,9 @@ class SelectTestQueryFactory
         $this->usersTable = new TableExpression($this->database, 'User');
     }
 
+    /**
+     * @return SelectBuilder
+     */
     public function testColumnsFrom() : SelectBuilder
     {
         $query = clone $this->query;
@@ -60,7 +71,7 @@ class SelectTestQueryFactory
         $query->select(new Column('rok', $this->commentsTable));
         $query->select(new Column('userId', $this->commentsTable));
 
-        $query->from($this->commentsTable);
+        $query->from(clone $this->commentsTable);
 
         return $query;
     }
@@ -69,7 +80,7 @@ class SelectTestQueryFactory
     {
         $query = clone $this->query;
 
-        $commentTable = new TableExpression($this->database, 'comments');
+        $commentTable = $this->commentsTable;
 
         $query->distinct(new Column('rok', $commentTable));
         $query->from($commentTable);
@@ -94,28 +105,22 @@ class SelectTestQueryFactory
 
     public function testInnerJoinTableOnCondition() : SelectBuilder
     {
-        $query = clone $this->query;
+        $query = clone $this->testColumnsFrom();
 
-        $commentTable = new TableExpression($this->database, 'comments');
-        $userTable = new TableExpression($this->database, 'User');
-
-        $query->select(new Column('id', $commentTable));
-        $query->select(new Column('text', $commentTable));
-        $query->select(new Column('rok', $commentTable));
-        $query->select(new Column('userId', $commentTable));
+        $commentTable = $this->commentsTable;
+        $userTable = $this->usersTable;
 
         $query->select(new Column('id', $userTable));
         $query->select(new Column('username', $userTable));
 
-        $query->from($commentTable);
         $query->innerJoin(
             $userTable, [
-            new JoinCondition(
-                new Column('id', $userTable),
-                new JoinOperator('='),
-                new Column('userId', $commentTable)
-            ),
-        ],
+                new JoinCondition(
+                    new Column('id', $userTable),
+                    new JoinOperator('='),
+                    new Column('userId', $commentTable)
+                ),
+            ],
         );
 
         return $query;
@@ -123,39 +128,35 @@ class SelectTestQueryFactory
 
     public function testCrossJoin() : SelectBuilder
     {
-        $query = clone $this->query;
+        $query = clone $this->testColumnsFrom();
+        $userTable = $this->usersTable;
 
-        $commentTable = new TableExpression($this->database, 'comments');
-        $userTable = new TableExpression($this->database, 'User');
-
-        $query->select(new Column('id', $commentTable));
-        $query->select(new Column('text', $commentTable));
-        $query->select(new Column('rok', $commentTable));
-        $query->select(new Column('userId', $commentTable));
         $query->select(new Column('id', $userTable));
         $query->select(new Column('username', $userTable));
 
-        $query->from($commentTable);
         $query->crossJoin($userTable);
+
+        return $query;
+    }
+
+    private function createLeftJoin() : SelectBuilder
+    {
+        $query = clone $this->testColumnsFrom();
+        $userTable = $this->usersTable;
+
+        $query->select(new Column('id', $userTable));
+        $query->select(new Column('username', $userTable));
 
         return $query;
     }
 
     public function testLeftJoinTableOnCondition() : SelectBuilder
     {
-        $query = clone $this->query;
+        $query = clone $this->createLeftJoin();
 
-        $commentTable = new TableExpression($this->database, 'comments');
-        $userTable = new TableExpression($this->database, 'User');
+        $commentTable = $this->commentsTable;
+        $userTable = $this->usersTable;
 
-        $query->select(new Column('id', $commentTable));
-        $query->select(new Column('text', $commentTable));
-        $query->select(new Column('rok', $commentTable));
-        $query->select(new Column('userId', $commentTable));
-        $query->select(new Column('id', $userTable));
-        $query->select(new Column('username', $userTable));
-
-        $query->from($commentTable);
         $query->leftJoin(
             $userTable, [
                 new JoinCondition(
@@ -169,22 +170,13 @@ class SelectTestQueryFactory
         return $query;
     }
 
-
     public function testLeftJoinTableOnConditionGreater() : SelectBuilder
     {
-        $query = clone $this->query;
+        $query = clone $this->createLeftJoin();
 
-        $commentTable = new TableExpression($this->database, 'comments');
-        $userTable = new TableExpression($this->database, 'User');
+        $commentTable = $this->commentsTable;
+        $userTable = $this->usersTable;
 
-        $query->select(new Column('id', $commentTable));
-        $query->select(new Column('text', $commentTable));
-        $query->select(new Column('rok', $commentTable));
-        $query->select(new Column('userId', $commentTable));
-        $query->select(new Column('id', $userTable));
-        $query->select(new Column('username', $userTable));
-
-        $query->from($commentTable);
         $query->leftJoin(
             $userTable, [
                 new JoinCondition(
@@ -192,12 +184,15 @@ class SelectTestQueryFactory
                     new JoinOperator('='),
                     new Column('userId', $commentTable)
                 ),
-                new WhereCondition(
-                    new Column('id', $userTable),
-                    new WhereOperator('>'),
-                    new IntegerValue(2)
-                ),
             ],
+        );
+
+        $query->where(
+            new WhereCondition(
+                new Column('id', $userTable),
+                new WhereOperator('>'),
+                new IntegerValue(2)
+            ),
         );
 
         return $query;
@@ -205,19 +200,11 @@ class SelectTestQueryFactory
 
     public function testLeftJoinTableOnConditionGreaterEquals() : SelectBuilder
     {
-        $query = clone $this->query;
+        $query = clone $this->createLeftJoin();
 
-        $commentTable = new TableExpression($this->database, 'comments');
-        $userTable = new TableExpression($this->database, 'User');
+        $commentTable = $this->commentsTable;
+        $userTable = $this->usersTable;
 
-        $query->select(new Column('id', $commentTable));
-        $query->select(new Column('text', $commentTable));
-        $query->select(new Column('rok', $commentTable));
-        $query->select(new Column('userId', $commentTable));
-        $query->select(new Column('id', $userTable));
-        $query->select(new Column('username', $userTable));
-
-        $query->from($commentTable);
         $query->leftJoin(
             $userTable, [
                 new JoinCondition(
@@ -238,32 +225,27 @@ class SelectTestQueryFactory
 
     public function testLeftJoinTableOnConditionSmaller() : SelectBuilder
     {
-        $query = clone $this->query;
+        $query = clone $this->createLeftJoin();
 
-        $commentTable = new TableExpression($this->database, 'comments');
-        $userTable = new TableExpression($this->database, 'User');
+        $commentTable = $this->commentsTable;
+        $userTable = $this->usersTable;
 
-        $query->select(new Column('id', $commentTable));
-        $query->select(new Column('text', $commentTable));
-        $query->select(new Column('rok', $commentTable));
-        $query->select(new Column('userId', $commentTable));
-        $query->select(new Column('id', $userTable));
-        $query->select(new Column('username', $userTable));
-
-        $query->from($commentTable);
         $query->leftJoin(
             $userTable, [
                 new JoinCondition(
-                        new Column('id', $userTable),
+                    new Column('id', $userTable),
                     new JoinOperator('='),
                     new Column('userId', $commentTable)
                 ),
-                new WhereCondition(
-                    new Column('id', $userTable),
-                    new WhereOperator('<'),
-                    new IntegerValue(15)
-                ),
             ],
+        );
+
+        $query->where(
+            new WhereCondition(
+                new Column('id', $userTable),
+                new WhereOperator('<'),
+                new IntegerValue(15)
+            ),
         );
 
         return $query;
@@ -271,19 +253,11 @@ class SelectTestQueryFactory
 
     public function testLeftJoinTableOnConditionSmallerEquals() : SelectBuilder
     {
-        $query = clone $this->query;
+        $query = clone $this->createLeftJoin();
 
-        $commentTable = new TableExpression($this->database, 'comments');
-        $userTable = new TableExpression($this->database, 'User');
+        $commentTable = $this->commentsTable;
+        $userTable = $this->usersTable;
 
-        $query->select(new Column('id', $commentTable));
-        $query->select(new Column('text', $commentTable));
-        $query->select(new Column('rok', $commentTable));
-        $query->select(new Column('userId', $commentTable));
-        $query->select(new Column('id', $userTable));
-        $query->select(new Column('username', $userTable));
-
-        $query->from($commentTable);
         $query->leftJoin(
             $userTable, [
                 new JoinCondition(
@@ -291,12 +265,15 @@ class SelectTestQueryFactory
                     new JoinOperator('='),
                     new Column('userId', $commentTable)
                 ),
-                new WhereCondition(
-                    new Column('id', $userTable),
-                    new WhereOperator('<='),
-                    new IntegerValue(15)
-                ),
             ],
+        );
+
+        $query->where(
+            new WhereCondition(
+                new Column('id', $userTable),
+                new WhereOperator('<='),
+                new IntegerValue(15)
+            ),
         );
 
         return $query;
@@ -304,19 +281,11 @@ class SelectTestQueryFactory
 
     public function testLeftJoinTableOnConditionNotEquals() : SelectBuilder
     {
-        $query = clone $this->query;
+        $query = clone $this->createLeftJoin();
 
-        $commentTable = new TableExpression($this->database, 'comments');
-        $userTable = new TableExpression($this->database, 'User');
+        $commentTable = $this->commentsTable;
+        $userTable = $this->usersTable;
 
-        $query->select(new Column('id', $commentTable));
-        $query->select(new Column('text', $commentTable));
-        $query->select(new Column('rok', $commentTable));
-        $query->select(new Column('userId', $commentTable));
-        $query->select(new Column('id', $userTable));
-        $query->select(new Column('username', $userTable));
-
-        $query->from($commentTable);
         $query->leftJoin(
             $userTable, [
                 new JoinCondition(
@@ -324,12 +293,15 @@ class SelectTestQueryFactory
                     new JoinOperator('='),
                     new Column('userId', $commentTable)
                 ),
-                new WhereCondition(
-                    new Column('id', $userTable),
-                    new WhereOperator('!='),
-                    new IntegerValue(15)
-                ),
             ],
+        );
+
+        $query->where(
+            new WhereCondition(
+                new Column('id', $userTable),
+                new WhereOperator('!='),
+                new IntegerValue(15)
+            )
         );
 
         return $query;
@@ -337,19 +309,11 @@ class SelectTestQueryFactory
 
     public function testLeftJoinTableOnConditionNotEquals2() : SelectBuilder
     {
-        $query = clone $this->query;
+        $query = clone $this->createLeftJoin();
 
-        $commentTable = new TableExpression($this->database, 'comments');
-        $userTable = new TableExpression($this->database, 'User');
+        $commentTable = $this->commentsTable;
+        $userTable = $this->usersTable;
 
-        $query->select(new Column('id', $commentTable));
-        $query->select(new Column('text', $commentTable));
-        $query->select(new Column('rok', $commentTable));
-        $query->select(new Column('userId', $commentTable));
-        $query->select(new Column('id', $userTable));
-        $query->select(new Column('username', $userTable));
-
-        $query->from($commentTable);
         $query->leftJoin(
             $userTable, [
                 new JoinCondition(
@@ -357,12 +321,14 @@ class SelectTestQueryFactory
                     new JoinOperator('='),
                     new Column('userId', $commentTable)
                 ),
-                new WhereCondition(
-                    new Column('id', $userTable),
-                    new WhereOperator('!='),
-                    new IntegerValue(15)
-                ),
             ]
+        );
+        $query->where(
+            new WhereCondition(
+                new Column('id', $userTable),
+                new WhereOperator('<>'),
+                new IntegerValue(15)
+            )
         );
 
         return $query;
@@ -370,19 +336,11 @@ class SelectTestQueryFactory
 
     public function testLeftJoinTableOnConditionInArray() : SelectBuilder
     {
-        $query = clone $this->query;
+        $query = clone $this->createLeftJoin();
 
-        $commentTable = new TableExpression($this->database, 'comments');
-        $userTable = new TableExpression($this->database, 'User');
+        $commentTable = $this->commentsTable;
+        $userTable = $this->usersTable;
 
-        $query->select(new Column('id', $commentTable));
-        $query->select(new Column('text', $commentTable));
-        $query->select(new Column('rok', $commentTable));
-        $query->select(new Column('userId', $commentTable));
-        $query->select(new Column('id', $userTable));
-        $query->select(new Column('username', $userTable));
-
-        $query->from($commentTable);
         $query->leftJoin(
             $userTable, [
                 new JoinCondition(
@@ -393,24 +351,24 @@ class SelectTestQueryFactory
             ],
         );
 
+        $query->where(
+            new WhereCondition(
+                new Column('id', $userTable),
+                new WhereOperator('IN'),
+                new IntArrayValue([1, 10])
+            ),
+        );
+
         return $query;
     }
 
     public function testLeftJoinTableOnConditionNotInArray() : SelectBuilder
     {
-        $query = clone $this->query;
+        $query = clone $this->createLeftJoin();
 
-        $commentTable = new TableExpression($this->database, 'comments');
-        $userTable = new TableExpression($this->database, 'User');
+        $commentTable = $this->commentsTable;
+        $userTable = $this->usersTable;
 
-        $query->select(new Column('id', $commentTable));
-        $query->select(new Column('text', $commentTable));
-        $query->select(new Column('rok', $commentTable));
-        $query->select(new Column('userId', $commentTable));
-        $query->select(new Column('id', $userTable));
-        $query->select(new Column('username', $userTable));
-
-        $query->from($commentTable);
         $query->leftJoin(
             $userTable, [
                 new JoinCondition(
@@ -418,12 +376,15 @@ class SelectTestQueryFactory
                     new JoinOperator('='),
                     new Column('userId', $commentTable)
                 ),
-                new WhereCondition(
-                    new Column('id', $userTable),
-                    new WhereOperator('NOT IN'),
-                    new ArrayValue([1, 10])
-                ),
             ],
+        );
+
+        $query->where(
+            new WhereCondition(
+                new Column('id', $userTable),
+                new WhereOperator('NOT IN'),
+                new IntArrayValue([1, 10])
+            ),
         );
 
         return $query;
@@ -433,7 +394,7 @@ class SelectTestQueryFactory
     {
         $query = clone $this->query;
 
-        $commentTable = new TableExpression($this->database, 'comments');
+        $commentTable = $this->commentsTable;
 
         $query->select(new Column('id', $commentTable));
         $query->select(new Column('text', $commentTable));
@@ -450,7 +411,7 @@ class SelectTestQueryFactory
     {
         $query = clone $this->query;
 
-        $commentTable = new TableExpression($this->database, 'comments');
+        $commentTable = $this->commentsTable;
 
         $query->select(new Column('id', $commentTable));
         $query->select(new Column('text', $commentTable));
@@ -495,11 +456,13 @@ class SelectTestQueryFactory
             return $query;
         }*/
 
+
     public function testWhereSingleCondition() : SelectBuilder
     {
         $query = clone $this->query;
 
-        $commentTable = new TableExpression($this->database, 'comments');
+        $commentTable = $this->commentsTable;
+        $userTable = $this->usersTable;
 
         $query->select(new Column('id', $commentTable));
         $query->select(new Column('text', $commentTable));
@@ -523,7 +486,8 @@ class SelectTestQueryFactory
     {
         $query = clone $this->query;
 
-        $commentTable = new TableExpression($this->database, 'comments');
+        $commentTable = $this->commentsTable;
+        $userTable = $this->usersTable;
 
         $query->select(new Column('id', $commentTable));
         $query->select(new Column('text', $commentTable));
@@ -555,7 +519,8 @@ class SelectTestQueryFactory
     {
         $query = clone $this->query;
 
-        $commentTable = new TableExpression($this->database, 'comments');
+        $commentTable = $this->commentsTable;
+        $userTable = $this->usersTable;
 
         $query->select(new Column('id', $commentTable));
         $query->select(new Column('text', $commentTable));
@@ -579,7 +544,8 @@ class SelectTestQueryFactory
     {
         $query = clone $this->query;
 
-        $commentTable = new TableExpression($this->database, 'comments');
+        $commentTable = $this->commentsTable;
+        $userTable = $this->usersTable;
 
         $query->select(new Column('id', $commentTable));
         $query->select(new Column('text', $commentTable));
@@ -603,7 +569,8 @@ class SelectTestQueryFactory
     {
         $query = clone $this->query;
 
-        $commentTable = new TableExpression($this->database, 'comments');
+        $commentTable = $this->commentsTable;
+        $userTable = $this->usersTable;
 
         $query->select(new Column('id', $commentTable));
         $query->select(new Column('text', $commentTable));
@@ -627,7 +594,8 @@ class SelectTestQueryFactory
     {
         $query = clone $this->query;
 
-        $commentTable = new TableExpression($this->database, 'comments');
+        $commentTable = $this->commentsTable;
+        $userTable = $this->usersTable;
 
         $query->select(new Column('id', $commentTable));
         $query->select(new Column('text', $commentTable));
@@ -651,7 +619,8 @@ class SelectTestQueryFactory
     {
         $query = clone $this->query;
 
-        $commentTable = new TableExpression($this->database, 'comments');
+        $commentTable = $this->commentsTable;
+        $userTable = $this->usersTable;
 
         $query->select(new Column('id', $commentTable));
         $query->select(new Column('text', $commentTable));
@@ -675,7 +644,7 @@ class SelectTestQueryFactory
     {
         $query = clone $this->query;
 
-        $commentTable = new TableExpression($this->database, 'comments');
+        $commentTable = $this->commentsTable;
 
         $query->select(new Column('id', $commentTable));
         $query->select(new Column('text', $commentTable));
@@ -699,7 +668,7 @@ class SelectTestQueryFactory
     {
         $query = clone $this->query;
 
-        $commentTable = new TableExpression($this->database, 'comments');
+        $commentTable = $this->commentsTable;
 
         $query->select(new Column('id', $commentTable));
         $query->select(new Column('text', $commentTable));
@@ -723,7 +692,7 @@ class SelectTestQueryFactory
     {
         $query = clone $this->query;
 
-        $commentTable = new TableExpression($this->database, 'comments');
+        $commentTable = $this->commentsTable;
 
         $query->select(new Column('id', $commentTable));
         $query->select(new Column('text', $commentTable));
@@ -736,7 +705,7 @@ class SelectTestQueryFactory
             new WhereCondition(
                 new Column('rok', $commentTable),
                 new WhereOperator('IN'),
-                new ArrayValue([2020, 2021])
+                new IntArrayValue([2020, 2021])
             )
         );
 
@@ -747,7 +716,7 @@ class SelectTestQueryFactory
     {
         $query = clone $this->query;
 
-        $commentTable = new TableExpression($this->database, 'comments');
+        $commentTable = $this->commentsTable;
 
         $query->select(new Column('id', $commentTable));
         $query->select(new Column('text', $commentTable));
@@ -760,7 +729,7 @@ class SelectTestQueryFactory
             new WhereCondition(
                 new Column('rok', $commentTable),
                 new WhereOperator('NOT IN'),
-                new ArrayValue([2020, 2021])
+                new IntArrayValue([2020, 2021])
             )
         );
 
@@ -771,7 +740,7 @@ class SelectTestQueryFactory
     {
         $query = clone $this->query;
 
-        $commentTable = new TableExpression($this->database, 'comments');
+        $commentTable = $this->commentsTable;
 
         $query->select(new Column('id', $commentTable));
         $query->select(new Column('text', $commentTable));
@@ -784,7 +753,7 @@ class SelectTestQueryFactory
             new WhereCondition(
                 new Column('rok', $commentTable),
                 new WhereOperator('IS NULL'),
-                null
+                new NullValue()
             )
         );
 
@@ -795,7 +764,7 @@ class SelectTestQueryFactory
     {
         $query = clone $this->query;
 
-        $commentTable = new TableExpression($this->database, 'comments');
+        $commentTable = $this->commentsTable;
 
         $query->select(new Column('id', $commentTable));
         $query->select(new Column('text', $commentTable));
@@ -808,7 +777,7 @@ class SelectTestQueryFactory
             new WhereCondition(
                 new Column('rok', $commentTable),
                 new WhereOperator('IS NOT NULL'),
-                null
+                new NullValue()
             )
         );
 
@@ -819,7 +788,7 @@ class SelectTestQueryFactory
     {
         $query = clone $this->query;
 
-        $commentTable = new TableExpression($this->database, 'comments');
+        $commentTable = $this->commentsTable;
 
         $query->select(new Column('id', $commentTable));
         $query->select(new Column('text', $commentTable));
@@ -832,7 +801,7 @@ class SelectTestQueryFactory
             new WhereCondition(
                 new Column('rok', $commentTable),
                 new WhereOperator('BETWEEN'),
-                new ArrayValue([2017, 2020])
+                new IntArrayValue([2017, 2020])
             )
         );
 
@@ -843,7 +812,7 @@ class SelectTestQueryFactory
     {
         $query = clone $this->query;
 
-        $commentTable = new TableExpression($this->database, 'comments');
+        $commentTable = $this->commentsTable;
 
         $query->select(new Column('id', $commentTable));
         $query->select(new Column('text', $commentTable));
@@ -856,7 +825,7 @@ class SelectTestQueryFactory
             new WhereCondition(
                 new Column('rok', $commentTable),
                 new WhereOperator('BETWEEN_INCLUSIVE'),
-                new ArrayValue([2017, 2020])
+                new IntArrayValue([2017, 2020])
             )
         );
 
@@ -867,7 +836,7 @@ class SelectTestQueryFactory
     {
         $query = clone $this->query;
 
-        $commentTable = new TableExpression($this->database, 'comments');
+        $commentTable = $this->commentsTable;
 
         $query->select(new Column('id', $commentTable));
         $query->select(new Column('text', $commentTable));
@@ -885,7 +854,7 @@ class SelectTestQueryFactory
     {
         $query = clone $this->query;
 
-        $commentTable = new TableExpression($this->database, 'comments');
+        $commentTable = $this->commentsTable;
 
         $query->select(new Column('id', $commentTable));
         $query->select(new Column('text', $commentTable));
@@ -903,7 +872,7 @@ class SelectTestQueryFactory
     {
         $query = clone $this->query;
 
-        $commentTable = new TableExpression($this->database, 'comments');
+        $commentTable = $this->commentsTable;
 
         $query->select(new Column('id', $commentTable));
         $query->select(new Column('text', $commentTable));
@@ -923,7 +892,7 @@ class SelectTestQueryFactory
     {
         $query = clone $this->query;
 
-        $commentTable = new TableExpression($this->database, 'comments');
+        $commentTable = $this->commentsTable;
 
         $query->select(new Column('id', $commentTable));
         $query->select(new Column('text', $commentTable));
@@ -951,7 +920,7 @@ class SelectTestQueryFactory
     {
         $query = clone $this->query;
 
-        $commentTable = new TableExpression($this->database, 'comments');
+        $commentTable = $this->commentsTable;
 
         $query->select(new Column('id', $commentTable));
         $query->select(new Column('text', $commentTable));
@@ -986,7 +955,7 @@ class SelectTestQueryFactory
     {
         $query = clone $this->query;
 
-        $commentTable = new TableExpression($this->database, 'comments');
+        $commentTable = $this->commentsTable;
 
         $query->select(new Column('id', $commentTable));
         $query->select(new Column('text', $commentTable));
@@ -1003,7 +972,7 @@ class SelectTestQueryFactory
     {
         $query = clone $this->query;
 
-        $commentTable = new TableExpression($this->database, 'comments');
+        $commentTable = $this->commentsTable;
 
         $query->select(new Column('id', $commentTable));
         $query->select(new Column('text', $commentTable));
@@ -1020,7 +989,7 @@ class SelectTestQueryFactory
     {
         $query = clone $this->query;
 
-        $commentTable = new TableExpression($this->database, 'comments');
+        $commentTable = $this->commentsTable;
 
         $query->select(new Column('id', $commentTable));
         $query->select(new Column('text', $commentTable));
@@ -1038,7 +1007,7 @@ class SelectTestQueryFactory
     {
         $query = clone $this->query;
 
-        $commentTable = new TableExpression($this->database, 'comments');
+        $commentTable = $this->commentsTable;
 
         $query->select(new Column('id', $commentTable));
         $query->select(new Column('text', $commentTable));
@@ -1059,7 +1028,7 @@ class SelectTestQueryFactory
     {
         $query = clone $this->query;
 
-        $commentTable = new TableExpression($this->database, 'comments');
+        $commentTable = $this->commentsTable;
 
         $query->select(new Column('id', $commentTable));
         $query->select(new Column('text', $commentTable));
@@ -1082,7 +1051,7 @@ class SelectTestQueryFactory
     {
         $query = clone $this->query;
 
-        $commentTable = new TableExpression($this->database, 'comments');
+        $commentTable = $this->commentsTable;
 
         $query->select(new Column('id', $commentTable));
         $query->select(new Column('text', $commentTable));
@@ -1105,7 +1074,7 @@ class SelectTestQueryFactory
     {
         $query = clone $this->query;
 
-        $commentTable = new TableExpression($this->database, 'comments');
+        $commentTable = $this->commentsTable;
 
         $query->select(new Column('id', $commentTable));
         $query->select(new Column('text', $commentTable));
@@ -1127,9 +1096,9 @@ class SelectTestQueryFactory
 
     public function testHavingEquals() : SelectBuilder
     {
-        $q = clone $this->testAggregateFunctionWithGroupBy();
+        $query = clone $this->testAggregateFunctionWithGroupBy();
 
-        $q->having(
+        $query->having(
             new HavingCondition(
                 new AggregateFunctionExpression(
                     'sum',
@@ -1140,14 +1109,14 @@ class SelectTestQueryFactory
             )
         );
 
-        return $q;
+        return $query;
     }
 
     public function testHavingLargerThan() : SelectBuilder
     {
-        $q = clone $this->testAggregateFunctionWithGroupBy();
+        $query = clone $this->testAggregateFunctionWithGroupBy();
 
-        $q->having(
+        $query->having(
             new HavingCondition(
                 new AggregateFunctionExpression(
                     'sum',
@@ -1158,14 +1127,14 @@ class SelectTestQueryFactory
             )
         );
 
-        return $q;
+        return $query;
     }
 
     public function testHavingLargerThanEquals() : SelectBuilder
     {
-        $q = clone $this->testAggregateFunctionWithGroupBy();
+        $query = clone $this->testAggregateFunctionWithGroupBy();
 
-        $q->having(
+        $query->having(
             new HavingCondition(
                 new AggregateFunctionExpression(
                     'sum',
@@ -1176,15 +1145,14 @@ class SelectTestQueryFactory
             )
         );
 
-        return $q;
+        return $query;
     }
-
 
     public function testHavingSmallerThan() : SelectBuilder
     {
-        $q = clone $this->testAggregateFunctionWithGroupBy();
+        $query = clone $this->testAggregateFunctionWithGroupBy();
 
-        $q->having(
+        $query->having(
             new HavingCondition(
                 new AggregateFunctionExpression(
                     'sum',
@@ -1195,14 +1163,14 @@ class SelectTestQueryFactory
             )
         );
 
-        return $q;
+        return $query;
     }
 
     public function testHavingSmallerThanEquals() : SelectBuilder
     {
-        $q = clone $this->testAggregateFunctionWithGroupBy();
+        $query = clone $this->testAggregateFunctionWithGroupBy();
 
-        $q->having(
+        $query->having(
             new HavingCondition(
                 new AggregateFunctionExpression(
                     'sum',
@@ -1213,14 +1181,14 @@ class SelectTestQueryFactory
             )
         );
 
-        return $q;
+        return $query;
     }
 
     public function testHavingNotEquals1() : SelectBuilder
     {
-        $q = clone $this->testAggregateFunctionWithGroupBy();
+        $query = clone $this->testAggregateFunctionWithGroupBy();
 
-        $q->having(
+        $query->having(
             new HavingCondition(
                 new AggregateFunctionExpression(
                     'sum',
@@ -1231,14 +1199,14 @@ class SelectTestQueryFactory
             )
         );
 
-        return $q;
+        return $query;
     }
 
     public function testHavingNotEquals2() : SelectBuilder
     {
-        $q = clone $this->testAggregateFunctionWithGroupBy();
+        $query = clone $this->testAggregateFunctionWithGroupBy();
 
-        $q->having(
+        $query->having(
             new HavingCondition(
                 new AggregateFunctionExpression(
                     'sum',
@@ -1249,79 +1217,193 @@ class SelectTestQueryFactory
             )
         );
 
-        return $q;
+        return $query;
     }
 
     public function testHavingIn() : SelectBuilder
     {
-        $q = clone $this->testAggregateFunctionWithGroupBy();
+        $query = clone $this->testAggregateFunctionWithGroupBy();
 
-        $q->having(
+        $query->having(
             new HavingCondition(
                 new AggregateFunctionExpression(
                     'sum',
                     [new Column('rok', $this->commentsTable)]
                 ),
                 new WhereOperator('IN'),
-                new ArrayValue([6060, 8060, 2018])
+                new IntArrayValue([6060, 8060, 2018])
             )
         );
 
-        return $q;
+        return $query;
     }
 
     public function testHavingNotIn() : SelectBuilder
     {
-        $q = clone $this->testAggregateFunctionWithGroupBy();
+        $query = clone $this->testAggregateFunctionWithGroupBy();
 
-        $q->having(
+        $query->having(
             new HavingCondition(
                 new AggregateFunctionExpression(
                     'sum',
                     [new Column('rok', $this->commentsTable)]
                 ),
                 new WhereOperator('NOT IN'),
-                new ArrayValue([6060, 8060, 2018])
+                new IntArrayValue([6060, 8060, 2018])
             )
         );
 
-        return $q;
+        return $query;
     }
 
     public function testHavingBetween() : SelectBuilder
     {
-        $q = $this->testAggregateFunctionWithGroupBy();
+        $query = $this->testAggregateFunctionWithGroupBy();
 
-        $q->having(
+        $query->having(
             new HavingCondition(
                 new AggregateFunctionExpression(
                     'sum',
                     [new Column('rok', $this->commentsTable)]
                 ),
                 new WhereOperator('BETWEEN'),
-                new ArrayValue([6060, 8080])
+                new IntArrayValue([6060, 8080])
             )
         );
 
-        return $q;
+        return $query;
     }
 
     public function testHavingBetweenInclusive() : SelectBuilder
     {
-        $q = $this->testAggregateFunctionWithGroupBy();
+        $query = $this->testAggregateFunctionWithGroupBy();
 
-        $q->having(
+        $query->having(
             new HavingCondition(
                 new AggregateFunctionExpression(
                     'sum',
                     [new Column('rok', $this->commentsTable)]
                 ),
                 new WhereOperator('BETWEEN_INCLUSIVE'),
-                new ArrayValue([6060, 8080])
+                new IntArrayValue([6060, 8080])
             )
         );
 
-        return $q;
+        return $query;
     }
 
+    public function testHavingMathPlus() : SelectBuilder
+    {
+        $query = $this->testAggregateFunctionWithGroupBy();
+
+        $query->having(
+            new HavingCondition(
+                new Plus(
+                    new IntegerValue(5.0),
+                    new AggregateFunctionExpression(
+                        'sum',
+                        [new Column('rok', $this->commentsTable)]
+                    )
+                ),
+                new WhereOperator('IN'),
+                new IntArrayValue([6065, 8065])
+            )
+        );
+
+        return $query;
+    }
+
+    public function testHavingMathPlus2() : SelectBuilder
+    {
+        $query = $this->testAggregateFunctionWithGroupBy();
+
+        $query->having(
+            new HavingCondition(
+                new Plus(
+                    new AggregateFunctionExpression(
+                        'sum',
+                        [new Column('rok', $this->commentsTable)]
+                    ),
+                    new IntegerValue(5)
+                ),
+                new WhereOperator('IN'),
+                new IntArrayValue([6065, 8065])
+            )
+        );
+
+        return $query;
+    }
+
+    public function testHavingMathMinus() : SelectBuilder
+    {
+        $query = $this->testAggregateFunctionWithGroupBy();
+
+        $query->having(
+            new HavingCondition(
+                new Minus(
+                    new IntegerValue(5.0),
+                    new AggregateFunctionExpression(
+                        'sum',
+                        [new Column('rok', $this->commentsTable)]
+                    )
+                ),
+                new WhereOperator('IN'),
+                new IntArrayValue([-6055, -8055])
+            )
+        );
+
+        return $query;
+    }
+
+    public function testHavingMathMinus2() : SelectBuilder
+    {
+        $query = $this->testAggregateFunctionWithGroupBy();
+
+        $query->having(
+            new HavingCondition(
+                new Minus(
+                    new AggregateFunctionExpression(
+                        'sum',
+                        [new Column('rok', $this->commentsTable)]
+                    ),
+                    new IntegerValue(5)
+                ),
+                new WhereOperator('IN'),
+                new IntArrayValue([6055, 8055])
+            )
+        );
+
+        return $query;
+    }
+
+    public function testHavingMathPower() : SelectBuilder
+    {
+        $query = $this->testAggregateFunctionWithGroupBy();
+
+        $query->select(
+            new Power(
+                new AggregateFunctionExpression(
+                    'count',
+                    [new Column('rok', $this->commentsTable)]
+                ),
+                new IntegerValue(2)
+            )
+        );
+
+        $query->having(
+            new HavingCondition(
+                new Power(
+                    new AggregateFunctionExpression(
+                        'sum',
+                        [new Column('rok', $this->commentsTable)]
+                    ),
+                    new IntegerValue(2)
+                ),
+                new WhereOperator('IN'),
+                new IntArrayValue([64963600, 8055])
+            )
+        );
+
+        return $query;
+    }
 }

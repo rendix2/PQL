@@ -8,25 +8,45 @@
  * Time: 23:52
  */
 
-namespace PQL\Query\Builder\Expressions;
+namespace PQL\Database\Query\Builder\Expressions;
 
+/**
+ * Class AbstractExpression
+ *
+ * @package PQL\Database\Query\Builder\Expressions
+ */
 abstract class AbstractExpression implements IExpression
 {
-
+    /**
+     * @var string|null $alias
+     */
     private ?string $alias;
 
+    /**
+     * @var bool $hasAlias
+     */
     private bool $hasAlias;
 
+    /**
+     * @param string|null $alias
+     */
     public function __construct(?string $alias = null)
     {
         $this->alias = $alias;
         $this->hasAlias = $alias !== null;
     }
 
+    public function __destruct()
+    {
+        foreach ($this as $key => $value) {
+            unset($this->{$key});
+        }
+    }
+
     /**
-     * @return null|string
+     * @return string|null
      */
-    public function getAlias(): ?string
+    public function getAlias() : ?string
     {
         return $this->alias;
     }
@@ -34,7 +54,7 @@ abstract class AbstractExpression implements IExpression
     /**
      * @return bool
      */
-    public function hasAlias(): bool
+    public function hasAlias() : bool
     {
         return $this->hasAlias;
     }

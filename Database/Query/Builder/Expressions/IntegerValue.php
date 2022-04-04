@@ -8,21 +8,25 @@
  * Time: 11:03
  */
 
-namespace PQL\Query\Builder\Expressions;
+namespace PQL\Database\Query\Builder\Expressions;
 
-
-use Nette\NotImplementedException;
-
+/**
+ * Class IntegerValue
+ *
+ * @package PQL\Database\Query\Builder\Expressions
+ */
 class IntegerValue extends AbstractExpression implements INumberValue
 {
-
+    /**
+     * @var int $value
+     */
     private int $value;
 
     /**
      * IntegerValue constructor.
      *
      * @param int         $value
-     * @param null|string $alias
+     * @param string|null $alias
      */
     public function __construct(int $value, ?string $alias = null)
     {
@@ -31,19 +35,32 @@ class IntegerValue extends AbstractExpression implements INumberValue
         $this->value = $value;
     }
 
+    /**
+     *
+     */
     public function __destruct()
     {
         foreach ($this as $key => $value) {
             unset($this->{$key});
         }
+
+        parent::__destruct();
     }
 
+    /**
+     * @return int
+     */
     public function evaluate() : int
     {
         return $this->value;
     }
 
-    public function print(?int $level = null): string
+    /**
+     * @param int|null $level
+     *
+     * @return string
+     */
+    public function print(?int $level = null) : string
     {
         return $this->value;
     }

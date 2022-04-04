@@ -10,7 +10,7 @@
 
 namespace PQL;
 
-use PQL\Query\Builder\Select;
+use PQL\Database\Query\Builder\SelectBuilder;
 use PQL\Tests\SelectTestQueryFactory;
 use ReflectionClass;
 
@@ -37,17 +37,21 @@ class TestRunner
     }
 
     /**
-     * @param Select $query
+     * @param SelectBuilder $query
      */
-    public function print(Select $query) : void
+    public function print(SelectBuilder $query) : void
     {
+        //dump($query);
+
+
         echo $query->printQuery();
         $res = $query->execute();
 
-        dump($res);
+        //dump($res);
         echo '<br><br>';
         echo $query->printResult();
         echo '<br><br>';
+        dump($query->explain());
         echo '<hr>';
     }
 }

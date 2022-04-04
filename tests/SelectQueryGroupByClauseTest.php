@@ -4,6 +4,7 @@
 namespace PQL\Tests;
 
 use PQL\Bootstrap;
+use PQL\Query\ArrayHelper;
 use PQL\Tests\InputData\TestAggregateFunctionWithGroupBy;
 use PQL\Tests\InputData\TestAggregateFunctionWithoutGroupBy;
 use PQL\Tests\InputData\TestSingleGroupBy;
@@ -26,7 +27,7 @@ class SelectQueryGroupByClauseTest extends TestCase
     public function testSingleGroupBy() : void
     {
         $query = $this->selectTestQueryFactory->testSingleGroupBy();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestSingleGroupBy();
         $expectedRows = $dataObj->getData();
@@ -37,7 +38,7 @@ class SelectQueryGroupByClauseTest extends TestCase
     public function testAggregateFunctionWithoutGroupBy() : void
     {
         $query = $this->selectTestQueryFactory->testAggregateFunctionWithoutGroupBy();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestAggregateFunctionWithoutGroupBy();
         $expectedRows = $dataObj->getData();
@@ -48,7 +49,7 @@ class SelectQueryGroupByClauseTest extends TestCase
     public function testAggregateFunctionWithGroupBy() : void
     {
         $query = $this->selectTestQueryFactory->testAggregateFunctionWithGroupBy();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestAggregateFunctionWithGroupBy();
         $expectedRows = $dataObj->getData();

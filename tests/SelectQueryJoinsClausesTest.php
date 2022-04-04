@@ -4,6 +4,7 @@
 namespace PQL\Tests;
 
 use PQL\Bootstrap;
+use PQL\Query\ArrayHelper;
 use PQL\Tests\InputData\TestCrossJoin;
 use PQL\Tests\InputData\TestInnerJoinTableOnCondition;
 use PQL\Tests\InputData\TestLeftJoinTableOnCondition;
@@ -34,7 +35,7 @@ class SelectQueryJoinsClausesTest extends TestCase
     public function testInnerJoinTableOnCondition() : void
     {
         $query = $this->selectTestQueryFactory->testInnerJoinTableOnCondition();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestInnerJoinTableOnCondition();
         $expectedRows = $dataObj->getData();
@@ -45,7 +46,7 @@ class SelectQueryJoinsClausesTest extends TestCase
     public function testCrossJoin() : void
     {
         $query = $this->selectTestQueryFactory->testCrossJoin();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestCrossJoin();
         $expectedRows = $dataObj->getData();
@@ -56,7 +57,7 @@ class SelectQueryJoinsClausesTest extends TestCase
     public function testLeftJoinTableOnCondition() : void
     {
         $query = $this->selectTestQueryFactory->testLeftJoinTableOnCondition();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestLeftJoinTableOnCondition();
         $expectedRows = $dataObj->getData();
@@ -67,7 +68,7 @@ class SelectQueryJoinsClausesTest extends TestCase
     public function testLeftJoinTableOnConditionGreater() : void
     {
         $query = $this->selectTestQueryFactory->testLeftJoinTableOnConditionGreater();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestLeftJoinTableOnConditionGreater();
         $expectedRows = $dataObj->getData();
@@ -78,7 +79,7 @@ class SelectQueryJoinsClausesTest extends TestCase
     public function testLeftJoinTableOnConditionGreaterEquals() : void
     {
         $query = $this->selectTestQueryFactory->testLeftJoinTableOnConditionGreaterEquals();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestLeftJoinTableOnConditionGreaterEquals();
         $expectedRows = $dataObj->getData();
@@ -89,7 +90,7 @@ class SelectQueryJoinsClausesTest extends TestCase
     public function testLeftJoinTableOnConditionSmaller() : void
     {
         $query = $this->selectTestQueryFactory->testLeftJoinTableOnConditionSmaller();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestLeftJoinTableOnConditionSmaller();
         $expectedRows = $dataObj->getData();
@@ -100,7 +101,7 @@ class SelectQueryJoinsClausesTest extends TestCase
     public function testLeftJoinTableOnConditionEquals() : void
     {
         $query = $this->selectTestQueryFactory->testLeftJoinTableOnCondition();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestLeftJoinTableOnCondition();
         $expectedRows = $dataObj->getData();
@@ -111,7 +112,7 @@ class SelectQueryJoinsClausesTest extends TestCase
     public function testLeftJoinTableOnConditionNotEquals() : void
     {
         $query = $this->selectTestQueryFactory->testLeftJoinTableOnConditionNotEquals();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestLeftJoinTableOnConditionNotEquals();
         $expectedRows = $dataObj->getData();
@@ -122,7 +123,7 @@ class SelectQueryJoinsClausesTest extends TestCase
     public function testLeftJoinTableOnConditionNotEquals2() : void
     {
         $query = $this->selectTestQueryFactory->testLeftJoinTableOnConditionNotEquals2();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestLeftJoinTableOnConditionNotEquals2();
         $expectedRows = $dataObj->getData();
@@ -133,7 +134,7 @@ class SelectQueryJoinsClausesTest extends TestCase
     public function testLeftJoinTableOnConditionInArray() : void
     {
         $query = $this->selectTestQueryFactory->testLeftJoinTableOnConditionInArray();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestLeftJoinTableOnConditionInArray();
         $expectedRows = $dataObj->getData();
@@ -144,7 +145,7 @@ class SelectQueryJoinsClausesTest extends TestCase
     public function testLeftJoinTableOnConditionNotInArray() : void
     {
         $query = $this->selectTestQueryFactory->testLeftJoinTableOnConditionNotInArray();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestLeftJoinTableOnConditionNotInArray();
         $expectedRows = $dataObj->getData();

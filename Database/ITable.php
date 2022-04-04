@@ -8,10 +8,13 @@
  * Time: 16:19
  */
 
-namespace PQL;
+namespace PQL\Database;
 
-
+/**
+ * Interface ITable
+ *
+ * @package PQL\Database
+ */
 interface ITable
 {
-
 }

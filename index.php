@@ -3,25 +3,20 @@
 use Netpromotion\Profiler\Adapter\TracyBarAdapter;
 use Netpromotion\Profiler\Profiler;
 use Nette\Loaders\RobotLoader;
-use PQL\Server;
+use PQL\Bootstrap;
+use PQL\Database\Index\BtreePlus;
+use PQL\Database\Query\Builder\Expressions\Column;
+use PQL\Database\Query\Builder\Expressions\WhereCondition;
+use PQL\Database\Server;
 use PQL\TestDataCreator;
 use PQL\TestRunner;
+use PQL\Tests\InputData\TestLeftJoinTableOnConditionGreaterEquals;
+use PQL\Tests\InputData\TestLeftJoinTableOnConditionNotInArray;
 use Tracy\Debugger;
 
-$sep = DIRECTORY_SEPARATOR;
-
-require __DIR__ . $sep . 'vendor' . $sep . 'autoload.php';
-
-$loader = new RobotLoader();
-$loader->addDirectory(__DIR__);
-$loader->setTempDirectory(__DIR__ . $sep . 'temp');
-$loader->setAutoRefresh();
-$loader->register();
-
-Debugger::enable();
-Debugger::$maxDepth = 2000;
-Debugger::getBar()->addPanel(new TracyBarAdapter());
-Profiler::enable();
+require_once 'Bootstrap.php';
+$bootstrap = new Bootstrap();
+$bootstrap->app();
 
 echo '<meta charset="UTF-8">';
 
@@ -29,9 +24,80 @@ echo '<meta charset="UTF-8">';
 $testDataCreator = new TestDataCreator();
 $testDataCreator->run();
 
-
 $testRunner = new TestRunner();
 $testRunner->run();
+
+/*$factory = new \PQL\Tests\SelectTestQueryFactory();
+$q = $factory->testInnerJoinTableOnCondition();*/
+
+
+
+
+/*$q = $factory->testInnerJoinTableOnCondition();
+
+$testRunner->print($q);*/
+
+
+
+
+
+
+/*$server = new Server();
+$testDatabase = $server->getDatabase('test');
+
+
+$updateQuery = $testDatabase->deleteQuery();
+
+$commentsTable =     new \PQL\Database\Query\Builder\Expressions\TableExpression(
+    $testDatabase,
+    'comments'
+);
+
+$updateQuery->from($commentsTable);*/
+
+
+/*$updateQuery->set(
+    new \PQL\Database\Query\Builder\Expressions\Set(
+        new Column(
+            'rok',
+            $commentsTable
+        ),
+        new \PQL\Database\Query\Builder\Expressions\IntegerValue(2050)
+    )
+);
+
+$updateQuery->where(new WhereCondition(
+    new Column(
+        'rok',
+        $commentsTable
+    ),
+    new \PQL\Database\Query\Builder\Expressions\Operator( '='),
+    new \PQL\Database\Query\Builder\Expressions\IntegerValue(2015)
+
+));
+
+echo $updateQuery->print();
+$updateQuery->execute();
+*/
+
+/*$row1 = new stdClass();
+$row1->id = 1;
+$row1->name = 'tom';
+
+$row2 = new stdClass();
+$row2->id = 2;
+$row2->name = 'tom2';
+
+$tree = new BtreePlus();
+$tree->insert($row1);
+$tree->insert($row2);
+
+bdump($tree);
+
+$tree->delete($row2);
+
+bdump($tree);*/
+
 
 
 /*
@@ -89,7 +155,7 @@ $query->groupBy(new Column('rok', $commentTable));
 
 //$query->where(new WhereCondition(new Column('username', $userTable), new Operator('IS NOT NULL'), null));
 //$query->where(new WhereCondition(new Column('username', $userTable), new Operator('='), new StringValue('xpy')));
-//$query->where(new WhereCondition(new Column('rok', $commentTable), new Operator('='), new \PQL\Query\Builder\Expressions\IntegerValue('2015')));
+//$query->where(new WhereCondition(new Column('rok', $commentTable), new Operator('='), new \PQL\Database\Query\Builder\Expressions\IntegerValue('2015')));
 
 //$query->orderBy(new Column('username', $userTable), 'ASC');
 //$query->limit(10);

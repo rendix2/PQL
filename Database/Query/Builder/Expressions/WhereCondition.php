@@ -8,37 +8,53 @@
  * Time: 10:52
  */
 
-namespace PQL\Query\Builder\Expressions;
-
+namespace PQL\Database\Query\Builder\Expressions;
 
 use Nette\NotImplementedException;
+use PQL\Database\IPrintable;
 
-class WhereCondition implements ICondition
+/**
+ * Class WhereCondition
+ *
+ * @package PQL\Database\Query\Builder\Expressions
+ */
+class WhereCondition implements ICondition, BinaryExpression
 {
-
+    /**
+     * @var IExpression $left
+     */
     private IExpression $left;
 
-    private Operator $operator;
+    /**
+     * @var WhereOperator $operator
+     */
+    private WhereOperator $operator;
 
-    private ?IValue $right;
+    /**
+     * @var IValue $right
+     */
+    private IValue $right;
 
     /**
      * Where constructor.
      *
-     * @param IExpression $left
-     * @param Operator    $operator
-     * @param ?IValue $right
+     * @param IExpression   $left
+     * @param WhereOperator $operator
+     * @param IValue       $right
      */
     public function __construct(
-        IExpression $left,
-        Operator $operator,
-        ?IValue $right = null
+        IExpression   $left,
+        WhereOperator $operator,
+        IValue       $right
     ) {
         $this->left = $left;
         $this->operator = $operator;
         $this->right = $right;
     }
 
+    /**
+     * Where destructor.
+     */
     public function __destruct()
     {
         foreach ($this as $key => $value) {
@@ -49,29 +65,47 @@ class WhereCondition implements ICondition
     /**
      * @return IExpression
      */
-    public function getLeft(): IExpression
+    public function getLeft() : IExpression
     {
         return $this->left;
     }
 
     /**
-     * @return Operator
+     * @return WhereOperator
      */
-    public function getOperator(): Operator
+    public function getOperator() : WhereOperator
     {
         return $this->operator;
     }
 
     /**
-     * @return ?IValue
+     * @return IValue
      */
-    public function getRight(): ?IValue
+    public function getRight() : IValue
     {
         return $this->right;
     }
 
+    /**
+     * @return string
+     */
     public function evaluate() : string
     {
         throw new NotImplementedException();
+    }
+
+    /**
+     * @param int|null $level
+     *
+     * @return string
+     */
+    public function print(?int $level = null) : string
+    {
+        return sprintf(
+            '%s %s %s',
+            $this->left->evaluate(),
+            $this->operator->evaluate(),
+            $this->right->evaluate()
+        );
     }
 }

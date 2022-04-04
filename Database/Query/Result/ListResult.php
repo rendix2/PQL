@@ -8,9 +8,8 @@
  * Time: 23:30
  */
 
-namespace PQL\Query\Result;
+namespace PQL\Database\Query\Result;
 
 class ListResult
 {
-
 }

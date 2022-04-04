@@ -4,6 +4,7 @@
 namespace PQL\Tests;
 
 use PQL\Bootstrap;
+use PQL\Query\ArrayHelper;
 use PQL\Tests\InputData\TestColumnsFrom;
 use PQL\Tests\InputData\TestDistinctColumn;
 use PQL\Tests\InputData\TestDistinctFunctionColumn;
@@ -28,7 +29,7 @@ class SelectQuerySelectClauseTest extends TestCase
     public function testColumnsFrom() : void
     {
         $query = $this->selectTestQueryFactory->testColumnsFrom();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestColumnsFrom();
         $expectedRows = $dataObj->getData();
@@ -39,7 +40,7 @@ class SelectQuerySelectClauseTest extends TestCase
     public function testDistinctColumn() : void
     {
         $query = $this->selectTestQueryFactory->testDistinctColumn();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestDistinctColumn();
         $expectedRows = $dataObj->getData();
@@ -50,7 +51,7 @@ class SelectQuerySelectClauseTest extends TestCase
     public function testDistinctFunctionColumn() : void
     {
         $query = $this->selectTestQueryFactory->testDistinctFunctionColumn();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestDistinctFunctionColumn();
         $expectedRows = $dataObj->getData();
@@ -61,7 +62,7 @@ class SelectQuerySelectClauseTest extends TestCase
     public function testSingleArgumentFunction() : void
     {
         $query = $this->selectTestQueryFactory->testSingleArgumentFunction();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestSingleArgumentFunction();
         $expectedRows = $dataObj->getData();
@@ -72,7 +73,7 @@ class SelectQuerySelectClauseTest extends TestCase
     public function testExpressions() : void
     {
         $query = $this->selectTestQueryFactory->testExpressions();
-        $queryRows = ArrayHelper::createArray($query->execute());
+        $queryRows = ArrayHelper::toArray($query->execute());
 
         $dataObj = new TestExpressions();
         $expectedRows = $dataObj->getData();

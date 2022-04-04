@@ -8,28 +8,31 @@
  * Time: 2:49
  */
 
-namespace PQL\Query\Result;
+namespace PQL\Database\Query\Result;
 
+use PQL\Database\IPrintable;
+use PQL\Database\Query\Builder\SelectBuilder;
 
-use PQL\IPrintable;
-use PQL\Query\Builder\Select;
-
+/**
+ * Class TableResult
+ *
+ * @package PQL\Database\Query\Result
+ */
 class TableResult implements IPrintable
 {
-
-    private array $data;
-
-    private Select $query;
+    /**
+     * @var SelectBuilder $query
+     */
+    private SelectBuilder $query;
 
     /**
      * TableResult constructor.
      *
-     * @param array $data
+     * @param SelectBuilder $query
      */
-    public function __construct(Select $query, array $data)
+    public function __construct(SelectBuilder $query)
     {
         $this->query = $query;
-        $this->data = $data;
     }
 
     public function __destruct()
@@ -39,9 +42,14 @@ class TableResult implements IPrintable
         }
     }
 
+    /**
+     * @param int|null $level
+     *
+     * @return string
+     */
     public function print(?int $level = null) : string
     {
-        if (count($this->data)) {
+        if (count($this->query->getResult())) {
             $table = '<table border="1">';
             $table .= '<thead><tr>';
 
@@ -55,7 +63,7 @@ class TableResult implements IPrintable
 
             $table .= '</tr></thead><tbody>';
 
-            foreach ($this->data as $rows) {
+            foreach ($this->query->getResult() as $rows) {
                 $table .= '<tr>';
 
                 foreach ($rows as $row) {

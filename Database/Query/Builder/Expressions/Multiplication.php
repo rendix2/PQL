@@ -8,12 +8,23 @@
  * Time: 21:20
  */
 
-namespace PQL\Query\Builder\Expressions;
+namespace PQL\Database\Query\Builder\Expressions;
 
-class Multiplication extends AbstractExpression implements IMathOperator
+/**
+ * Class Multiplication
+ *
+ * @package PQL\Database\Query\Builder\Expressions
+ */
+class Multiplication extends AbstractExpression implements IMathBinaryOperator
 {
+    /**
+     * @var IMathExpression $left
+     */
     private IMathExpression $left;
 
+    /**
+     * @var IMathExpression $right
+     */
     private IMathExpression $right;
 
     /**
@@ -34,14 +45,40 @@ class Multiplication extends AbstractExpression implements IMathOperator
         foreach ($this as $key => $value) {
             unset($this->{$key});
         }
+
+        parent::__destruct();
     }
 
+    /**
+     * @return IMathExpression
+     */
+    public function getLeft() : IMathExpression
+    {
+        return $this->left;
+    }
+
+    /**
+     * @return IMathExpression
+     */
+    public function getRight() : IMathExpression
+    {
+        return $this->right;
+    }
+
+    /**
+     * @return float
+     */
     public function evaluate() : float
     {
         return $this->left->evaluate() * $this->right->evaluate();
     }
 
-    public function print(): string
+    /**
+     * @param int|null $level
+     *
+     * @return string
+     */
+    public function print(?int $level = null) : string
     {
         return sprintf('(%s + %s)', $this->left->print(), $this->right->print());
     }

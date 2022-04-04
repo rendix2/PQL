@@ -8,48 +8,97 @@
  * Time: 13:54
  */
 
-namespace PQL\Query\Builder\Expressions;
+namespace PQL\Database\Query\Builder\Expressions;
 
 
+use InvalidArgumentException;
 use Nette\NotImplementedException;
-use PQL\IPrintable;
-use PQL\Query\Builder\Select;
-use PQL\Query\Printer\Select as SelectPrinter;
-use PQL\Query\Runner\SelectExecutor;
+use PQL\Database\IPrintable;
+use PQL\Database\Query\Builder\SelectBuilder;
+use PQL\Database\Query\Printer\SelectPrinter;
+use PQL\Database\Query\Executor\SelectExecutor;
+use PQL\Database\Table;
 use stdClass;
 
-class QueryExpression extends AbstractExpression implements IFromExpression, IPrintable
+/**
+ * Class QueryExpression
+ *
+ * @package PQL\Database\Query\Builder\Expressions
+ */
+class QueryExpression extends AbstractExpression implements IFromExpression
 {
-    private Select $select;
+    /**
+     * @var SelectBuilder $select
+     */
+    private SelectBuilder $select;
 
+    /**
+     * @var SelectExecutor $selectExecutor
+     */
     private SelectExecutor $selectExecutor;
 
-    public function __construct(Select $select, ?string $alias = null)
+    /**
+     * @var array|null $data
+     */
+    private ?array $data;
+
+    /**
+     * QueryExpression constructor
+     *
+     * @param SelectBuilder $select
+     * @param string|null   $alias
+     */
+    public function __construct(SelectBuilder $select, ?string $alias = null)
     {
         parent::__construct($alias);
 
         $this->select = $select;
         $this->selectExecutor = new SelectExecutor($this->select);
+
+        $this->data = null;
     }
 
+    /**
+     * QueryExpression destructor.
+     */
     public function __destruct()
     {
         foreach ($this as $key => $value) {
             unset($this->{$key});
         }
+
+        parent::__destruct();
     }
 
-    public function getQuery() : Select
+    /**
+     * @return SelectBuilder
+     */
+    public function getQuery() : SelectBuilder
     {
         return $this->select;
     }
 
-    public function getData() : array
+    public function getTable() : Table
     {
-        return $this->selectExecutor->run();
+        throw new InvalidArgumentException();
     }
 
-    public function getNullEntity(): stdClass
+    /**
+     * @return array
+     */
+    public function getData() : array
+    {
+        if (!$this->data) {
+            $this->data = $this->selectExecutor->run();
+        }
+
+        return $this->data;
+    }
+
+    /**
+     * @return stdClass
+     */
+    public function getNullEntity() : stdClass
     {
         $entity = new stdClass();
 
@@ -60,12 +109,20 @@ class QueryExpression extends AbstractExpression implements IFromExpression, IPr
         return $entity;
     }
 
+    /**
+     * @return string
+     */
     public function evaluate() : string
     {
         throw new NotImplementedException();
     }
 
-    public function print(?int $level = null): string
+    /**
+     * @param int|null $level
+     *
+     * @return string
+     */
+    public function print(?int $level = null) : string
     {
         $printer = new SelectPrinter($this->select, $level);
 

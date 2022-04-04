@@ -8,10 +8,16 @@
  * Time: 10:49
  */
 
-namespace PQL\Query\Builder\Expressions;
+namespace PQL\Database\Query\Builder\Expressions;
 
+use PQL\Database\IPrintable;
 
-interface IExpression
+/**
+ * Interface IExpression
+ *
+ * @package PQL\Database\Query\Builder\Expressions
+ */
+interface IExpression extends IPrintable
 {
     public function evaluate();
 }

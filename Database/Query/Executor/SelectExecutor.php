@@ -2,23 +2,50 @@
 /**
  *
  * Created by PhpStorm.
- * Filename: Select.php
+ * Filename: SelectPrinter.php
  * User: Tomáš Babický
  * Date: 27.08.2021
  * Time: 1:04
  */
 
-namespace PQL\Query\Runner;
+namespace PQL\Database\Query\Executor;
 
 use Exception;
 use Netpromotion\Profiler\Profiler;
-use PQL\Query\Builder\Select;
+use PQL\Database\Query\Builder\Expressions\AggregateFunctionExpression;
+use PQL\Database\Query\Builder\Expressions\Column;
+use PQL\Database\Query\Builder\Expressions\Division;
+use PQL\Database\Query\Builder\Expressions\IMathBinaryOperator;
+use PQL\Database\Query\Builder\Expressions\IMathExpression;
+use PQL\Database\Query\Builder\Expressions\Minus;
+use PQL\Database\Query\Builder\Expressions\Multiplication;
+use PQL\Database\Query\Builder\Expressions\Plus;
+use PQL\Database\Query\Builder\Expressions\Power;
+use PQL\Database\Query\Builder\SelectBuilder;
+use PQL\Database\Query\Executor\Select\CrossJoinExecutor;
+use PQL\Database\Query\Executor\Select\InnerJoinExecutor;
+use PQL\Database\Query\Executor\Select\LeftJoinExecutor;
+use PQL\Database\Query\Scheduler\Scheduler;
+use PQL\Query\ArrayHelper;
 use PQL\Query\Container;
 use stdClass;
 
+/**
+ * Class SelectExecutor
+ *
+ * @package PQL\Database\Query\Executor
+ */
 class SelectExecutor
 {
+    /**
+     * @var AggregateFunctionsPostGroupByExecutor $aggregateFunctionsPostGroupByExecutor
+     */
     private AggregateFunctionsPostGroupByExecutor $aggregateFunctionsPostGroupByExecutor;
+
+    /**
+     * @var CrossJoinExecutor $crossJoinExecutor
+     */
+    private CrossJoinExecutor $crossJoinExecutor;
 
     /**
      * @var stdClass[] $data
@@ -50,15 +77,22 @@ class SelectExecutor
      */
     private HavingExecutor $havingExecutor;
 
+    private InnerJoinExecutor $innerJoinExecutor;
+
     /**
      * @var IntersectExecutor $intersectExecutor
      */
     private IntersectExecutor $intersectExecutor;
 
     /**
-     * @var JoinExecutor $joinExecutor
+     * @var LeftJoinExecutor $leftJoinExecutor
      */
-    private JoinExecutor $joinExecutor;
+    private LeftJoinExecutor $leftJoinExecutor;
+
+    /**
+     * @var MathExecutor $mathExecutor
+     */
+    private MathExecutor $mathExecutor;
 
     /**
      * @var OrderByExecutor $orderByExecutor
@@ -66,14 +100,19 @@ class SelectExecutor
     private OrderByExecutor $orderByExecutor;
 
     /**
-     * @var Select $query
+     * @var SelectBuilder $query
      */
-    private Select $query;
+    private SelectBuilder $query;
 
     /**
      * @var GroupByExecutor $groupByExecutor
      */
     private GroupByExecutor $groupByExecutor;
+
+    /**
+     * @var Scheduler $scheduler
+     */
+    private Scheduler $scheduler;
 
     /**
      * @var UnionAllExecutor $unionAllExecutor
@@ -90,14 +129,26 @@ class SelectExecutor
      */
     private WhereExecutor $whereExecutor;
 
-    public function __construct(Select $query)
+    /**
+     * @var CheckExecutor $checkExecutor
+     */
+    private CheckExecutor $checkExecutor;
+
+    /**
+     * @param SelectBuilder $query
+     */
+    public function __construct(SelectBuilder $query)
     {
         $this->query = $query;
 
         $container = new Container($query);
 
         $this->whereExecutor = $container->getWhereExecutor();
-        $this->joinExecutor = $container->getJoinExecutor();
+
+        $this->innerJoinExecutor = $container->getInnerJoinExecutor();
+        $this->crossJoinExecutor = $container->getCrossJoinExecutor();
+        $this->leftJoinExecutor = $container->getLeftJoinExecutor();
+
         $this->aggregateFunctionsPreGroupByExecutor = $container->getAggregateFunctionsPreGroupByExecutor();
         $this->aggregateFunctionsPostGroupByExecutor = $container->getAggregateFunctionsPostGroupByExecutor();
         $this->groupByExecutor = $container->getGroupByExecutor();
@@ -105,12 +156,20 @@ class SelectExecutor
         $this->orderByExecutor = $container->getOrderByExecutor();
         $this->functionsExecutor = $container->getFunctionsExecutor();
 
+        $this->mathExecutor = $container->getMathExecutor();
+
         $this->intersectExecutor = $container->getIntersectExecutor();
         $this->exceptExecutor = $container->getExceptExecutor();
         $this->unionExecutor = $container->getUnionExecutor();
         $this->unionAllExecutor = $container->getUnionAllExecutor();
 
         $this->distinctExecutor = $container->getDistinctExecutor();
+
+        $this->scheduler = $container->getScheduler();
+
+        $this->checkExecutor = $container->getCheckExecutor();
+
+        $this->data = [];
     }
 
     public function __destruct()
@@ -175,6 +234,10 @@ class SelectExecutor
         $this->having();
         Profiler::finish('having');
 
+        Profiler::start('math');
+        $this->math();
+        Profiler::finish('math');
+
         Profiler::start('orderBy');
         $this->orderBy();
         Profiler::finish('orderBy');
@@ -210,19 +273,12 @@ class SelectExecutor
         return $this->data;
     }
 
+    /**
+     * @throws Exception
+     */
     private function checks() : void
     {
-        if ($this->query->getDistinct()) {
-            if (count($this->query->getColumns()) > 1) {
-                throw new Exception('We are using Distinct and have more than one selected columns.');
-            }
-
-            if (count($this->query->getColumns()) === 1) {
-                if ($this->query->getDistinct() !== $this->query->getColumns()[0]) {
-                    throw new Exception('We have set Distinct column and columns. If distinct column is user, you cannot use normal columns.');
-                }
-            }
-        }
+        $this->checkExecutor->run([]);
     }
 
     private function from() : void
@@ -232,17 +288,17 @@ class SelectExecutor
 
     private function innerJoins() : void
     {
-        $this->data = $this->joinExecutor->innerJoins($this->data);
+        $this->data = $this->innerJoinExecutor->run($this->data);
     }
 
     private function crossJoins() : void
     {
-        $this->data = $this->joinExecutor->crossJoins($this->data);
+        $this->data = $this->crossJoinExecutor->run($this->data);
     }
 
     private function leftJoins() : void
     {
-        $this->data = $this->joinExecutor->leftJoins($this->data);
+        $this->data = $this->leftJoinExecutor->run($this->data);
     }
 
     private function rightJoins() : void
@@ -321,13 +377,7 @@ class SelectExecutor
             }
         }
 
-        $objectRows = [];
-
-        foreach ($res as $row) {
-            $objectRows[] = (object) $row;
-        }
-
-        $this->data = $objectRows;
+        $this->data = ArrayHelper::toObject($res);
     }
 
     private function distinct() : void
@@ -353,5 +403,10 @@ class SelectExecutor
     private function unionAll() : void
     {
         $this->data = $this->unionAllExecutor->run($this->data);
+    }
+
+    private function math() : void
+    {
+        $this->data = $this->mathExecutor->run($this->data);
     }
 }
