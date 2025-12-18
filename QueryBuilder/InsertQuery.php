@@ -10,7 +10,7 @@ namespace pql\QueryBuilder;
 
 use Exception;
 use pql\Database;
-use pql\QueryExecutor\Insert as InsertExecutor;
+use pql\QueryExecutor\InsertExecutor as InsertExecutor;
 use pql\QueryResult\IResult;
 use pql\QueryResult\TableResult;
 use pql\Table;

@@ -2,7 +2,7 @@
 
 namespace pql\QueryBuilder\From;
 
-class Table implements IFromExpression
+class TableFromExpression implements IFromExpression
 {
     /**
      * @var string $table

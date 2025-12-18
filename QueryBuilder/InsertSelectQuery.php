@@ -9,7 +9,7 @@
 namespace pql\QueryBuilder;
 
 use pql\Database;
-use pql\QueryExecutor\InsertSelect as InsertSelectExecutor;
+use pql\QueryExecutor\InsertSelectExecutor as InsertSelectExecutor;
 use pql\QueryResult\IResult;
 use pql\QueryResult\TableResult;
 use pql\Table;

@@ -3,21 +3,20 @@
 namespace pql\QueryExecutor\AggregateFunctions;
 
 /**
- * Class Sum
+ * Class Average
  *
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryExecutor\AggregateFunctions
  */
-class Sum extends AggregateFunction
+class AverageAggregationFunctionAbstract extends AbstractAggregateFunction
 {
     /**
      * @inheritDoc
      */
     public function run($column, $functionColumnName)
     {
-        $functionGroupByResult = [];
+        $functionGroupByResult  = [];
 
-        // iterate over grouped data!
         foreach ($this->getQuery()->getGroupedByData() as $groupByColumn => $groupByRows) {
             foreach ($groupByRows as $groupByValue => $groupedRows) {
                 foreach ($groupedRows as $groupedRow) {
@@ -27,6 +26,8 @@ class Sum extends AggregateFunction
                         $functionGroupByResult[$groupByColumn][$groupByValue] = $groupedRow[$column];
                     }
                 }
+
+                $functionGroupByResult[$groupByColumn][$groupByValue] /= count($groupedRows);
             }
 
             $this->getQuery()->addGroupedFunctionDataIntoResult($groupByColumn, $functionGroupByResult, $functionColumnName);

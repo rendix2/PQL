@@ -16,7 +16,7 @@ use Exception;
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryBuilder
  */
-trait Limit
+trait LimitQueryBuilder
 {
     /**
      * @var int $limit
@@ -34,7 +34,7 @@ trait Limit
     /**
      * @param int $limit
      *
-     * @return Limit|SelectQuery
+     * @return LimitQueryBuilder|SelectQuery
      * @throws Exception
      */
     public function limit($limit)

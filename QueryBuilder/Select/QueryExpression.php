@@ -11,7 +11,7 @@ use pql\QueryPrinter\QueryPrinter;
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryBuilder\Select
  */
-class Query implements ISelectExpression
+class QueryExpression implements ISelectExpression
 {
     /**
      * @var QueryBuilder $query

@@ -14,9 +14,9 @@ use SplFileObject;
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryExecute
  */
-class Update implements IQueryExecutor
+class UpdateExecutor implements IQueryExecutor
 {
-    use Limit;
+    use LimitExecutor;
 
     /**
      * @var UpdateBuilder $query

@@ -8,7 +8,7 @@ namespace pql\QueryExecutor\AggregateFunctions;
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryExecutor\AggregateFunctions
  */
-class Median extends AggregateFunction
+class MedianAggregationFunctionAbstract extends AbstractAggregateFunction
 {
     /**
      * @inheritDoc

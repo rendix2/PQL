@@ -19,7 +19,7 @@ use pql\QueryBuilder\Select\ISelectExpression;
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryBuilder
  */
-trait Where
+trait WhereQueryBuilder
 {
     /**
      * @var Condition[] $whereConditions
@@ -36,7 +36,7 @@ trait Where
      * @param IOperator         $operator
      * @param ISelectExpression $value
      *
-     * @return Where|SelectQuery
+     * @return WhereQueryBuilder|SelectQuery
      * @throws Exception
      */
     public function where(ISelectExpression $column, IOperator $operator, ISelectExpression $value)

@@ -12,7 +12,7 @@ use SplFileObject;
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryExecute
  */
-class Insert implements IQueryExecutor
+class InsertExecutor implements IQueryExecutor
 {
     /**
      * @var InsertBuilder $query

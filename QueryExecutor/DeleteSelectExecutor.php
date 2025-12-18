@@ -19,7 +19,7 @@ use pql\QueryBuilder\Query;
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryExecute
  */
-class DeleteSelect implements IQueryExecutor
+class DeleteSelectExecutor implements IQueryExecutor
 {
     /**
      * @var DeleteSelectBuilder $query
@@ -49,7 +49,7 @@ class DeleteSelect implements IQueryExecutor
      */
     public function run()
     {
-        $selectQuery = new SelectQuery($this->query->getData());
+        $selectQuery = new SelectExecutor($this->query->getData());
         $selectQuery->run();
 
         $selectedColumns = [];

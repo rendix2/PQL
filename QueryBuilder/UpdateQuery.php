@@ -9,7 +9,7 @@
 namespace pql\QueryBuilder;
 
 use pql\Database;
-use pql\QueryExecutor\Update as UpdateExecutor;
+use pql\QueryExecutor\UpdateExecutor as UpdateExecutor;
 use pql\QueryResult\IResult;
 use pql\QueryResult\TableResult;
 use pql\Table;
@@ -22,8 +22,8 @@ use pql\Table;
  */
 class UpdateQuery implements IQueryBuilder
 {
-    use Where;
-    use Limit;
+    use WhereQueryBuilder;
+    use LimitQueryBuilder;
     use Offset;
 
     /**

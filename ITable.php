@@ -2,6 +2,7 @@
 
 namespace pql;
 
+use Generator;
 use pql\QueryRow\TableRow;
 
 /**
@@ -18,9 +19,9 @@ interface ITable
     public function getColumns();
 
     /**
-     * @param bool $object
+     * @param bool $returnObject
      *
      * @return TableRow[]|array
      */
-    public function getRows($object = false);
+    public function getRows(bool $returnObject = false): Generator;
 }

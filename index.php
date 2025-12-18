@@ -6,6 +6,7 @@ use pql\Database;
 use pql\QueryBuilder\Query;
 use pql\QueryBuilder\Select\AggregateFunctions\Count;
 use pql\QueryBuilder\Select\Column;
+use pql\Table;
 use Tracy\Debugger;
 use Nette\Loaders\RobotLoader;
 
@@ -17,8 +18,9 @@ $loader->setTempDirectory(__DIR__ . '/temp');
 $loader->setAutoRefresh();
 $loader->register();
 
-Debugger::enable();
+Debugger::enable(Debugger::Development);
 Debugger::$maxDepth = 2000;
+Debugger::$logDirectory = __DIR__ . '/log';
 Debugger::getBar()->addPanel(new TracyBarAdapter());
 Profiler::enable();
 
@@ -68,8 +70,19 @@ $start = microtime(true);
 bdump($search, 'search');
 */
 
+//Database::create('test');
 
-//Table::create($database, 'test', ['id', 'jmeno']);
+$database = new Database('test');
+
+
+Table::create($database, 'test',
+    [
+        new \pql\TableColumn('id', 'int',false),
+        new \pql\TableColumn('jmeno', 'string', true),
+        new \pql\TableColumn('datum', 'string', false),
+        new \pql\TableColumn('pocet', 'string', false)
+    ]
+);
 
 /*
 function hashJoin($table1, $table2, $condition) {
@@ -152,6 +165,8 @@ foreach ($result as $row) {
 
 $database = new Database('test');
 
+//\pql\Table::create($database, 'test');
+
 //$myNew = $database->getTable('test');
 
 //bdump($database);
@@ -196,7 +211,7 @@ $acount = new Column( 'a.pocet');
 
 //$query2->select()->select(new \pql\QueryBuilder\PFunction(NumberFormat::FUNCTION_NAME, 'pocet', [5 , ',' , $thousands_sep = '_']))
 $query2->select()->select(null, new Column('datum'))
-    ->from(new \pql\QueryBuilder\From\Table('test'))
+    ->from(new \pql\QueryBuilder\From\TableFromExpression('test'))
     //->innerJoin(new \pql\QueryBuilder\From\Table('test'), [new \pql\Condition(new Column('a.pocet') ,'=', 'b.pocet')], 'b')
     //->where('pocet', '>', 2)
     //->where('pocet', '<', 5)
@@ -205,7 +220,7 @@ $query2->select()->select(null, new Column('datum'))
     //->groupBy('datum');
 //->having($count, '=', 5);
 
-$querySelect = new \pql\QueryBuilder\From\Query($query2);
+$querySelect = new \pql\QueryBuilder\From\QueryFromExpression($query2);
 $equalsOperator = new \pql\QueryBuilder\Operator\Equals();
 
 
@@ -214,8 +229,8 @@ $q1->select()
     ->select(null, new Column('id'))
     ->select(null, new Column('datum'))
     ->select(null, new Column('pocet'))
-    ->from(new \pql\QueryBuilder\From\Table('test'))
-    ->where(new Column('pocet'), new \pql\QueryBuilder\Operator\Equals(), new \pql\QueryBuilder\Select\Value(45.0));
+    ->from(new \pql\QueryBuilder\From\TableFromExpression('test'))
+    ->where(new Column('pocet'), new \pql\QueryBuilder\Operator\Equals(), new \pql\QueryBuilder\Select\ValueExpression(45.0));
 
 $query3 = $q1   ;
 
@@ -256,7 +271,7 @@ $query4->select()->select(null, new Column('datum'))
 //->orderBy('a.pocet')
 //->groupBy('a.pocet');
 
-$plus = new \pql\QueryBuilder\Select\Minus(new \pql\QueryBuilder\Select\Value(1), new \pql\QueryBuilder\Select\Value(15));
+$plus = new \pql\QueryBuilder\Select\Minus(new \pql\QueryBuilder\Select\ValueExpression(1), new \pql\QueryBuilder\Select\ValueExpression(15));
 
 $ex = new \pql\QueryBuilder\Select\Expression(new \pql\QueryBuilder\Select\Plus($plus));
 

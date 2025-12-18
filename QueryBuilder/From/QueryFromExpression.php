@@ -5,7 +5,7 @@ namespace pql\QueryBuilder\From;
 use pql\QueryBuilder\Query as QueryBuilder;
 use pql\QueryPrinter\QueryPrinter;
 
-class Query implements IFromExpression
+class QueryFromExpression implements IFromExpression
 {
     /**
      * @var QueryBuilder $query

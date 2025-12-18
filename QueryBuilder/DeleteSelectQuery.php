@@ -9,7 +9,7 @@
 namespace pql\QueryBuilder;
 
 use pql\Database;
-use pql\QueryExecutor\DeleteSelect as DeleteSelectExecutor;
+use pql\QueryExecutor\DeleteSelectExecutor as DeleteSelectExecutor;
 use pql\QueryResult\IResult;
 use pql\QueryResult\TableResult;
 use pql\Table;

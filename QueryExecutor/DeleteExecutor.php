@@ -15,9 +15,9 @@ use SplFileObject;
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryExecute
  */
-class Delete implements IQueryExecutor
+class DeleteExecutor implements IQueryExecutor
 {
-    use Limit;
+    use LimitExecutor;
 
     /**
      * @var DeleteBuilder $query

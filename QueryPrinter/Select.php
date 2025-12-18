@@ -25,7 +25,7 @@ class Select implements IQueryPrinter
 {
     use Where;
     use Limit;
-    use Offset;
+    use OffsetPrinter;
 
     /**
      * @var SelectBuilder $query
@@ -124,7 +124,7 @@ class Select implements IQueryPrinter
                 $select .= ',<br> ';
             }
 
-            if ($selectedColumn->getExpression() instanceof \pql\QueryBuilder\Select\Query) {
+            if ($selectedColumn->getExpression() instanceof \pql\QueryBuilder\Select\QueryExpression) {
                 $select .= $this->indent . '(' . (string) $selectedColumn . '<br>)';
             } else {
                 $select .= $this->indent . (string) $selectedColumn;

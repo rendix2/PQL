@@ -8,6 +8,8 @@
 
 namespace pql;
 
+use Generator;
+
 /**
  * Class TemporaryTable
  *
@@ -111,13 +113,13 @@ class TemporaryTable implements ITable
     }
 
     /**
-     * @param bool $object
+     * @param bool $returnObject
      *
      * @return array
      */
-    public function getRows($object = false)
+    public function getRows(bool $returnObject = false): Generator
     {
-        return $this->rows;
+        yield $this->rows;
     }
 
     /**

@@ -61,23 +61,25 @@ class Database
      */
     public function __construct($name)
     {
-        $database_dir = self::getPath($name);
+        $databaseDir = self::getPath($name);
 
-        if (!is_dir($database_dir)) {
-            throw new Exception(sprintf('Database "%s" does not exist.', $name));
+        if (!is_dir($databaseDir)) {
+            throw new Exception(sprintf('Database "%s" dir "%s"  does not exist.', $databaseDir, $name));
         }
 
-        $this->dir = $database_dir;
+        $this->dir = $databaseDir;
 
         $size = 0;
 
         $files = Finder::findFiles('*')->from($this->dir);
+        $count = 0;
 
         /**
          * @var $file SplFileInfo
          */
         foreach ($files as $file) {
             $size += $file->getSize();
+            $count++;
         }
 
         $this->size = $size;
@@ -85,7 +87,7 @@ class Database
 
         $this->tables = $this->findTables();
 
-        $this->tablesCount = $files->count();
+        $this->tablesCount = $count;
     }
 
     /**
@@ -220,7 +222,7 @@ class Database
 
                 return new Database($name);
             } catch (IOException $e) {
-                throw new Exception('Database was not created.');
+                throw new Exception(message: 'Database was not created.', previous: $e);
             }
         }
     }

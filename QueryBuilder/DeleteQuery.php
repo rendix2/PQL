@@ -9,7 +9,7 @@
 namespace pql\QueryBuilder;
 
 use pql\Database;
-use pql\QueryExecutor\Delete as DeleteExecutor;
+use pql\QueryExecutor\DeleteExecutor as DeleteExecutor;
 use pql\QueryResult\IResult;
 use pql\QueryResult\TableResult;
 use pql\Table;
@@ -23,8 +23,8 @@ use pql\Table;
 class DeleteQuery implements IQueryBuilder
 {
     use From;
-    use Where;
-    use Limit;
+    use WhereQueryBuilder;
+    use LimitQueryBuilder;
     use Offset;
 
     /**

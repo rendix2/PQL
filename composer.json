@@ -1,11 +1,13 @@
 {
     "require": {
-        "nette/utils": "^2.5",
-        "nette/finder": "^2.4",
-        "nette/robot-loader": "^3.1",
-        "tracy/tracy": "^2.5",
-        "nette/safe-stream": "^2.3",
         "ext-mbstring": "*",
+
+        "nette/utils": "^4.1",
+        "nette/robot-loader": "^4.1",
+        "tracy/tracy": "^2.11",
+        "nette/safe-stream": "^3.0",
+        "nette/finder": "^3.0",
+
         "netpromotion/profiler": "^1.3"
     }
 }

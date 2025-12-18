@@ -8,7 +8,7 @@ namespace pql\QueryBuilder\Select;
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryBuilder\Select
  */
-class Value implements ISelectExpression
+class ValueExpression implements ISelectExpression
 {
     /**
      * @var string|int $value

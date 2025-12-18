@@ -20,7 +20,7 @@ use pql\QueryBuilder\From\IFromExpression;
 use pql\QueryBuilder\Select\AggregateFunction;
 use pql\QueryBuilder\Select\ISelectExpression;
 use pql\QueryBuilder\Select\StandardFunction;
-use pql\QueryExecutor\SelectQuery as SelectExecutor;
+use pql\QueryExecutor\SelectExecutor as SelectExecutor;
 use pql\QueryResult\IResult;
 use pql\QueryResult\TableResult;
 use pql\SelectedColumn;
@@ -35,8 +35,8 @@ use pql\Table;
 class SelectQuery implements IQueryBuilder
 {
     use From;
-    use Where;
-    use Limit;
+    use WhereQueryBuilder;
+    use LimitQueryBuilder;
     use Offset;
 
     /**
@@ -813,7 +813,7 @@ class SelectQuery implements IQueryBuilder
      */
     private function checkTable(IFromExpression $expression)
     {
-        if ($expression instanceof \pql\QueryBuilder\From\Table) {
+        if ($expression instanceof \pql\QueryBuilder\From\TableFromExpression) {
             $joinedTable = new Table($this->database, $expression->evaluate());
 
             if (!$this->database->tableExists($joinedTable)) {
@@ -825,7 +825,7 @@ class SelectQuery implements IQueryBuilder
 
                 throw new Exception($message);
             }
-        } elseif ($expression instanceof \pql\QueryBuilder\From\Query) {
+        } elseif ($expression instanceof \pql\QueryBuilder\From\QueryFromExpression) {
             $originTable   = $expression->getQuery();
             $iteratedTable = $expression->getQuery();
 
@@ -926,17 +926,17 @@ class SelectQuery implements IQueryBuilder
         $joinedTable = $this->checkTable($expression);
 
         if (count($onConditions)) {
-            if ($expression instanceof \pql\QueryBuilder\From\Table) {
+            if ($expression instanceof \pql\QueryBuilder\From\TableFromExpression) {
                 $this->innerJoinedTables[] = new JoinedTable(new Table($this->database, $joinedTable->getName()), $onConditions, $alias);
-            } elseif ($expression instanceof \pql\QueryBuilder\From\Query) {
+            } elseif ($expression instanceof \pql\QueryBuilder\From\QueryFromExpression) {
                 $this->innerJoinedTables[] = new JoinedTable($joinedTable, $onConditions, $alias);
             }
 
             $this->hasInnerJoinedTable = true;
         } else {
-            if ($expression instanceof \pql\QueryBuilder\From\Table) {
+            if ($expression instanceof \pql\QueryBuilder\From\TableFromExpression) {
                 $this->crossJoinedTables[] = new JoinedTable(new Table($this->database, $joinedTable->getName()), $onConditions, $alias);
-            } elseif ($expression instanceof \pql\QueryBuilder\From\Query) {
+            } elseif ($expression instanceof \pql\QueryBuilder\From\QueryFromExpression) {
                 $this->crossJoinedTables[] = new JoinedTable($joinedTable, $onConditions, $alias);
             }
 
@@ -960,7 +960,7 @@ class SelectQuery implements IQueryBuilder
             throw new Exception('Cannot do SELF JOIN, if i have empty FROM clause.');
         }
 
-        return $this->innerJoin(new \pql\QueryBuilder\From\Table($this->table->getName()), $onConditions, $alias);
+        return $this->innerJoin(new \pql\QueryBuilder\From\TableFromExpression($this->table->getName()), $onConditions, $alias);
     }
 
     /**

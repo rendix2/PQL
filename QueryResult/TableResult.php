@@ -161,19 +161,19 @@ final class TableResult implements ITable, IResult
     }
 
     /**
-     * @param bool $object
+     * @param bool $returnObject
      *
-     * @return array|TableRow[]
+     * @return \Generator
      */
-    public function getRows($object = false)
+    public function getRows(bool $returnObject = false): \Generator
     {
-        return $this->rows;
+        yield $this->rows;
     }
 
     /**
      * @return IQueryExecutor
      */
-    public function getQuery()
+    public function getQuery() : IQueryExecutor
     {
         return $this->query;
     }

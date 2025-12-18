@@ -3,7 +3,7 @@
 namespace pql\QueryBuilder\Operator;
 
 use pql\QueryBuilder\Select\ISelectExpression;
-use pql\QueryBuilder\Select\Value;
+use pql\QueryBuilder\Select\ValueExpression;
 
 /**
  * Class Larger
@@ -34,7 +34,7 @@ class Larger implements IOperator
      */
     public function checkConditions(ISelectExpression $column, ISelectExpression $value)
     {
-        if ($column instanceof Value || $value instanceof Value) {
+        if ($column instanceof ValueExpression || $value instanceof ValueExpression) {
             return true;
         }
 

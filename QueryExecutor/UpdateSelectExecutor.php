@@ -10,7 +10,7 @@ namespace pql\QueryExecutor;
 
 use pql\QueryBuilder\Query;
 use pql\QueryBuilder\UpdateSelectQuery as UpdateSelectBuilder;
-use pql\QueryBuilder\Where;
+use pql\QueryBuilder\WhereQueryBuilder;
 
 /**
  * Class UpdateSelect
@@ -18,9 +18,9 @@ use pql\QueryBuilder\Where;
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryExecute
  */
-class UpdateSelect implements IQueryExecutor
+class UpdateSelectExecutor implements IQueryExecutor
 {
-    use Where;
+    use WhereQueryBuilder;
 
     /**
      * @var UpdateSelectBuilder $query
@@ -58,7 +58,7 @@ class UpdateSelect implements IQueryExecutor
      */
     public function run()
     {
-        $selectQuery = new SelectQuery($this->query->getData());
+        $selectQuery = new SelectExecutor($this->query->getData());
         $selectQuery->run();
 
         $results = [];

@@ -9,7 +9,7 @@
 namespace pql\QueryBuilder;
 
 use pql\Database;
-use pql\QueryExecutor\UpdateSelect as UpdateSelectExecutor;
+use pql\QueryExecutor\UpdateSelectExecutor as UpdateSelectExecutor;
 use pql\QueryResult\IResult;
 use pql\QueryResult\TableResult;
 use pql\Table;
@@ -22,7 +22,7 @@ use pql\Table;
  */
 class UpdateSelectQuery implements IQueryBuilder
 {
-    use Where;
+    use WhereQueryBuilder;
 
     /**
      * @var Database $database

@@ -3,6 +3,7 @@
 namespace pql\QueryExecutor;
 
 use Exception;
+use Generator;
 use Netpromotion\Profiler\Profiler;
 use pql\Alias;
 use pql\Condition;
@@ -14,12 +15,12 @@ use pql\QueryBuilder\Select\IMathExpression;
 use pql\QueryBuilder\Select\ISelectExpression;
 use pql\QueryBuilder\Select\StandardFunction;
 use pql\QueryBuilder\SelectQuery as SelectBuilder;
-use pql\QueryExecutor\AggregateFunctions\Average;
-use pql\QueryExecutor\AggregateFunctions\Count;
-use pql\QueryExecutor\AggregateFunctions\Max;
-use pql\QueryExecutor\AggregateFunctions\Median;
-use pql\QueryExecutor\AggregateFunctions\Min;
-use pql\QueryExecutor\AggregateFunctions\Sum;
+use pql\QueryExecutor\AggregateFunctions\AverageAggregationFunctionAbstract;
+use pql\QueryExecutor\AggregateFunctions\CountAggregationFunctionAbstract;
+use pql\QueryExecutor\AggregateFunctions\MaxAggregationFunctionAbstract;
+use pql\QueryExecutor\AggregateFunctions\MedianAggregationFunctionAbstract;
+use pql\QueryExecutor\AggregateFunctions\MinAggregationFunctionAbstract;
+use pql\QueryExecutor\AggregateFunctions\SumAggregationFunctionAbstract;
 use pql\QueryExecutor\Functions\NumberFormat;
 use pql\QueryExecutor\Joins\HashJoin;
 use pql\QueryExecutor\Joins\NestedLoopJoin;
@@ -35,9 +36,9 @@ use pql\Table;
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryExecute
  */
-class SelectQuery implements IQueryExecutor
+class SelectExecutor implements IQueryExecutor
 {
-    use Limit;
+    use LimitExecutor;
 
     /**
      * @var array $groupedByData
@@ -520,7 +521,7 @@ class SelectQuery implements IQueryExecutor
                 switch ($column->getExpression()->getName()) {
                     case AggregateFunction::SUM:
                         if ($this->groupedByDataCount) {
-                            $aggregateFunction = new Sum($this);
+                            $aggregateFunction = new SumAggregationFunctionAbstract($this);
                             $aggregateFunction->run($column, $functionColumnName);
                         } else {
                             $this->addFunctionIntoResult($column->getExpression(), $functions->sum($column));
@@ -530,7 +531,7 @@ class SelectQuery implements IQueryExecutor
 
                     case AggregateFunction::COUNT:
                         if ($this->groupedByDataCount) {
-                            $aggregateFunction = new Count($this);
+                            $aggregateFunction = new CountAggregationFunctionAbstract($this);
                             $aggregateFunction->run($column, $functionColumnName);
                         } else {
                             $this->addFunctionIntoResult($column->getExpression(), $functions->count($column));
@@ -540,7 +541,7 @@ class SelectQuery implements IQueryExecutor
 
                     case AggregateFunction::AVERAGE:
                         if ($this->groupedByDataCount) {
-                            $aggregateFunction = new Average($this);
+                            $aggregateFunction = new AverageAggregationFunctionAbstract($this);
                             $aggregateFunction->run($column, $functionColumnName);
                         } else {
                             $this->addFunctionIntoResult($column->getExpression(), $functions->avg($column));
@@ -550,7 +551,7 @@ class SelectQuery implements IQueryExecutor
 
                     case AggregateFunction::MIN:
                         if ($this->groupedByDataCount) {
-                            $aggregateFunction = new Min($this);
+                            $aggregateFunction = new MinAggregationFunctionAbstract($this);
                             $aggregateFunction->run($column, $functionColumnName);
                         } else {
                             $this->addFunctionIntoResult($column->getExpression(), $functions->min($column));
@@ -560,7 +561,7 @@ class SelectQuery implements IQueryExecutor
 
                     case AggregateFunction::MAX:
                         if ($this->groupedByDataCount) {
-                            $aggregateFunction = new Max($this);
+                            $aggregateFunction = new MaxAggregationFunctionAbstract($this);
                             $aggregateFunction->run($column, $functionColumnName);
                         } else {
                             $this->addFunctionIntoResult($column->getExpression(), $functions->max($column));
@@ -569,7 +570,7 @@ class SelectQuery implements IQueryExecutor
 
                     case AggregateFunction::MEDIAN:
                         if ($this->groupedByDataCount) {
-                            $aggregateFunction = new Median($this);
+                            $aggregateFunction = new MedianAggregationFunctionAbstract($this);
                             $aggregateFunction->run($column, $functionColumnName);
                         } else {
                             $this->addFunctionIntoResult($column->getExpression(), $functions->median($column));
@@ -755,7 +756,7 @@ class SelectQuery implements IQueryExecutor
      * @return array
      *
      */
-    private function doWhere(array $rows, Condition $condition)
+    private function doWhere(Generator $rows, Condition $condition)
     {
         $whereResult = [];
 
@@ -815,7 +816,7 @@ class SelectQuery implements IQueryExecutor
                     $exploded = explode(Alias::DELIMITER, $whereCondition->getColumn());
 
                     if (count($exploded) === 2) {
-                        list($alias, $column) = $exploded;
+                        [$alias, $column] = $exploded;
 
                         if ($alias === $this->query->getTableAlias()->getTo() && $table->columnExists($column)) {
                             $this->result = $this->doWhere($this->result, $whereCondition);
@@ -836,7 +837,7 @@ class SelectQuery implements IQueryExecutor
                     $exploded = explode(Alias::DELIMITER, $whereCondition->getValue());
 
                     if (count($exploded) === 2) {
-                        list($alias, $column) = $exploded;
+                        [$alias, $column] = $exploded;
 
                         if ($alias === $this->query->getTableAlias()->getTo() && $table->columnExists($column)) {
                             $this->result = $this->doWhere($this->result, $whereCondition);

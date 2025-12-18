@@ -8,7 +8,7 @@
 
 namespace pql\QueryBuilder;
 
-use pql\QueryExecutor\Explain as ExplainExecutor;
+use pql\QueryExecutor\ExplainExecutor as ExplainExecutor;
 use pql\QueryResult\IResult;
 use pql\QueryResult\ListResult;
 use pql\QueryResult\TableResult;

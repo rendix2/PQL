@@ -2,7 +2,7 @@
 
 namespace pql\QueryExecutor\AggregateFunctions;
 
-use pql\QueryExecutor\SelectQuery;
+use pql\QueryExecutor\SelectExecutor;
 
 /**
  * Class AggregateFunction
@@ -10,25 +10,25 @@ use pql\QueryExecutor\SelectQuery;
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryExecutor\AggregateFunctions
  */
-abstract class AggregateFunction implements IAggregateFunction
+abstract class AbstractAggregateFunction implements IAggregateFunction
 {
     /**
-     * @var SelectQuery $query
+     * @var SelectExecutor $query
      */
     private $query;
 
     /**
      * AggregateFunction constructor.
      *
-     * @param SelectQuery $query
+     * @param SelectExecutor $query
      */
-    public function __construct(SelectQuery $query)
+    public function __construct(SelectExecutor $query)
     {
         $this->query = $query;
     }
 
     /**
-     * @return SelectQuery
+     * @return SelectExecutor
      */
     public function getQuery()
     {
