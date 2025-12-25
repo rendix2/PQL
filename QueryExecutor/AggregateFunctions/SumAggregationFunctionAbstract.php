@@ -2,22 +2,13 @@
 
 namespace pql\QueryExecutor\AggregateFunctions;
 
-/**
- * Class Sum
- *
- * @author  rendix2 <rendix2@seznam.cz>
- * @package pql\QueryExecutor\AggregateFunctions
- */
+
 class SumAggregationFunctionAbstract extends AbstractAggregateFunction
 {
-    /**
-     * @inheritDoc
-     */
-    public function run($column, $functionColumnName)
+    public function run(string $column, string $functionColumnName): void
     {
         $functionGroupByResult = [];
 
-        // iterate over grouped data!
         foreach ($this->getQuery()->getGroupedByData() as $groupByColumn => $groupByRows) {
             foreach ($groupByRows as $groupByValue => $groupedRows) {
                 foreach ($groupedRows as $groupedRow) {

@@ -13,33 +13,21 @@ use pql\QueryPrinter\QueryPrinter;
  */
 class QueryExpression implements ISelectExpression
 {
-    /**
-     * @var QueryBuilder $query
-     */
-    private $query;
+    private QueryBuilder $query;
 
-    /**
-     * Query constructor.
-     *
-     * @param QueryBuilder $query
-     */
     public function __construct(QueryBuilder $query)
     {
         $this->query = $query;
     }
 
-    /**
-     * @return string
-     */
+
     public function evaluate()
     {
         $printer = new QueryPrinter($this->query);
         return $printer->printQuery();
     }
 
-    /**
-     * @return QueryBuilder
-     */
+
     public function getQuery()
     {
         return $this->query;

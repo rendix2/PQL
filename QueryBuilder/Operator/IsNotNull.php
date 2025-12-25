@@ -16,7 +16,7 @@ class IsNotNull implements IOperator
     /**
      * @inheritDoc
      */
-    public function __toString()
+    public function __toString(): string
     {
         return 'is not null';
     }
@@ -24,7 +24,7 @@ class IsNotNull implements IOperator
     /**
      * @inheritDoc
      */
-    public function evaluate()
+    public function evaluate(): string
     {
         return 'is_not_null';
     }
@@ -32,7 +32,7 @@ class IsNotNull implements IOperator
     /**
      * @inheritDoc
      */
-    public function checkConditions(ISelectExpression $column, ISelectExpression $value)
+    public function checkConditions(ISelectExpression $column, ISelectExpression $value): bool
     {
         if ($column instanceof Column || $value instanceof Column) {
             return true;

@@ -16,73 +16,38 @@ namespace pql;
  */
 class OrderByColumn
 {
-    /**
-     * @var string $column
-     */
-    private $column;
+    private string $column;
 
-    /***
-     * @var bool $asc
-     */
-    private $asc;
 
-    /**
-     * OrderByColumn constructor.
-     *
-     * @param string $column
-     * @param bool   $asc
-     */
-    public function __construct($column, $asc = true)
+    private bool $asc;
+
+    public function __construct(string $column, bool $asc = true)
     {
         $this->column = $column;
         $this->asc    = $asc;
     }
 
-    /**
-     * OrderByColumn destructor.
-     */
-    public function __destruct()
-    {
-        $this->column = null;
-        $this->asc    = null;
-    }
-
-    /**
-     * @return string
-     */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->column . ' ' . $this->getSortingWord();
     }
 
-    /**
-     * @return string
-     */
-    public function getColumn()
+    public function getColumn(): string
     {
         return $this->column;
     }
 
-    /**
-     * @return bool
-     */
-    public function getAsc()
+    public function getAsc(): bool
     {
         return $this->asc;
     }
 
-    /**
-     * @return int
-     */
-    public function getSortingConst()
+    public function getSortingConst(): int
     {
         return $this->asc === true ? SORT_ASC : SORT_DESC;
     }
 
-    /**
-     * @return string
-     */
-    public function getSortingWord()
+    public function getSortingWord(): string
     {
         return $this->asc === true ? 'ASC' : 'DESC';
     }

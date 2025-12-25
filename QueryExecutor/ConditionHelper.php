@@ -46,7 +46,9 @@ class ConditionHelper
         $isValueArray  = is_array($condition->getValue());
         $isColumnArray = is_array($condition->getColumn());
 
-        $isBetweenOperator = $condition->getOperator() === Operator::BETWEEN || $condition->getOperator() === Operator::BETWEEN_INCLUSIVE;
+        $operator = $condition->getOperator()->evaluate();
+
+        $isBetweenOperator = $operator === Operator::BETWEEN || $operator === Operator::BETWEEN_INCLUSIVE;
 
         $columnIsFunction = $condition->getColumn() instanceof AggregateFunction;
         $valueIsFunction  = $condition->getValue() instanceof AggregateFunction;
@@ -61,7 +63,7 @@ class ConditionHelper
             $issetRowAColumnRowBValue = false;
             $issetRowAValueRowBColumn = false;
         } elseif ($isColumnArray) {
-            if ($condition->getOperator() === Operator::IN) {
+            if ($operator === Operator::IN) {
                 $issetRowAColumn = false;
                 $issetRowAValue = true;
             } elseif ($isBetweenOperator) {
@@ -72,7 +74,7 @@ class ConditionHelper
             $issetRowAColumnRowBValue = false;
             $issetRowAValueRowBColumn = false;
         } elseif ($isValueArray) {
-            if ($condition->getOperator() === Operator::IN) {
+            if ($operator === Operator::IN) {
                 $issetRowAColumn = true;
                 $issetRowAValue = false;
             } elseif ($isBetweenOperator) {
@@ -148,14 +150,14 @@ class ConditionHelper
 
                 // COUNT(column_id) = 1
                 if ($columnIsFunction) {
-                    if ($rowA[(string)$condition->getColumn()] === $condition->getValue()) {
+                    if ($rowA[(string)$condition->getColumn()->evaluate()] === $condition->getValue()) {
                         return true;
                     }
                 }
 
                 // 1 = COUNT(column_id)
                 if ($valueIsFunction) {
-                    if ($valueIsFunction && $rowA[(string)$condition->getValue()] === $condition->getColumn()) {
+                    if ($rowA[(string)$condition->getValue()->evaluate()] === $condition->getColumn()) {
                         return true;
                     }
                 }
@@ -213,14 +215,14 @@ class ConditionHelper
 
                 // COUNT(column_id) > 1
                 if ($columnIsFunction) {
-                    if ($rowA[(string)$condition->getColumn()] > $condition->getValue()) {
+                    if ($rowA[(string)$condition->getColumn()->evaluate()] > $condition->getValue()) {
                         return true;
                     }
                 }
 
                 // 1 > COUNT(column_id)
                 if ($valueIsFunction) {
-                    if ($valueIsFunction && $rowA[(string)$condition->getValue()] > $condition->getColumn()) {
+                    if ($rowA[(string)$condition->getValue()->evaluate()] > $condition->getColumn()) {
                         return true;
                     }
                 }
@@ -278,14 +280,14 @@ class ConditionHelper
 
                 // COUNT(column_id) >= 1
                 if ($columnIsFunction) {
-                    if ($rowA[(string)$condition->getColumn()] >= $condition->getValue()) {
+                    if ($rowA[(string)$condition->getColumn()->evaluate()] >= $condition->getValue()) {
                         return true;
                     }
                 }
 
                 // 1 >= COUNT(column_id)
                 if ($valueIsFunction) {
-                    if ($valueIsFunction && $rowA[(string)$condition->getValue()] >= $condition->getColumn()) {
+                    if ($rowA[(string)$condition->getValue()->evaluate()] >= $condition->getColumn()) {
                         return true;
                     }
                 }
@@ -343,14 +345,14 @@ class ConditionHelper
 
                 // COUNT(column_id) < 1
                 if ($columnIsFunction) {
-                    if ($rowA[(string)$condition->getColumn()] < $condition->getValue()) {
+                    if ($rowA[(string)$condition->getColumn()->evaluate()] < $condition->getValue()) {
                         return true;
                     }
                 }
 
                 // 1 < COUNT(column_id)
                 if ($valueIsFunction) {
-                    if ($valueIsFunction && $rowA[(string)$condition->getValue()] < $condition->getColumn()) {
+                    if ($valueIsFunction && $rowA[(string)$condition->getValue()->evaluate()] < $condition->getColumn()) {
                         return true;
                     }
                 }
@@ -408,14 +410,14 @@ class ConditionHelper
 
                 // COUNT(column_id) <= 1
                 if ($columnIsFunction) {
-                    if ($rowA[(string)$condition->getColumn()] <= $condition->getValue()) {
+                    if ($rowA[(string)$condition->getColumn()->evaluate()] <= $condition->getValue()) {
                         return true;
                     }
                 }
 
                 // 1 <= COUNT(column_id)
                 if ($valueIsFunction) {
-                    if ($valueIsFunction && $rowA[(string)$condition->getValue()] <= $condition->getColumn()) {
+                    if ($rowA[(string)$condition->getValue()->evaluate()] <= $condition->getColumn()) {
                         return true;
                     }
                 }
@@ -577,14 +579,14 @@ class ConditionHelper
 
                 // COUNT(column_id) != 1
                 if ($columnIsFunction) {
-                    if ($rowA[(string)$condition->getColumn()] !== $condition->getValue()) {
+                    if ($rowA[(string)$condition->getColumn()->evaluate()] !== $condition->getValue()) {
                         return true;
                     }
                 }
 
                 // 1 != COUNT(column_id)
                 if ($valueIsFunction) {
-                    if ($valueIsFunction && $rowA[(string)$condition->getValue()] !== $condition->getColumn()) {
+                    if ($rowA[(string)$condition->getValue()->evaluate()] !== $condition->getColumn()) {
                         return true;
                     }
                 }
@@ -592,8 +594,8 @@ class ConditionHelper
                 break;
 
             case RegularExpression::class:
-                $quotedValue  = preg_quote($condition->getValue(), '#');
-                $quotedColumn = preg_quote($condition->getColumn(), '#');
+                $quotedValue  = preg_quote($condition->getValue()->evaluate(), '#');
+                $quotedColumn = preg_quote($condition->getColumn()->evaluate(), '#');
 
                 // column regexp [a-z]
                 if ($issetRowAColumn && preg_match('#' . $quotedValue . '#', $rowA[$condition->getColumn()->evaluate()])) {
@@ -663,43 +665,39 @@ class ConditionHelper
         return false;
     }
 
-    /**
-     * @param Condition $condition
-     * @param mixed     $value
-     *
-     * @return bool
-     */
-    public static function havingCondition(Condition $condition, $value)
+    public static function havingCondition(Condition $condition, mixed $value): bool
     {
-        if ($condition->getOperator() === Operator::EQUAL && $value === $condition->getValue()) {
+        $operator = $condition->getOperator()->evaluate();
+
+        if ($operator === Operator::EQUAL && $value === $condition->getValue()) {
             return true;
         }
 
-        if ($condition->getOperator() === Operator::LESS_THAN && $value < $condition->getValue()) {
+        if ($operator === Operator::NON_EQUAL && $value !== $condition->getValue()) {
             return true;
         }
 
-        if ($condition->getOperator() === Operator::LESS_EQUAL_THAN && $value <= $condition->getValue()) {
+        if ($operator === Operator::LESS_THAN && $value < $condition->getValue()) {
             return true;
         }
 
-        if ($condition->getOperator() === Operator::GREATER_THAN && $value > $condition->getValue()) {
+        if ($operator === Operator::LESS_EQUAL_THAN && $value <= $condition->getValue()) {
             return true;
         }
 
-        if ($condition->getOperator() === Operator::GREATER_EQUAL_THAN && $value >= $condition->getValue()) {
+        if ($operator === Operator::GREATER_THAN && $value > $condition->getValue()) {
             return true;
         }
 
-        if (($condition->getOperator() === Operator::LESS_AND_GREATER_THAN || $condition->getOperator() === Operator::NON_EQUAL) && $value !== $condition->getValue()) {
+        if ($operator === Operator::GREATER_EQUAL_THAN && $value >= $condition->getValue()) {
             return true;
         }
 
-        if ($condition->getOperator() === Operator::BETWEEN && $value > $condition->getValue() && $value < $condition->getValue()->evaluate()) {
+        if ($operator === Operator::BETWEEN && $value > $condition->getValue() && $value < $condition->getValue()->evaluate()) {
             return true;
         }
 
-        if ($condition->getOperator() === Operator::BETWEEN_INCLUSIVE && $value >= $condition->getValue() && $value <= $condition->getValue()->evaluate()) {
+        if ($operator === Operator::BETWEEN_INCLUSIVE && $value >= $condition->getValue() && $value <= $condition->getValue()->evaluate()) {
             return true;
         }
 

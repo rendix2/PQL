@@ -24,12 +24,12 @@ class ExplainQuery extends SelectQuery
     /**
      * @var IResult $result
      */
-    private $result;
+    private IResult $result;
 
     /**
      * @return IResult|ListResult|TableResult
      */
-    public function run()
+    public function run(): IResult|ListResult|TableResult
     {
         if ($this->result instanceof ListResult) {
             return $this->result;

@@ -11,10 +11,7 @@ namespace pql\QueryBuilder\Select;
 class ArrayValue implements ISelectExpression
 {
 
-    /**
-     * @var array $values
-     */
-    private $values;
+    private array $values;
 
     /**
      * ArrayValue constructor.
@@ -26,9 +23,6 @@ class ArrayValue implements ISelectExpression
         $this->values = $values;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function evaluate()
     {
         return $this->values;

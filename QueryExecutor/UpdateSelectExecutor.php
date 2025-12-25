@@ -22,10 +22,7 @@ class UpdateSelectExecutor implements IQueryExecutor
 {
     use WhereQueryBuilder;
 
-    /**
-     * @var UpdateSelectBuilder $query
-     */
-    private $query;
+    private UpdateSelectBuilder $query;
 
     /**
      * UpdateSelect constructor.
@@ -37,25 +34,11 @@ class UpdateSelectExecutor implements IQueryExecutor
         $this->query = $query;
     }
 
-    /**
-     * UpdateSelect destructor.
-     */
-    public function __destruct()
-    {
-        $this->query = null;
-    }
-
-    /**
-     * @return UpdateSelectBuilder
-     */
-    public function getQuery()
+    public function getQuery(): UpdateSelectBuilder
     {
         return $this->query;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function run()
     {
         $selectQuery = new SelectExecutor($this->query->getData());

@@ -18,34 +18,15 @@ class UpdateExecutor implements IQueryExecutor
 {
     use LimitExecutor;
 
-    /**
-     * @var UpdateBuilder $query
-     */
-    private $query;
+    private UpdateBuilder $query;
 
-    /**
-     * @var array $result
-     */
-    private $result;
+    private array $result;
 
-    /**
-     * Update constructor.
-     *
-     * @param UpdateBuilder $query
-     */
     public function __construct(UpdateBuilder $query)
     {
         $this->query = $query;
     }
 
-    /**
-     * Update destructor.
-     */
-    public function __destruct()
-    {
-        $this->query = null;
-        $this->result = null;
-    }
 
     /**
      * run query

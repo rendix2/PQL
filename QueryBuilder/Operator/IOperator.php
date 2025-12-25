@@ -12,18 +12,9 @@ use pql\QueryBuilder\Select\ISelectExpression;
  */
 interface IOperator
 {
+    public function __toString(): string;
 
-    /**
-     * string representation of Operator
-     *
-     * @return string
-     */
-    public function __toString();
-
-    /**
-     * @return string
-     */
-    public function evaluate();
+    public function evaluate(): string;
 
     /**
      * check column and value if this operator can work with them
@@ -33,5 +24,5 @@ interface IOperator
      *
      * @return bool
      */
-    public function checkConditions(ISelectExpression $column, ISelectExpression $value);
+    public function checkConditions(ISelectExpression $column, ISelectExpression $value): bool;
 }

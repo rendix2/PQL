@@ -21,23 +21,17 @@ trait LimitQueryBuilder
     /**
      * @var int $limit
      */
-    private $limit;
+    private int $limit;
 
     /**
      * @return int
      */
-    public function getLimit()
+    public function getLimit(): int
     {
         return $this->limit;
     }
 
-    /**
-     * @param int $limit
-     *
-     * @return LimitQueryBuilder|SelectQuery
-     * @throws Exception
-     */
-    public function limit($limit)
+    public function limit(int $limit): LimitQueryBuilder|SelectQuery
     {
         if (!is_numeric($limit)) {
             throw new Exception('Limit is not a number.');

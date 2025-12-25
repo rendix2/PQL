@@ -12,12 +12,7 @@ use pql\QueryBuilder\Select\AggregateFunction;
  */
 class Min extends AggregateFunction
 {
-    /**
-     * Min constructor.
-     *
-     * @param string $column
-     */
-    public function __construct($column)
+    public function __construct(string $column)
     {
         parent::__construct(self::MIN, $column);
     }

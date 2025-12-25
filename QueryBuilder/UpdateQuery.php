@@ -14,83 +14,36 @@ use pql\QueryResult\IResult;
 use pql\QueryResult\TableResult;
 use pql\Table;
 
-/**
- * Class UpdateQuery
- *
- * @author  rendix2 <rendix2@seznam.cz>
- * @package pql\QueryBuilder
- */
 class UpdateQuery implements IQueryBuilder
 {
     use WhereQueryBuilder;
     use LimitQueryBuilder;
     use Offset;
 
-    /**
-     * @var Database $database
-     */
-    private $database;
+    private Database $database;
 
-    /**
-     * @var IResult $result
-     */
-    private $result;
+    private IResult $result;
 
-    /**
-     * @var Table $table
-     */
-    private $table;
+    private Table $table;
 
-    /**
-     * @var array $data
-     */
-    private $data;
+    private array $data;
 
-    /**
-     * Update constructor.
-     *
-     * @param Database $database
-     */
     public function __construct(Database $database)
     {
         $this->database = $database;
     }
 
-    /**
-     * Update destructor.
-     */
-    public function __destruct()
-    {
-        $this->database = null;
-        $this->result = null;
-        $this->table = null;
-        $this->data = null;
-    }
-
-    /**
-     * @return array
-     */
-    public function getData()
+    public function getData(): array
     {
         return $this->data;
     }
 
-    /**
-     * @return Table
-     */
-    public function getTable()
+    public function getTable(): Table
     {
         return $this->table;
     }
 
-    /**
-     * @param string $table
-     * @param array  $data
-     *
-     * @return UpdateQuery
-     *
-     */
-    public function update($table, array $data)
+    public function update(string $table, array $data): UpdateQuery
     {
         $this->data  = $data;
         $this->table = new Table($this->database, $table);
@@ -98,10 +51,7 @@ class UpdateQuery implements IQueryBuilder
         return $this;
     }
 
-    /**
-     * @return IResult|TableResult
-     */
-    public function run()
+    public function run(): IResult|TableResult
     {
         if ($this->result instanceof TableResult) {
             return $this->result;

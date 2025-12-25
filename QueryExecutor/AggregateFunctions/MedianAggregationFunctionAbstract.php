@@ -2,18 +2,9 @@
 
 namespace pql\QueryExecutor\AggregateFunctions;
 
-/**
- * Class Median
- *
- * @author  rendix2 <rendix2@seznam.cz>
- * @package pql\QueryExecutor\AggregateFunctions
- */
 class MedianAggregationFunctionAbstract extends AbstractAggregateFunction
 {
-    /**
-     * @inheritDoc
-     */
-    public function run($column, $functionColumnName)
+    public function run(string $column, string $functionColumnName): void
     {
         $functionGroupByResult  = [];
 

@@ -13,7 +13,7 @@ class Minus implements IMathExpression
     /**
      * @var ISelectExpression[]  $expressions
      */
-    private $expressions;
+    private array $expressions;
 
     /**
      * Minus constructor.
@@ -25,9 +25,6 @@ class Minus implements IMathExpression
         $this->expressions = $expressions;
     }
 
-    /**
-     * @return string
-     */
     public function evaluate()
     {
         $result = '';
@@ -43,10 +40,7 @@ class Minus implements IMathExpression
         return $result;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function result()
+    public function result(): int|float
     {
         $result = $this->expressions[0]->getValue();
         $expressions = $this->expressions;

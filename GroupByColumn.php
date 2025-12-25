@@ -10,41 +10,19 @@ namespace pql;
  */
 class GroupByColumn
 {
-    /**
-     * @var string $column
-     */
-    private $column;
+    private string $column;
 
-    /**
-     * GroupByColumn constructor.
-     *
-     * @param string $column
-     */
-    public function __construct($column)
+    public function __construct(string $column)
     {
         $this->column = $column;
     }
 
-    /**
-     * GroupByColumn destructor.
-     */
-    public function __destruct()
-    {
-        $this->column = null;
-    }
-
-    /**
-     * @return string
-     */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->column;
     }
 
-    /**
-     * @return string
-     */
-    public function getColumn()
+    public function getColumn(): string
     {
         return $this->column;
     }

@@ -14,27 +14,11 @@ use SplFileObject;
  */
 class InsertExecutor implements IQueryExecutor
 {
-    /**
-     * @var InsertBuilder $query
-     */
-    private $query;
+    private InsertBuilder $query;
 
-    /**
-     * Insert constructor.
-     *
-     * @param InsertBuilder $query
-     */
     public function __construct(InsertBuilder $query)
     {
         $this->query = $query;
-    }
-
-    /**
-     * Insert destructor.
-     */
-    public function __destruct()
-    {
-        $this->query = null;
     }
 
     /**
@@ -45,10 +29,7 @@ class InsertExecutor implements IQueryExecutor
         return $this->insert();
     }
 
-    /**
-     *
-     */
-    private function insert()
+    private function insert(): int|false
     {
         $row = [];
         $indexData = [];

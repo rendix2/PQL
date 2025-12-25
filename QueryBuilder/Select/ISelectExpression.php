@@ -10,9 +10,6 @@ namespace pql\QueryBuilder\Select;
  */
 interface ISelectExpression
 {
-    /**
-     * @return string
-     */
     public function evaluate();
 
 }

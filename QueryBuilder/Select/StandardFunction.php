@@ -13,26 +13,19 @@ class StandardFunction implements ISelectExpression
     /**
      * @var string $name
      */
-    private $name;
+    private string $name;
 
     /**
      * @var string $column
      */
-    private $column;
+    private string $column;
 
     /**
      * @var array $params
      */
-    private $params;
+    private array $params;
 
-    /**
-     * PqlFunction constructor.
-     *
-     * @param string $name
-     * @param string $column
-     * @param mixed ...$params
-     */
-    public function __construct($name, $column, ...$params)
+    public function __construct(string$name, string $column, mixed ...$params)
     {
         $this->name = $name;
         $this->column = $column;

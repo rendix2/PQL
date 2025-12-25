@@ -12,39 +12,17 @@ use pql\QueryBuilder\Select\ISelectExpression;
  */
 class SelectedColumn
 {
-    /**
-     * @var string $column
-     */
-    private $column;
+    private string $column;
 
-    /**
-     * @var ISelectExpression $expression
-     */
-    private $expression;
+    private ISelectExpression $expression;
 
-    /**
-     * @var Alias $alias
-     */
-    private $alias;
+    private ?Alias $alias;
 
-    /**
-     * @var bool $hasAlias
-     */
-    private $hasAlias;
+    private bool $hasAlias;
 
-    /**
-     * @var bool $hasTableAlias
-     */
-    private $hasTableAlias;
+    private bool $hasTableAlias;
 
-    /**
-     * SelectedColumn constructor.
-     *
-     * @param string      $column
-     * @param ISelectExpression $expression
-     * @param Alias|null  $alias
-     */
-    public function __construct($column, ISelectExpression $expression, Alias $alias = null)
+    public function __construct(string $column, ISelectExpression $expression, ?Alias $alias = null)
     {
         $this->column        = $column;
         $this->expression    = $expression;
@@ -53,61 +31,32 @@ class SelectedColumn
         $this->hasTableAlias = Alias::hasAlias($column);
     }
 
-    /**
-     * SelectedColumn destructor.
-     */
-    public function __destruct()
-    {
-        $this->column = null;
-        $this->alias = null;
-        $this->hasAlias = null;
-        $this->hasTableAlias = null;
-    }
-
-    /**
-     * @return string
-     */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->hasAlias ? $this->column . ' AS ' . $this->alias->getTo() : $this->column;
     }
 
-    /**
-     * @return string
-     */
-    public function getColumn()
+    public function getColumn(): string
     {
         return $this->column;
     }
 
-    /**
-     * @return ISelectExpression
-     */
-    public function getExpression()
+    public function getExpression(): ISelectExpression
     {
         return $this->expression;
     }
 
-    /**
-     * @return Alias
-     */
-    public function getAlias()
+    public function getAlias(): Alias
     {
         return $this->alias;
     }
 
-    /**
-     * @return bool
-     */
-    public function hasAlias()
+    public function hasAlias(): bool
     {
         return $this->hasAlias;
     }
 
-    /**
-     * @return bool
-     */
-    public function hasTableAlias()
+    public function hasTableAlias(): bool
     {
         return $this->hasTableAlias;
     }

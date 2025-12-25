@@ -4,24 +4,14 @@ namespace pql\QueryBuilder\From;
 
 class TableFromExpression implements IFromExpression
 {
-    /**
-     * @var string $table
-     */
-    private $table;
+    private string $table;
 
-    /**
-     * Table constructor.
-     * @param string $table
-     */
-    public function __construct($table)
+    public function __construct(string $table)
     {
         $this->table = $table;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function evaluate()
+    public function evaluate(): string
     {
         return $this->table;
     }

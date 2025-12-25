@@ -10,23 +10,14 @@ namespace pql\QueryExecutor\Joins;
 
 use pql\Condition;
 
-/**
- * Class SortMergeJoin
- *
- * @author  rendix2 <rendix2@seznam.cz>
- * @package pql\QueryExecute\Joins
- */
 class SortMergeJoin implements IJoin
 {
-    /**
-     * @inheritDoc
-     */
-    public static function leftJoin(array $tableA, array $tableB, Condition $condition)
+    public static function leftJoin(array $tableA, array $tableB, Condition $condition): array
     {
         $result = [];
 
         $columnAData = array_column($tableA, $condition->getColumn()->evaluate());
-        $columnBData = array_column($tableB, $condition->getValue());
+        $columnBData = array_column($tableB, $condition->getValue()->evaluate());
 
         array_multisort($columnAData, SORT_ASC, $tableA);
         array_multisort($columnBData, SORT_ASC, $tableB);
@@ -93,12 +84,12 @@ class SortMergeJoin implements IJoin
     /**
      * @inheritDoc
      */
-    public static function rightJoin(array $tableA, array $tableB, Condition $condition)
+    public static function rightJoin(array $tableA, array $tableB, Condition $condition): array
     {
         $result = [];
 
         $columnAData = array_column($tableA, $condition->getColumn()->evaluate());
-        $columnBData = array_column($tableB, $condition->getValue());
+        $columnBData = array_column($tableB, $condition->getValue()->evaluate());
 
         array_multisort($columnAData, SORT_ASC, $tableA);
         array_multisort($columnBData, SORT_ASC, $tableB);
@@ -165,12 +156,12 @@ class SortMergeJoin implements IJoin
     /**
      * @inheritDoc
      */
-    public static function innerJoin(array $tableA, array $tableB, Condition $condition)
+    public static function innerJoin(array $tableA, array $tableB, Condition $condition): array
     {
         $res = [];
 
         $columnAData = array_column($tableA, $condition->getColumn()->evaluate());
-        $columnBData = array_column($tableB, $condition->getValue());
+        $columnBData = array_column($tableB, $condition->getValue()->evaluate());
 
         array_multisort($columnAData, SORT_ASC, $tableA);
         array_multisort($columnBData, SORT_ASC, $tableB);
@@ -214,14 +205,7 @@ class SortMergeJoin implements IJoin
         return $res;
     }
 
-    /**
-     * @param array     $tableA
-     * @param array     $tableB
-     * @param Condition $condition
-     *
-     * @return array
-     */
-    public static function fullJoin(array $tableA, array $tableB, Condition $condition)
+    public static function fullJoin(array $tableA, array $tableB, Condition $condition): array
     {
         $left = self::leftJoin($tableA, $tableB, $condition);
         $right = self::rightJoin($tableA, $tableB, $condition);

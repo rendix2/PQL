@@ -2,6 +2,8 @@
 
 namespace pql\QueryExecutor\Storage;
 
+use Exception;
+
 /**
  * Class StandardStorage
  *
@@ -13,21 +15,21 @@ class StandardStorage implements IStorage
 
     public function create()
     {
-        throw new \Exception();
+        throw new Exception();
     }
 
     public function read()
     {
-        throw new \Exception();
+        throw new Exception();
     }
 
     public function update()
     {
-        throw new \Exception();
+        throw new Exception();
     }
 
     public function delete()
     {
-        throw new \Exception();
+        throw new Exception();
     }
 }

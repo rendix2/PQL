@@ -25,22 +25,22 @@ class DeleteSelectQuery implements IQueryBuilder
     /**
      * @var Database $database
      */
-    private $database;
+    private Database $database;
 
     /**
      * @var Table $table
      */
-    private $table;
+    private Table $table;
 
     /**
      * @var Query $data
      */
-    private $data;
+    private Query $data;
 
     /**
      * @var IResult $result
      */
-    private $result;
+    private IResult $result;
 
     /**
      * DeleteSelect constructor.
@@ -52,29 +52,12 @@ class DeleteSelectQuery implements IQueryBuilder
         $this->database = $database;
     }
 
-    /**
-     * DeleteSelect destructor.
-     */
-    public function __destruct()
-    {
-        $this->database = null;
-        $this->table = null;
-        $this->data = null;
-        $this->result = null;
-    }
-
-    /**
-     * @return Query
-     */
-    public function getData()
+    public function getData(): Query
     {
         return $this->data;
     }
 
-    /**
-     * @return Database
-     */
-    public function getDatabase()
+    public function getDatabase(): Database
     {
         return $this->database;
     }
@@ -82,18 +65,12 @@ class DeleteSelectQuery implements IQueryBuilder
     /**
      * @return Table
      */
-    public function getTable()
+    public function getTable(): Table
     {
         return $this->table;
     }
 
-    /**
-     * @param Query  $select
-     * @param string $table
-     *
-     * @return DeleteSelectQuery
-     */
-    public function deleteSelect(Query $select, $table)
+    public function deleteSelect(Query $select, string $table): DeleteSelectQuery
     {
         $this->table = new Table($this->database, $table);
 
@@ -102,10 +79,7 @@ class DeleteSelectQuery implements IQueryBuilder
         return $this;
     }
 
-    /**
-     * @return IResult|TableResult
-     */
-    public function run()
+    public function run(): IResult|TableResult
     {
         if ($this->result instanceof TableResult) {
             return $this->result;

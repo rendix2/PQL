@@ -30,17 +30,17 @@ class DeleteQuery implements IQueryBuilder
     /**
      * @var Database $database
      */
-    private $database;
+    private Database $database;
 
     /**
      * @var array $data
      */
-    private $data;
+    private array $data;
 
     /**
      * @var IResult $result
      */
-    private $result;
+    private IResult $result;
 
     /**
      * Delete constructor.
@@ -50,38 +50,21 @@ class DeleteQuery implements IQueryBuilder
     public function __construct(Database $database)
     {
         $this->database = $database;
+        $this->table = null;
     }
 
-    /**
-     * Delete destructor.
-     */
-    public function __destruct()
-    {
-        $this->database = null;
-        $this->data = null;
-        $this->result = null;
-    }
 
-    /**
-     * @return IResult
-     */
-    public function getResult()
+    public function getResult(): IResult
     {
         return $this->result;
     }
 
-    /**
-     * @return Table
-     */
-    public function getTable()
+    public function getTable(): Table
     {
         return $this->table;
     }
 
-    /**
-     * @return array
-     */
-    public function getData()
+    public function getData(): array
     {
         return  $this->data;
     }
@@ -92,23 +75,14 @@ class DeleteQuery implements IQueryBuilder
      * @return DeleteQuery
      * @throws \Exception
      */
-    public function delete($table)
+    public function delete(string $table): DeleteQuery
     {
-        if (is_string($table)) {
-            $this->table = new Table($this->database, $table);
-        } else {
-            $message = 'Delete query supports only table name for input.';
-
-            throw new \Exception($message);
-        }
+        $this->table = new Table($this->database, $table);
 
         return $this;
     }
 
-    /**
-     * @return IResult|TableResult
-     */
-    public function run()
+    public function run(): IResult|TableResult
     {
         if ($this->result instanceof TableResult) {
             return $this->result;

@@ -26,105 +26,71 @@ use SplFileObject;
  */
 class Table implements ITable
 {
-    /**
-     * @var string
-     */
-    const EXT = 'pql';
+    public const string EXT = 'pql';
 
-    /**
-     * @var string
-     */
-    const INDEX_DIR = 'index';
+    private const string INDEX_DIR = 'index';
 
-    /**
-     * @var string
-     */
-    const INDEX_EXTENSION = 'index';
+    private const string INDEX_EXTENSION = 'index';
 
-    /**
-     * @var int
-     */
-    const FIRST_LINE_LENGTH = 102400;
+    public const int FIRST_LINE_LENGTH = 102400;
 
-    /**
-     * @var string
-     */
-    const COLUMN_DELIMITER = ', ';
+    public const string COLUMN_DELIMITER = ', ';
 
-    /**
-     * @var string
-     */
-    const COLUMN_DATA_DELIMITER = ':';
+    private const string COLUMN_DATA_DELIMITER = ':';
 
-    /**
-     * @var string $name
-     */
-    private $name;
+    private string $name;
 
-    /**
-     * @var string $fileName
-     */
-    private $filePath;
+    private string $filePath;
 
-    /**
-     * @var string $tableDir
-     */
-    private $tableDir;
+    private string $tableDir;
 
-    /**
-     * @var string $indexDir
-     */
-    private $indexDir;
+    private string $indexDir;
 
-    /**
-     * @var string $fileName
-     */
-    private $fileName;
 
-    /**
-     * @var int $size
-     */
-    private $size;
+    private string $fileName;
+
+
+    private int $size;
 
     /**
      * @var TableRow[] $rows
      */
-    private $rows;
+    private array $rows;
 
     /**
      * @var int $rowsCount
      */
-    private $rowsCount;
+    private int $rowsCount;
 
     /**
      * @var Database $database
      */
-    private $database;
+    private Database $database;
 
     /**
      * @var TableColumn[] $columns
      */
-    private $columns;
+    private array $columns;
 
     /**
      * @var int $columnsCount
      */
-    private $columnsCount;
+    private int $columnsCount;
     
     /**
      * @var string $columnsString
      */
-    private $columnsString;
+    private string $columnsString;
 
     /**
      * @var array $indexes
      */
-    private $indexes;
+    private array $indexes;
 
     /**
      * @var array $indexNames
      */
-    private $indexNames;
+    private array $indexNames;
 
     /**
      * @var string $lineEnds
@@ -261,36 +227,7 @@ class Table implements ITable
         $this->lineEndsLength = mb_strlen($this->lineEnds);
     }
 
-    public function __destruct()
-    {
-        $this->name          = null;
-        $this->fileName      = null;
-        $this->size          = null;
-        $this->rows          = null;
-        $this->rowsCount     = null;
-        $this->database      = null;
-
-        foreach ($this->columns as &$column) {
-            $column = null;
-        }
-
-        unset($column);
-
-        $this->columns       = null;
-        $this->columnsCount  = null;
-        $this->columnsString = null;
-        $this->filePath      = null;
-        $this->tableDir      = null;
-        $this->indexDir      = null;
-        $this->indexes       = null;
-        $this->lineEnds      = null;
-        $this->lineEndsLength = null;
-    }
-
-    /**
-     * @return Database
-     */
-    public function getDatabase()
+    public function getDatabase() : Database
     {
         return $this->database;
     }
@@ -298,7 +235,7 @@ class Table implements ITable
     /**
      * @return int
      */
-    public function getRowsCount()
+    public function getRowsCount() : int
     {
         return $this->rowsCount;
     }
@@ -306,107 +243,69 @@ class Table implements ITable
     /**
      * @return TableColumn[]
      */
-    public function getColumns()
+    public function getColumns() : array
     {
         return $this->columns;
     }
 
-    /**
-     * @return string
-     */
-    public function getName()
+    public function getName() : string
     {
         return $this->name;
     }
 
-    /**
-     * @return string
-     */
-    public function getFileName()
+    public function getFileName() : string
     {
         return $this->fileName;
     }
     
-    /**
-     * @return string
-     */
-    public function getColumnsString()
+    public function getColumnsString() : string
     {
         return $this->columnsString;
     }
 
-    /**
-     * @return array
-     */
-    public function getIndexes()
+    public function getIndexes() : array
     {
         return $this->indexes;
     }
 
-    /**
-     * @return array[]
-     */
-    public function getIndexNames()
+    public function getIndexNames() : array
     {
         return $this->indexNames;
     }
 
-    /**
-     * @return string
-     */
-    public function getFilePath()
+    public function getFilePath() : string
     {
         return $this->filePath;
     }
 
-    /**
-     * @return string
-     */
-    public function getTableDir()
+    public function getTableDir() : string
     {
         return $this->tableDir;
     }
 
-    /**
-     * @return string
-     */
-    public function getFileEnds()
+    public function getFileEnds() : string
     {
         return $this->lineEnds;
     }
 
-    /**
-     * @return int
-     */
-    public function getFileEndsLength()
+    public function getFileEndsLength(): int
     {
         return $this->lineEndsLength;
     }
 
-    /**
-     * @return string
-     */
-    public function getIndexDir() : string
+    public function getIndexDir(): string
     {
         return $this->indexDir;
     }
 
-    /**
-     * @return string
-     */
-    public function getDirPath() : string
+    public function getDirPath(): string
     {
         $sep = DIRECTORY_SEPARATOR;
 
         return $this->database->getDir() . $sep . $this->name . $sep;
     }
 
-    /**
-     * @param string $column
-     *
-     * @return bool
-     */
-    public function columnExists($column)
+    public function columnExists(string $column): bool
     {
         foreach ($this->getColumns() as $columnObject) {
             if ($columnObject->getName() === $column) {
@@ -437,8 +336,6 @@ class Table implements ITable
         }
 
         $tableDir = $databaseDir . $name . $sep;
-
-        bdump($tableDir, '$tableDir');
 
         if (!file_exists($tableDir)) {
             FileSystem::createDir($tableDir);
@@ -546,7 +443,7 @@ class Table implements ITable
      * @return Table
      * @throws Exception
      */
-    public function deleteColumn($name) : Table
+    public function deleteColumn(string $name) : Table
     {
         // initial checks
         if (!$this->columnsCount) {
@@ -588,10 +485,8 @@ class Table implements ITable
             $newRowsString .= PHP_EOL;
         }
 
-        //return;
         $result = file_put_contents($this->filePath, $newRowsString);
 
-        // recalculate data
         $this->columnsString = implode(self::COLUMN_DELIMITER, $explodedColumns);
         $this->size = filesize($this->filePath);
         $this->columnsCount--;
@@ -609,20 +504,11 @@ class Table implements ITable
         return $this;
     }
 
-    /**
-     * @param string $from
-     * @param string $to
-     *
-     * @return Table
-     */
-    public function renameColumn($from, $to)
+    public function renameColumn(string $from, string $to): Table
     {
         return $this;
     }
 
-    /**
-     * @return Table
-     */
     public function truncate() : Table
     {
         $firstRow = $this->columnsString . $this->lineEnds;
@@ -635,11 +521,6 @@ class Table implements ITable
         return $this;
     }
 
-    /**
-     *
-     * @return bool
-     * @throws Exception
-     */
     public function delete() : bool
     {
         if (!file_exists($this->filePath)) {
@@ -669,7 +550,7 @@ class Table implements ITable
      */
     public function getRows(bool $returnObject = false): Generator
     {
-        $this->rows = null;
+        $this->rows = [];
 
         $streamer = new SplFileObject($this->filePath, 'r');
 

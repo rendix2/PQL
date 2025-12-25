@@ -18,21 +18,10 @@ use Generator;
  */
 class TemporaryTable implements ITable
 {
-    /**
-     * @var array $rows
-     */
-    private $rows;
+    private array $rows;
 
-    /**
-     * @var array $columns
-     */
-    private $columns;
+    private array $columns;
 
-    /**
-     * TemporaryTable constructor.
-     *
-     * @param array $rows
-     */
     public function __construct(array $rows)
     {
         $this->rows = $rows;
@@ -44,50 +33,33 @@ class TemporaryTable implements ITable
         }
     }
 
-    /**
-     * TemporaryTable destructor.
-     */
-    public function __destruct()
-    {
-        $this->rows = null;
-        $this->columns = null;
-    }
-
-    /**
-     * @param array $row
-     */
-    public function addRow(array $row)
+    public function addRow(array $row): TemporaryTable
     {
         $this->rows[]  = $row;
         $this->columns = array_keys($this->rows);
+
+        return $this;
     }
 
-    /**
-     * @param int $id
-     */
-    public function deleteRow($id)
+    public function deleteRow(int $id): TemporaryTable
     {
         unset($this->rows[$id]);
+
+        return $this;
     }
 
-    /**
-     * @param string $column
-     */
-    public function addColumn($column)
+    public function addColumn(string $column): TemporaryTable
     {
         $this->columns[] = $column;
 
         foreach ($this->rows as $key => $row) {
             $this->rows[$key][$column] = null;
         }
+
+        return $this;
     }
 
-    /**
-     * @param string $columnToDelete
-     *
-     * @return bool
-     */
-    public function deleteColumn($columnToDelete)
+    public function deleteColumn(string $columnToDelete): bool
     {
         $key = array_search($columnToDelete, $this->columns, true);
 
@@ -104,28 +76,17 @@ class TemporaryTable implements ITable
         return true;
     }
 
-    /**
-     * @return array
-     */
-    public function getColumns()
+    public function getColumns(): array
     {
         return $this->columns;
     }
 
-    /**
-     * @param bool $returnObject
-     *
-     * @return array
-     */
     public function getRows(bool $returnObject = false): Generator
     {
         yield $this->rows;
     }
 
-    /**
-     * @return string
-     */
-    public function getName()
+    public function getName(): string
     {
         return 'Temporary';
     }

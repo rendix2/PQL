@@ -32,13 +32,7 @@ class JoinedTable
      */
     private $hasAlias;
 
-    /**
-     * JoinedTable constructor.
-     * @param Table|Query $table
-     * @param Condition[] $onConditions
-     * @param Alias|null  $alias
-     */
-    public function __construct($table, array $onConditions, $alias = null)
+    public function __construct(Table|Query $table, array $onConditions, string $alias = null)
     {
         $this->table = $table;
         $this->onConditions = $onConditions;
@@ -53,27 +47,9 @@ class JoinedTable
     }
 
     /**
-     * JoinedTable destructor.
-     */
-    public function __destruct()
-    {
-        $this->table = null;
-        $this->alias = null;
-        $this->hasAlias = null;
-
-        foreach ($this->onConditions as &$onCondition) {
-            $onCondition = null;
-        }
-
-        unset($onCondition);
-
-        $this->onConditions = null;
-    }
-
-    /**
      * @return Table|Query
      */
-    public function getTable()
+    public function getTable(): Table|Query
     {
         return $this->table;
     }
@@ -94,10 +70,7 @@ class JoinedTable
         return $this->alias;
     }
 
-    /**
-     * @return bool
-     */
-    public function hasAlias()
+    public function hasAlias(): bool
     {
         return $this->hasAlias;
     }

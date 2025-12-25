@@ -21,25 +21,11 @@ use pql\QueryBuilder\Select\ISelectExpression;
  */
 trait WhereQueryBuilder
 {
-    /**
-     * @var Condition[] $whereConditions
-     */
-    private $whereConditions;
+    private array $whereConditions;
 
-    /**
-     * @var bool $hasWhereCondition
-     */
-    private $hasWhereCondition;
+    private bool $hasWhereCondition;
 
-    /**
-     * @param ISelectExpression $column
-     * @param IOperator         $operator
-     * @param ISelectExpression $value
-     *
-     * @return WhereQueryBuilder|SelectQuery
-     * @throws Exception
-     */
-    public function where(ISelectExpression $column, IOperator $operator, ISelectExpression $value)
+    public function where(ISelectExpression $column, IOperator $operator, ISelectExpression $value): SelectQuery
     {
         if (!$operator->checkConditions($column, $value)) {
             throw new Exception('Given parameters are not good....');
@@ -53,28 +39,17 @@ trait WhereQueryBuilder
         return $this;
     }
 
-    /**
-     * @return Condition[]
-     */
-    public function getWhereConditions()
+    public function getWhereConditions(): array
     {
         return $this->whereConditions;
     }
 
-    /**
-     * @return bool
-     */
-    public function hasWhereCondition()
+    public function hasWhereCondition(): bool
     {
         return $this->hasWhereCondition;
     }
 
-    /**
-     *
-     * @param string $key
-     * @internal
-     */
-    public function removeWhereCondition($key)
+    public function removeWhereCondition(string $key): void
     {
         unset($this->whereConditions[$key]);
 

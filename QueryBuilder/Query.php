@@ -4,6 +4,7 @@ namespace pql\QueryBuilder;
 
 use Exception;
 use pql\Database;
+use pql\QueryPrinter\InsertSelect;
 use pql\QueryPrinter\QueryPrinter;
 
 /**
@@ -21,67 +22,33 @@ use pql\QueryPrinter\QueryPrinter;
  */
 class Query
 {
-    /**
-     * @var IQueryBuilder $query
-     */
-    private $query;
+    private IQueryBuilder $query;
 
-    /**
-     * @var Database $database
-     */
-    private $database;
+    private Database $database;
 
-    /**
-     * Query constructor.
-     *
-     * @param Database $database
-     */
     public function __construct(Database $database)
     {
         $this->database = $database;
     }
 
-    /**
-     * Query destructor.
-     */
-    public function __destruct()
-    {
-        $this->query    = null;
-        $this->database = null;
-    }
-
-    /**
-     * prints query in SQL
-     *
-     * @return string
-     */
-    public function __toString()
+    public function __toString(): string
     {
         $queryPrinter = new QueryPrinter($this, 0);
 
         return $queryPrinter->printQuery();
     }
 
-    /**
-     * @return DeleteQuery
-     */
-    public function delete()
+    public function delete(): DeleteQuery
     {
         return $this->query = new DeleteQuery($this->database);
     }
 
-    /**
-     * @return DeleteSelectQuery
-     */
-    public function deleteSelect()
+    public function deleteSelect(): DeleteSelectQuery
     {
         return $this->query = new DeleteSelectQuery($this->database);
     }
 
-    /**
-     * @return ExplainQuery
-     */
-    public function explain()
+    public function explain(): ExplainQuery
     {
         return $this->query = new ExplainQuery($this->database);
     }
@@ -89,28 +56,22 @@ class Query
     /**
      * @return InsertQuery
      */
-    public function insert()
+    public function insert(): InsertQuery
     {
         return $this->query = new InsertQuery($this->database);
     }
 
-    public function insertSelect()
+    public function insertSelect(): InsertSelectQuery
     {
         return $this->query = new InsertSelectQuery($this->database);
     }
 
-    /**
-     * @return SelectQuery
-     */
-    public function select()
+    public function select(): SelectQuery
     {
         return $this->query = new SelectQuery($this->database);
     }
 
-    /**
-     * @return UpdateQuery
-     */
-    public function update()
+    public function update(): UpdateQuery
     {
         return $this->query = new UpdateQuery($this->database);
     }
@@ -118,24 +79,17 @@ class Query
     /**
      * @return UpdateSelectQuery
      */
-    public function updateSelect()
+    public function updateSelect(): UpdateSelectQuery
     {
         return $this->query = new UpdateSelectQuery($this->database);
     }
 
-    /**
-     * @return IQueryBuilder
-     */
-    public function getQuery()
+    public function getQuery(): IQueryBuilder
     {
         return $this->query;
     }
 
-    /**
-     * @return mixed
-     * @throws Exception
-     */
-    public function run()
+    public function run(): mixed
     {
         if ($this->query === null) {
             $message = 'Query is not set.';

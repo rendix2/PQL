@@ -20,51 +20,25 @@ class ExplainExecutor implements IQueryExecutor
     /**
      * @var array
      */
-    const JOIN_ALGORITHMS = [
+    const array JOIN_ALGORITHMS = [
         Optimizer::MERGE_JOIN  => 'MERGE JOIN',
         Optimizer::HASH_JOIN   => 'HASH JOIN',
         Optimizer::NESTED_LOOP => 'NESTED LOOP',
     ];
 
-    /**
-     * @var Optimizer $optimizer
-     */
-    private $optimizer;
+    private Optimizer $optimizer;
 
-    /**
-     * @var ExplainBuilder $query
-     */
-    private $query;
+    private IQueryBuilder $query;
 
-    /**
-     * @var array $result
-     */
-    private $result;
+    private array $result;
 
-    /**
-     * Explain constructor.
-     *
-     * @param IQueryBuilder $query
-     */
     public function __construct(IQueryBuilder $query)
     {
         $this->query     = $query;
         $this->optimizer = new Optimizer($query);
     }
 
-    /**
-     * Explain destructor.
-     */
-    public function __destruct()
-    {
-        $this->optimizer = null;
-        $this->query     = null;
-    }
-
-    /**
-     * @return ExplainBuilder
-     */
-    private function getQuery()
+    private function getQuery(): IQueryBuilder
     {
         return $this->query;
     }

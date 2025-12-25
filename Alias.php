@@ -19,17 +19,17 @@ class Alias
     /**
      * @var string
      */
-    const DELIMITER = '.';
+    public const string DELIMITER = '.';
 
     /**
      * @var Table|string $from
      */
-    private $from;
+    private Table|string $from;
 
     /**
      * @var string $to
      */
-    private $to;
+    private string $to;
 
     /**
      * Alias constructor.
@@ -37,7 +37,7 @@ class Alias
      * @param Table|string $from
      * @param string $to
      */
-    public function __construct($from, $to)
+    public function __construct(Table|string $from, string $to)
     {
         $this->from = $from;
         $this->to   = $to;
@@ -52,10 +52,7 @@ class Alias
         $this->to   = null;
     }
 
-    /**
-     * @return Table
-     */
-    public function getFrom()
+    public function getFrom(): Table|string
     {
         return $this->from;
     }
@@ -63,7 +60,7 @@ class Alias
     /**
      * @return string
      */
-    public function getTo()
+    public function getTo(): string
     {
         return $this->to;
     }
@@ -73,7 +70,7 @@ class Alias
      *
      * @return bool
      */
-    public static function hasAlias($string)
+    public static function hasAlias(string $string): bool
     {
         return strpos($string, self::DELIMITER) !== false;
     }

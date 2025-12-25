@@ -78,9 +78,6 @@ abstract class AggregateFunction implements ISelectExpression
         return $this->column;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function evaluate()
     {
         return $this->name . '(' . $this->column . ')';
