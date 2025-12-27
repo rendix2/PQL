@@ -20,8 +20,14 @@ use PQL\Query\UpdateExecutor;
 class UpdateBuilder
 {
 
+    /**
+     * @var Database $database
+     */
     private Database $database;
 
+    /**
+     * @var TableExpression $table
+     */
     private TableExpression $table;
 
     /**
@@ -114,8 +120,4 @@ class UpdateBuilder
     {
         return $this->whereConditions;
     }
-
-
-
-
 }

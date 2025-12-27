@@ -121,13 +121,15 @@ class Table implements ITable
 
         $this->storage = new StandardStorage($this);
 
+        bdump($metaFilePath);
+
         if (file_exists($metaFilePath)) {
             $metaData = $this->storage->readTableMetaData();
 
             $this->metaData = $metaData;
             $this->columns = $metaData->columns;
         } else {
-            $message = sprintf('Column file of table %s does not exist.', $name);
+            $message = sprintf('Meta file of table %s does not exist.', $name);
 
             throw new Exception($message);
         }

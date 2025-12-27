@@ -233,7 +233,8 @@ class SelectPrinter
 
         foreach ($this->query->getWhereConditions() as $i => $whereCondition) {
             $leftPart = $whereCondition->getLeft()->evaluate();
-            $operator = $whereCondition->getOperator()->getOperator();
+            $operator = $whereCondition->getOperator();
+            $operatorString = $operator->getOperator();
 
             if ($whereCondition->getRight()) {
                 $rightPart = $whereCondition->getRight()->print();
@@ -245,7 +246,11 @@ class SelectPrinter
                 $where .= '<br>' . $this->indent() . $this->indent() . $this->colorizer->getClauseSpan() . 'AND ' . $this->colorizer->getCloseSpan();
             }
 
-            $where .= $this->colorizer->getColumnSpan() . $leftPart . $this->colorizer->getClauseSpan() . ' ' . $this->colorizer->getOperatorSpan() . $operator . $this->colorizer->getCloseSpan() . ' ' . $this->colorizer->getColumnSpan() . $rightPart . $this->colorizer->getCloseSpan();
+            if ($operator->isUnary()) {
+                $where .= $this->colorizer->getColumnSpan() . $leftPart . $this->colorizer->getClauseSpan() . ' ' . $this->colorizer->getOperatorSpan() . $operatorString . $this->colorizer->getCloseSpan() . ' ' . $this->colorizer->getColumnSpan() . $this->colorizer->getCloseSpan();
+            } elseif ($operator->isBinary()) {
+                $where .= $this->colorizer->getColumnSpan() . $leftPart . $this->colorizer->getClauseSpan() . ' ' . $this->colorizer->getOperatorSpan() . $operatorString . $this->colorizer->getCloseSpan() . ' ' . $this->colorizer->getColumnSpan() . $rightPart . $this->colorizer->getCloseSpan();
+            }
         }
 
         return count($this->query->getWhereConditions()) ? $where : '';

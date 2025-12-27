@@ -15,7 +15,7 @@ namespace PQL\Database\Query\Builder\Expressions;
  *
  * @package PQL\Database\Query\Builder\Expressions
  */
-class StringValue extends AbstractExpression implements IValue
+class StringValue extends AbstractExpression implements IStringValue
 {
     /**
      * @var string $value

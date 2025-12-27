@@ -142,8 +142,14 @@ class SelectBuilder
      */
     private array $whereConditions;
 
+    /**
+     * @var ?int limit
+     */
     private ?int $limit;
 
+    /**
+     * @var ?int offset
+     */
     private ?int $offset;
 
     /**

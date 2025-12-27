@@ -23,7 +23,7 @@ class FloatValue extends AbstractExpression implements INumberValue
     private float $value;
 
     /**
-     * @param float       $value
+     * @param float $value
      * @param string|null $alias
      */
     public function __construct(float $value, ?string $alias = null)

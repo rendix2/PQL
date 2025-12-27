@@ -38,10 +38,39 @@ class WhereOperator implements IOperator
         'BETWEEN_INCLUSIVE',
     ];
 
+    private static array $unaryOperators = [
+        'IS NULL',
+        'IS NOT NULL',
+    ];
+
+    private static array $binaryOperators = [
+        '=',
+        '>',
+        '<',
+        '<=',
+        '>=',
+        '!=',
+        '<>',
+        'IN',
+        'NOT IN',
+        'BETWEEN',
+        'BETWEEN_INCLUSIVE',
+    ];
+
     /**
      * @var string|mixed $operator
      */
     private string $operator;
+
+    /**
+     * @var bool $isUnary
+     */
+    private bool $isUnary;
+
+    /**
+     * @var bool $isBinary
+     */
+    private bool $isBinary;
 
     /**
      * @throws Exception
@@ -58,6 +87,8 @@ class WhereOperator implements IOperator
             throw new Exception($message);
         }
 
+        $this->isUnary = in_array($operator, static::$unaryOperators);
+        $this->isBinary = in_array($operator, static::$binaryOperators);
         $this->operator = $operator;
     }
 
@@ -85,5 +116,21 @@ class WhereOperator implements IOperator
     public function evaluate() : string
     {
         return $this->operator;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isUnary() : bool
+    {
+        return $this->isUnary;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isBinary() : bool
+    {
+        return $this->isBinary;
     }
 }

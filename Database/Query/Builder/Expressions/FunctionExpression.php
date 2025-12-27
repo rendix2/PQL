@@ -27,14 +27,26 @@ class FunctionExpression extends AbstractFunction
         'strtolower' => 'mb_strtolower',
     ];
 
+    private static array $allowedFunctions = [
+        'sub_string' => 'substring',
+        'str_to_upper' => 'mb_strtoupper',
+        'str_to_lower' => 'mb_strtolower',
+        'uc_first' => 'ucfirst',
+        'lc_first' => 'lcfirst',
+        'str_length' => 'mb_strlen',
+        'md5',
+        'str_pad' => 'str_pad',
+        'str_repeat' => 'str_repeat'
+    ];
+
     /**
      * @var string $phpName
      */
     private string $phpName;
 
     /**
-     * @param string      $name
-     * @param array       $arguments
+     * @param string $name
+     * @param array $arguments
      * @param string|null $alias
      *
      * @throws Exception
@@ -73,7 +85,7 @@ class FunctionExpression extends AbstractFunction
     /**
      * @return string
      */
-    public function getPhpName(): string
+    public function getPhpName() : string
     {
         return $this->phpName;
     }

@@ -10,6 +10,6 @@
 
 namespace PQL\Database\Query\Builder\Expressions;
 
-interface INumberValue extends IValue, IMathExpression
+interface INumberValue extends IValue, IMathExpression, IScalarValue
 {
 }
