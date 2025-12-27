@@ -1,130 +1,127 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Tom
- * Date: 5. 12. 2019
- * Time: 16:02
- */
 
 namespace pql;
 
+use Exception;
+use Iterator;
+use Nette\Utils\FileSystem;
+use SplFileObject;
+
 /**
  * Class TemporaryTable
- *
- * @author  rendix2 <rendix2@seznam.cz>
- * @package pql
  */
-class TemporaryTable implements ITable
+class TemporaryTable implements ITable, Iterator
 {
-    /**
-     * @var array $rows
-     */
-    private $rows;
+    private const EXT = 'tmp';
+    private const DELIMITER = ', ';
+
+    private string $path;
 
     /**
-     * @var array $columns
+     * @var TableColumn[] $columns
      */
-    private $columns;
+    private array $columns;
 
-    /**
-     * TemporaryTable constructor.
-     *
-     * @param array $rows
-     */
-    public function __construct(array $rows)
+    private int $rowsCount = 0;
+
+    private ?SplFileObject $stream;
+
+    public function __construct(array $columns, Iterator $dataIterator)
     {
-        $this->rows = $rows;
+        $this->columns = $columns;
+        $this->stream = null;
+        $this->path = sys_get_temp_dir() . DIRECTORY_SEPARATOR . uniqid('pql_temp_') . '.' . self::EXT;
 
-        if (isset($this->rows[0])) {
-            $this->columns = array_keys($this->rows[0]);
-        } else {
-            $this->columns = array_keys($this->rows);
-        }
+        $this->materializeData($dataIterator);
     }
 
-    /**
-     * TemporaryTable destructor.
-     */
     public function __destruct()
     {
-        $this->rows = null;
-        $this->columns = null;
-    }
+        $this->stream = null;
 
-    /**
-     * @param array $row
-     */
-    public function addRow(array $row)
-    {
-        $this->rows[]  = $row;
-        $this->columns = array_keys($this->rows);
-    }
-
-    /**
-     * @param int $id
-     */
-    public function deleteRow($id)
-    {
-        unset($this->rows[$id]);
-    }
-
-    /**
-     * @param string $column
-     */
-    public function addColumn($column)
-    {
-        $this->columns[] = $column;
-
-        foreach ($this->rows as $key => $row) {
-            $this->rows[$key][$column] = null;
+        if (file_exists($this->path)) {
+            FileSystem::delete($this->path);
         }
     }
 
-    /**
-     * @param string $columnToDelete
-     *
-     * @return bool
-     */
-    public function deleteColumn($columnToDelete)
+    private function materializeData(Iterator $dataIterator): void
     {
-        $key = array_search($columnToDelete, $this->columns, true);
+        $handle = new SplFileObject($this->path, 'w');
+        $rowsCount = 0;
 
-        if ($key === false) {
-            return false;
+        foreach ($dataIterator as $row) {
+            $handle->fwrite(implode(self::DELIMITER, $row) . "\n");
+            $rowsCount++;
         }
 
-        unset($this->columns[$key]);
-
-        foreach ($this->rows as $key => $row) {
-            unset($this->rows[$key][$columnToDelete]);
-        }
-
-        return true;
+        $this->rowsCount = $rowsCount;
+        $handle = null;
     }
 
     /**
-     * @return array
+     * @return TableColumn[]
      */
-    public function getColumns()
+    public function getColumns(): array
     {
         return $this->columns;
     }
 
-    /**
-     * @param bool $object
-     *
-     * @return array
-     */
-    public function getRows($object = false)
+    public function getRowsCount(): int
     {
-        return $this->rows;
+        return $this->rowsCount;
     }
 
-    /**
-     * @return string
-     */
-    public function getName()
+    public function getRows($object = false): void
     {
-        return 'Temporary';
+        throw new Exception();
     }
+
+    public function getName(): string
+    {
+        return "TEMP_TABLE_" . basename($this->path);
+    }
+
+    public function rewind(): void
+    {
+        if ($this->stream === null) {
+            $this->stream = new SplFileObject($this->path, 'r');
+        } else {
+            $this->stream->rewind();
+        }
+    }
+
+    public function current(): array
+    {
+        $rawLine = $this->stream->current();
+
+        if (empty($rawLine)) { return []; }
+
+        return explode(self::DELIMITER, trim($rawLine));
+    }
+
+    public function key(): int
+    {
+        return $this->stream->key();
+    }
+
+    public function next(): void
+    {
+        $this->stream->next();
+    }
+
+    public function valid(): bool
+    {
+        return $this->stream->valid();
+    }
+
+    public function getIterator(): Iterator
+    {
+        return $this;
+    }
+
+    public function getArray(): array
+    {
+        return iterator_to_array($this);
+    }
+
 }
