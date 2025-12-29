@@ -43,15 +43,6 @@ class Alias
         $this->to   = $to;
     }
 
-    /**
-     * Alias destructor.
-     */
-    public function __destruct()
-    {
-        $this->from = null;
-        $this->to   = null;
-    }
-
     public function getFrom(): Table|string
     {
         return $this->from;

@@ -16,7 +16,7 @@ interface ITable
     /**
      * @return TableColumn[]
      */
-    public function getColumns();
+    public function getColumns(): array;
 
     public function getRows(bool $returnObject = false): Generator;
 }
