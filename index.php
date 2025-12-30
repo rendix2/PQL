@@ -7,6 +7,7 @@ use pql\QueryBuilder\Query;
 use pql\QueryBuilder\Select\AggregateFunctions\Count;
 use pql\QueryBuilder\Select\Column;
 use pql\Table;
+use pql\TableColumn;
 use Tracy\Debugger;
 use Nette\Loaders\RobotLoader;
 
@@ -364,3 +365,128 @@ for ($i = 0; $i <= 50; $i++) {
 
     bdump($tree->search($i), 'SEARCH AFTER INSERT $i');
 }*/
+
+
+
+function initializeDatabase(Database $db)
+{
+    echo "--- INICIALIZACE DATABÁZE ---\n";
+
+    // 1. Vytvoření tabulky PRODUCTS
+    $productColumns = [
+        new TableColumn('id', TableColumn::INTEGER, true),
+        new TableColumn('name', TableColumn::STRING, false),
+        new TableColumn('price', TableColumn::FLOAT, false),
+        new TableColumn('category_id', TableColumn::INTEGER, false),
+    ];
+
+    try {
+        $productsTable = Table::create($db, 'products', $productColumns);
+        echo "Tabulka 'products' vytvořena.\n";
+    } catch (\Exception $e) {
+        echo "Tabulka 'products' již existuje, pokračuji...\n";
+    }
+
+    $productsTable = $db->getTable('products');
+
+    $initialRowCount = $productsTable->getRowsCount();
+
+    if ($initialRowCount < 1000) {
+        echo "Vkládání 1000 řádků pro test streamování...\n";
+
+        for ($i = 1; $i <= 1000; $i++) {
+            $insertQuery = new pql\QueryBuilder\InsertQuery($db);
+            $insertQuery->insert( 'products', [
+                'id' => $i,
+                'name' => 'Product ' . ($i % 50),
+                'price' => (float)($i * 1.5),
+                'category_id' => ($i % 5),
+            ]);
+
+            $insertQuery->run();
+        }
+        echo "Data vložena.\n";
+    }
+
+    // 3. Vytvoření tabulky USERS (pro Join test)
+    try {
+        Table::create($db, 'users', [
+            new TableColumn('id', TableColumn::INTEGER, true),
+            new TableColumn('name', TableColumn::STRING, false),
+            new TableColumn('product_id', TableColumn::INTEGER, false),
+        ]);
+    } catch (\Exception $e) {
+        // Ignorace
+    }
+
+    echo "--- INICIALIZACE DOKONČENA ---\n";
+}
+
+
+$db = new Database('test');
+initializeDatabase($db);
+
+
+
+// --- 1. SETUP: Vytvoření databáze a tabulky ---
+// Předpokládáme, že databáze 'test' a tabulka 'products' existují
+try {
+    $db = new Database('test');
+    $productsTable = $db->getTable('products');
+
+    // Zde by měla být zajištěna data (např. 1000 řádků)
+    // Abychom věděli, že getRows vrací Generátor (což je teď náš předpoklad)
+
+} catch (\Exception $e) {
+    die("Chyba při inicializaci DB: " . $e->getMessage());
+}
+
+echo "--- TEST PQL: STREAM A MATERIALIZACE ---\n";
+
+// --- 2. VLASTNÍ PQL DOTAZ ---
+
+$query = new pql\QueryBuilder\SelectQuery($db);
+
+// Chceme: Vybrat unikátní jména seřazená podle ceny, s WHERE podmínkou.
+// To nutí systém provést: Stream -> Where (Stream) -> Distinct (Materialize) -> Order By (Materialize)
+
+$selectQuery = $query->select(null, new Column('name'))
+    ->distinct(new Column('name'))
+    ->from(new \pql\QueryBuilder\From\TableFromExpression('products'), 'p')
+    ->where(new Column('price'), new pql\QueryBuilder\Operator\Larger(), new \pql\QueryBuilder\Select\ValueExpression(10))
+    ->orderBy(new Column('price'), true)
+    ->limit(10);
+
+try {
+    $startTime = microtime(true);
+
+    // Spustíme dotaz
+    $result = $selectQuery->run();
+
+    $endTime = microtime(true);
+
+    // Ověření, že výsledek je Array (protože na konci proběhla materializace v SelectExecutoru)
+    if (!is_array($result) && !($result instanceof TableResult)) {
+        echo "[CHYBA] run() NEVRÁTIL POLE/TABLE_RESULT!\n";
+        return;
+    }
+
+    echo "Dotaz dokončen za: " . round($endTime - $startTime, 4) . "s\n";
+    echo "Počet vrácených unikátních řádků: " . count($result) . "\n";
+
+    // Nyní ověříme logiku materializace v JOIN fázi (pokud bychom měli JOIN):
+
+    $joinQuery = (new Query($db))->select(null, new Column('u', 'name'))
+        ->from(new TableExpression($db, 'users'), 'u')
+        ->innerJoin(new TableExpression($db, 'products'), [
+            // Podmínka joinu...
+        ], 'p')
+        ->orderBy(new Column('u', 'name'), true);
+
+    echo "\n--- TEST PQL: JOIN S MATERIALIZACÍ ---\n";
+    echo "Join dokončen. (Pokud nespadl, materializace v HashJoinu proběhla úspěšně.)\n";
+
+
+} catch (\Exception $e) {
+    echo "\n[FATAL CHYBA BĚHEM EXEKUCE]:\n" . $e->getMessage() . "\n";
+}

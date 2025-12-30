@@ -21,9 +21,6 @@ class InsertExecutor implements IQueryExecutor
         $this->query = $query;
     }
 
-    /**
-     *
-     */
     public function run()
     {
         return $this->insert();

@@ -57,14 +57,7 @@ class UpdateExecutor implements IQueryExecutor
         return count($this->result);
     }
 
-    /**
-     * @param array      $rows
-     * @param Condition $condition
-     * @param array      $updateData
-     *
-     * @return array
-     */
-    private function doWhere(array $rows, Condition $condition, array $updateData)
+    private function doWhere(array $rows, Condition $condition, array $updateData): array
     {
         foreach ($rows as $rowNumber => $row) {
             if (ConditionHelper::condition($condition, $row, [])) {
@@ -77,10 +70,7 @@ class UpdateExecutor implements IQueryExecutor
         return $rows;
     }
 
-    /**
-     * where conditions
-     */
-    private function where()
+    private function where(): void
     {
         $updateData = $this->query->getData();
         $rows = $this->query->getTable()->getRows();

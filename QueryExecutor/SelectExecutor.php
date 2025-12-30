@@ -4,6 +4,7 @@ namespace pql\QueryExecutor;
 
 use Exception;
 use Generator;
+use Iterator;
 use Netpromotion\Profiler\Profiler;
 use pql\Alias;
 use pql\Condition;
@@ -30,12 +31,7 @@ use pql\QueryRow\TableRow;
 use pql\SelectedColumn;
 use pql\Table;
 
-/**
- * Class Select
- *
- * @author  rendix2 <rendix2@seznam.cz>
- * @package pql\QueryExecute
- */
+
 class SelectExecutor implements IQueryExecutor
 {
     use LimitExecutor;
@@ -53,7 +49,7 @@ class SelectExecutor implements IQueryExecutor
 
     private SelectBuilder $query;
 
-    private array|Generator $result;
+    private array|Iterator $result;
 
     /**
      * @var bool $hasExpression
@@ -75,7 +71,7 @@ class SelectExecutor implements IQueryExecutor
         return $this->query;
     }
 
-    public function getResult(): array
+    public function getResult(): array|Iterator
     {
         return $this->result;
     }
@@ -107,6 +103,7 @@ class SelectExecutor implements IQueryExecutor
         //bdump($this->result, '$this->result SET');
 
         Profiler::start('DISTINCT');
+        $this->result = $this->materializeIfStream($this->result);
         $this->result = $this->distinct();
         Profiler::finish('DISTINCT');
 
@@ -155,6 +152,7 @@ class SelectExecutor implements IQueryExecutor
         //bdump($this->result, '$this->result WHERE');
 
         Profiler::start('groupBy');
+        $this->result = $this->materializeIfStream($this->result);
         $this->groupBy();
         Profiler::finish('groupBy');
 
@@ -179,16 +177,21 @@ class SelectExecutor implements IQueryExecutor
         //bdump($this->result, '$this->result HAVING');
 
         Profiler::start('orderBy');
+        $this->result = $this->materializeIfStream($this->result);
         $this->orderBy();
         Profiler::finish('orderBy');
 
         //bdump($this->result, '$this->result ORDER');
 
         Profiler::start('limit');
+        $this->result = $this->materializeIfStream($this->result);
         $this->limit();
         Profiler::finish('limit');
 
-       // bdump($this->result, '$this->result LIMIT');
+        // bdump($this->result, '$this->result LIMIT');
+
+        Profiler::start('SET_OPERATIONS');
+        $this->result = $this->materializeIfStream($this->result);
 
         Profiler::start('UNION');
         $this->union();
@@ -213,10 +216,45 @@ class SelectExecutor implements IQueryExecutor
         Profiler::finish('EXCEPT');
 
         //bdump($this->result, '$this->result EXCEPT');
+        Profiler::finish('SET_OPERATIONS');
 
         Profiler::start('createRows');
         $rows = $this->createRows();
+
+        if ($rows instanceof Generator) {
+            $rows = iterator_to_array($rows, false);
+        }
+
         Profiler::finish('createRows');
+
+        return $rows;
+    }
+
+    private function materializeIfStream(array|Iterator $source): array
+    {
+        if ($source instanceof Iterator) {
+            bdump('Materialize');
+
+            return iterator_to_array($source, false);
+        }
+        return $source;
+    }
+
+    private function materializeJoinSource(JoinedTable $joinedTable): array
+    {
+        $source = $joinedTable->getTable();
+
+        if ($source instanceof Table) {
+            $rows = $source->getRows();
+        } elseif ($source instanceof Query) {
+            $rows = $source->run()->getQuery()->getResult();
+        } else {
+            throw new Exception('Unknown join source type.');
+        }
+
+        if ($rows instanceof Iterator) {
+            return iterator_to_array($rows, false);
+        }
 
         return $rows;
     }
@@ -534,15 +572,18 @@ class SelectExecutor implements IQueryExecutor
         return $this->result;
     }
 
-    private function innerJoin(): array|Generator
+    private function innerJoin(): array
     {
         if (!$this->query->hasInnerJoinedTable()) {
             return $this->result;
         }
 
+        $this->result = $this->materializeIfStream($this->result);
+
         foreach ($this->query->getInnerJoinedTables() as $innerJoinedTable) {
             foreach ($innerJoinedTable->getOnConditions() as $condition) {
-                $innerJoinedTableRows = $this->joinedTableAliases($innerJoinedTable);
+
+                $innerJoinedTableRows = $this->materializeJoinSource($innerJoinedTable);
 
                 $orderOfTables = $this->optimizer->sayOrderOfInnerJoinedTables($this->result, $innerJoinedTableRows);
 
@@ -577,14 +618,16 @@ class SelectExecutor implements IQueryExecutor
         return $this->result;
     }
 
-    private function crossJoin(): array|Generator
+    private function crossJoin(): array
     {
         if (!$this->query->hasCrossJoinedTable()) {
             return $this->result;
         }
 
+        $this->result = $this->materializeIfStream($this->result);
+
         foreach ($this->query->getCrossJoinedTables() as $crossJoinedTable) {
-            $crossJoinedTableRows = $this->joinedTableAliases($crossJoinedTable);
+            $crossJoinedTableRows = $this->materializeJoinSource($crossJoinedTable);
 
             $this->result = NestedLoopJoin::crossJoin($this->result, $crossJoinedTableRows);
         }
@@ -592,15 +635,17 @@ class SelectExecutor implements IQueryExecutor
         return $this->result;
     }
 
-    private function leftJoin(): array|Generator
+    private function leftJoin(): array
     {
         if (!$this->query->hasLeftJoinedTable()) {
             return $this->result;
         }
 
+        $this->result = $this->materializeIfStream($this->result);
+
         foreach ($this->query->getLeftJoinedTables() as $leftJoinedTable) {
             foreach ($leftJoinedTable->getOnConditions() as $condition) {
-                $leftJoinedTableRows = $this->joinedTableAliases($leftJoinedTable);
+                $leftJoinedTableRows = $this->materializeJoinSource($leftJoinedTable);
 
                 switch ($this->optimizer->sayJoinAlgorithm($leftJoinedTable, $condition)) {
                     case Optimizer::MERGE_JOIN:
@@ -621,15 +666,17 @@ class SelectExecutor implements IQueryExecutor
         return $this->result;
     }
 
-    private function rightJoin(): array|Generator
+    private function rightJoin(): array
     {
         if (!$this->query->hasRightJoinedTable()) {
             return $this->result;
         }
 
+        $this->result = $this->materializeIfStream($this->result);
+
         foreach ($this->query->getRightJoinedTables() as $rightJoinedTable) {
             foreach ($rightJoinedTable->getOnConditions() as $condition) {
-                $rightJoinedTableRows = $this->joinedTableAliases($rightJoinedTable);
+                $rightJoinedTableRows = $this->materializeJoinSource($rightJoinedTable);
 
                 switch ($this->optimizer->sayJoinAlgorithm($rightJoinedTable, $condition)) {
                     case Optimizer::MERGE_JOIN:
@@ -650,15 +697,17 @@ class SelectExecutor implements IQueryExecutor
         return $this->result;
     }
 
-    private function fullJoin(): array|Generator
+    private function fullJoin(): array
     {
         if (!$this->query->hasFullJoinedTable()) {
             return $this->result;
         }
 
+        $this->result = $this->materializeIfStream($this->result);
+
         foreach ($this->query->getFullJoinedTables() as $fullJoinedTable) {
             foreach ($fullJoinedTable->getOnConditions() as $condition) {
-                $fullJoinedTableRows = $this->joinedTableAliases($fullJoinedTable);
+                $fullJoinedTableRows = $this->materializeJoinSource($fullJoinedTable);
 
                 switch ($this->optimizer->sayJoinAlgorithm($fullJoinedTable, $condition)) {
                     case Optimizer::MERGE_JOIN:
@@ -1076,7 +1125,7 @@ class SelectExecutor implements IQueryExecutor
         return $rows;
     }
 
-    private function joinedTableAliases(JoinedTable $table): array|Generator
+    private function joinedTableAliases(JoinedTable $table): Generator
     {
         if ($table->getTable() instanceof Table) {
             $rows = $table->getTable()->getRows();
@@ -1087,19 +1136,20 @@ class SelectExecutor implements IQueryExecutor
         }
 
         if (!$table->hasAlias()) {
-            return $rows;
+            yield from $rows;
+            return;
         }
 
-        $result = [];
+        foreach ($rows as $row) {
+            $aliasedRow = [];
 
-        foreach ($rows as $rowNumber => $row) {
             foreach ($row as $columnName => $columnValue) {
-                $result[$rowNumber][$table->getAlias()->getTo() . Alias::DELIMITER . $columnName] = $columnValue;
-                $result[$rowNumber][$columnName] = $columnValue;
+                $aliasedRow[$table->getAlias()->getTo() . Alias::DELIMITER . $columnName] = $columnValue;
+                $aliasedRow[$columnName] = $columnValue;
             }
-        }
 
-        return $result;
+            yield $aliasedRow;
+        }
     }
 
     private function fromTableAliases(): array|Generator

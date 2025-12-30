@@ -15,35 +15,13 @@ use pql\QueryBuilder\Query;
  */
 class InsertSelectExecutor implements IQueryExecutor
 {
-    /**
-     * @var InsertSelectBuilder $query
-     */
-    private $query;
+    private InsertSelectBuilder $query;
 
-    /**
-     * InsertSelect constructor.
-     *
-     * @param InsertSelectBuilder $query
-     */
     public function __construct(InsertSelectBuilder $query)
     {
         $this->query = $query;
     }
 
-    /**
-     * InsertSelect destructor.
-     *
-     *
-     */
-    public function __destruct()
-    {
-        $this->query = null;
-    }
-
-    /**
-     * @inheritDoc
-     * @throws Exception
-     */
     public function run()
     {
         $selectQuery = new SelectExecutor($this->query->getData());
