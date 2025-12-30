@@ -13,21 +13,13 @@ class Expression implements ISelectExpression
     /**
      * @var ISelectExpression[] $expressions
      */
-    private $expressions;
+    private array $expressions;
 
-    /**
-     * Expression constructor.
-     *
-     * @param ISelectExpression ...$expressions
-     */
     public function __construct(ISelectExpression ...$expressions)
     {
         $this->expressions = $expressions;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function evaluate()
     {
         $result = '';
@@ -39,9 +31,6 @@ class Expression implements ISelectExpression
         return $result;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function result()
     {
         $result = 0;

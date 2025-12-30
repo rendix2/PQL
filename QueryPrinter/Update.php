@@ -21,7 +21,7 @@ class Update implements IQueryPrinter
 {
     use Where;
     use Limit;
-    use Offset;
+    use OffsetPrinter;
 
     /**
      * @var UpdateBuilder $query

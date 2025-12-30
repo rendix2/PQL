@@ -14,7 +14,7 @@ namespace pql\QueryPrinter;
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryPrinter
  */
-trait Offset
+trait OffsetPrinter
 {
     /**
      * @return string

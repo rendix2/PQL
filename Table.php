@@ -9,6 +9,7 @@
 namespace pql;
 
 use Exception;
+use Generator;
 use Nette\IOException;
 use Nette\Utils\FileSystem;
 use Nette\Utils\Finder;
@@ -25,105 +26,71 @@ use SplFileObject;
  */
 class Table implements ITable
 {
-    /**
-     * @var string
-     */
-    const EXT = 'pql';
+    public const string EXT = 'pql';
 
-    /**
-     * @var string
-     */
-    const INDEX_DIR = 'index';
+    private const string INDEX_DIR = 'index';
 
-    /**
-     * @var string
-     */
-    const INDEX_EXTENSION = 'index';
+    private const string INDEX_EXTENSION = 'index';
 
-    /**
-     * @var int
-     */
-    const FIRST_LINE_LENGTH = 102400;
+    public const int FIRST_LINE_LENGTH = 102400;
 
-    /**
-     * @var string
-     */
-    const COLUMN_DELIMITER = ', ';
+    public const string COLUMN_DELIMITER = ', ';
 
-    /**
-     * @var string
-     */
-    const COLUMN_DATA_DELIMITER = ':';
+    private const string COLUMN_DATA_DELIMITER = ':';
 
-    /**
-     * @var string $name
-     */
-    private $name;
+    private string $name;
 
-    /**
-     * @var string $fileName
-     */
-    private $filePath;
+    private string $filePath;
 
-    /**
-     * @var string $tableDir
-     */
-    private $tableDir;
+    private string $tableDir;
 
-    /**
-     * @var string $indexDir
-     */
-    private $indexDir;
+    private string $indexDir;
 
-    /**
-     * @var string $fileName
-     */
-    private $fileName;
 
-    /**
-     * @var int $size
-     */
-    private $size;
+    private string $fileName;
+
+
+    private int $size;
 
     /**
      * @var TableRow[] $rows
      */
-    private $rows;
+    private array $rows;
 
     /**
      * @var int $rowsCount
      */
-    private $rowsCount;
+    private int $rowsCount;
 
     /**
      * @var Database $database
      */
-    private $database;
+    private Database $database;
 
     /**
      * @var TableColumn[] $columns
      */
-    private $columns;
+    private array $columns;
 
     /**
      * @var int $columnsCount
      */
-    private $columnsCount;
+    private int $columnsCount;
     
     /**
      * @var string $columnsString
      */
-    private $columnsString;
+    private string $columnsString;
 
     /**
      * @var array $indexes
      */
-    private $indexes;
+    private array $indexes;
 
     /**
      * @var array $indexNames
      */
-    private $indexNames;
+    private array $indexNames;
 
     /**
      * @var string $lineEnds
@@ -143,27 +110,35 @@ class Table implements ITable
      *
      * @throws Exception
      */
-    public function __construct(Database $database, $name)
+    public function __construct(Database $database, string $name)
     {
         $this->database = $database;
         $this->fileName = $name . '.' . self::EXT;
 
         $sep = DIRECTORY_SEPARATOR;
 
-        $tableDir = self::getFilePathFromDatabase($database, $name);
+        $databaseDir = $database->getDir();
+
+        if (!file_exists($databaseDir)) {
+            $message = sprintf('Directory of database "%s" does not exist.', $database->getName());
+
+            throw new Exception($message);
+        }
+
+        $tableDir = $databaseDir .  $name . $sep;
 
         if (!file_exists($tableDir)) {
-            $message = sprintf('Directory of table "%s" does not exist.', $name);
+            $message = sprintf('Directory "%s" of table "%s" does not exist.', $tableDir,  $name);
 
             throw new Exception($message);
         }
 
         $this->tableDir = $tableDir;
 
-        $filePath = $tableDir . $this->fileName;
+        $filePath = $tableDir . $name . '.' . self::EXT;
 
         if (!file_exists($filePath)) {
-            throw new Exception(sprintf('File of table "%s" does not exist.', $name));
+            throw new Exception(sprintf('File "%s" of table "%s" does not exist.', $filePath, $name));
         }
 
         $this->filePath = $filePath;
@@ -183,11 +158,12 @@ class Table implements ITable
         $index_dir = $tableDir . 'index' . $sep;
 
         if (!file_exists($index_dir)) {
-            throw new Exception('Index dir does not exist.');
+            FileSystem::createDir($index_dir);
         }
 
         $this->indexDir = $index_dir;
         $this->indexes  = [];
+        $this->indexNames = [];
 
         $indexes = Finder::findFiles('*.' .self::INDEX_EXTENSION)->in($this->indexDir);
 
@@ -199,13 +175,13 @@ class Table implements ITable
 
             $indexInstance = new BtreePlus($this->indexDir . $indexFile->getFilename());
 
-            $readedIndex = $indexInstance->read();
+            $readIndex = $indexInstance->read();
 
-            if ($readedIndex === false) {
+            if ($readIndex === false) {
                 $indexInstance->write() ;
             }
 
-            $this->indexes[$fileName] = $readedIndex;
+            $this->indexes[$fileName] = $readIndex;
             $this->indexNames[$fileName] = $indexFile->getFilename();
         }
 
@@ -242,43 +218,16 @@ class Table implements ITable
             $this->columnsString = substr($fileContent[0], 0, -1);
             $this->lineEnds = "\n";
         }
+        /*else {
+            $this->columnsString = substr($fileContent[0], 0, -1);
+            $this->lineEnds = "\n";
+        }
+        */
 
         $this->lineEndsLength = mb_strlen($this->lineEnds);
     }
 
-    /**
-     * Table destructor.
-     */
-    public function __destruct()
-    {
-        $this->name          = null;
-        $this->fileName      = null;
-        $this->size          = null;
-        $this->rows          = null;
-        $this->rowsCount     = null;
-        $this->database      = null;
-
-        foreach ($this->columns as &$column) {
-            $column = null;
-        }
-
-        unset($column);
-
-        $this->columns       = null;
-        $this->columnsCount  = null;
-        $this->columnsString = null;
-        $this->filePath      = null;
-        $this->tableDir      = null;
-        $this->indexDir      = null;
-        $this->indexes       = null;
-        $this->lineEnds      = null;
-        $this->lineEndsLength = null;
-    }
-
-    /**
-     * @return Database
-     */
-    public function getDatabase()
+    public function getDatabase() : Database
     {
         return $this->database;
     }
@@ -286,7 +235,7 @@ class Table implements ITable
     /**
      * @return int
      */
-    public function getRowsCount()
+    public function getRowsCount() : int
     {
         return $this->rowsCount;
     }
@@ -294,120 +243,69 @@ class Table implements ITable
     /**
      * @return TableColumn[]
      */
-    public function getColumns()
+    public function getColumns() : array
     {
         return $this->columns;
     }
 
-    /**
-     * @return string
-     */
-    public function getName()
+    public function getName() : string
     {
         return $this->name;
     }
 
-    /**
-     * @return string
-     */
-    public function getFileName()
+    public function getFileName() : string
     {
         return $this->fileName;
     }
     
-    /**
-     * @return string
-     */
-    public function getColumnsString()
+    public function getColumnsString() : string
     {
         return $this->columnsString;
     }
 
-    /**
-     * @return array
-     */
-    public function getIndexes()
+    public function getIndexes() : array
     {
         return $this->indexes;
     }
 
-    /**
-     * @return array[]
-     */
-    public function getIndexNames()
+    public function getIndexNames() : array
     {
         return $this->indexNames;
     }
 
-    /**
-     * @return string
-     */
-    public function getFilePath()
+    public function getFilePath() : string
     {
         return $this->filePath;
     }
 
-    /**
-     * @return string
-     */
-    public function getTableDir()
+    public function getTableDir() : string
     {
         return $this->tableDir;
     }
 
-    /**
-     * @return string
-     */
-    public function getFileEnds()
+    public function getFileEnds() : string
     {
         return $this->lineEnds;
     }
 
-    /**
-     * @return int
-     */
-    public function getFileEndsLength()
+    public function getFileEndsLength(): int
     {
         return $this->lineEndsLength;
     }
 
-    /**
-     * @param Database $database
-     * @param string   $name
-     *
-     * @return string
-     */
-    public static function getFilePathFromDatabase(Database $database, $name)
-    {
-        $sep = DIRECTORY_SEPARATOR;
-
-        return $database->getDir() . $name . $sep;
-    }
-
-    /**
-     * @return string
-     */
-    public function getIndexDir()
+    public function getIndexDir(): string
     {
         return $this->indexDir;
     }
 
-    /**
-     * @return string
-     */
-    public function getDirPath()
+    public function getDirPath(): string
     {
         $sep = DIRECTORY_SEPARATOR;
 
         return $this->database->getDir() . $sep . $this->name . $sep;
     }
 
-    /**
-     * @param string $column
-     *
-     * @return bool
-     */
-    public function columnExists($column)
+    public function columnExists(string $column): bool
     {
         foreach ($this->getColumns() as $columnObject) {
             if ($columnObject->getName() === $column) {
@@ -426,12 +324,27 @@ class Table implements ITable
      * @return Table
      * @throws Exception
      */
-    public static function create(Database $database, $name, array $columns)
+    public static function create(Database $database, string $name, array $columns)
     {
-        if (file_exists(self::getFilePathFromDatabase($database, $name))) {
-            $message = sprintf('Table "%s" already exists in database "%s".', $name, $database->getName());
+        $sep = DIRECTORY_SEPARATOR;
+        $databaseDir = $database->getDir();
+
+        if (!file_exists($databaseDir)) {
+            $message = sprintf('Directory of database "%s" does not exist.', $database->getName());
 
             throw new Exception($message);
+        }
+
+        $tableDir = $databaseDir . $name . $sep;
+
+        if (!file_exists($tableDir)) {
+            FileSystem::createDir($tableDir);
+        }
+
+        $index_dir = $tableDir . 'index' . $sep;
+
+        if (!file_exists($index_dir)) {
+            FileSystem::createDir($index_dir);
         }
 
         $columnsNames = [];
@@ -441,15 +354,21 @@ class Table implements ITable
          */
         foreach ($columns as $column) {
             if ($column instanceof TableColumn) {
-                $columnsNames[] = sprintf('%s:%s', $column->getName(), $column->getType());
+                $columnsNames[] = sprintf('%s:%s:%s',
+                    $column->getName(),
+                    $column->getType(),
+                    $column->getUnique() ? 'unique' : 'nonunique'
+                );
             } else {
                 throw new Exception('Unknown param "$columns". It should be instance of TableColumn class.');
             }
         }
 
+        $tableFile = $tableDir . $name . '.' . self::EXT;
+
         FileSystem::write(
-            self::getFilePathFromDatabase($database, $name),
-            implode(self::COLUMN_DELIMITER, $columnsNames)
+            $tableFile,
+            implode(self::COLUMN_DELIMITER, $columnsNames) . "\n"
         );
 
         return new Table($database, $name);
@@ -462,7 +381,7 @@ class Table implements ITable
      * @return Table
      * @throws Exception
      */
-    public function addColumn($name, $type, $unique)
+    public function addColumn($name, $type, $unique) : Table
     {
         if ($this->columnExists($name)) {
             $message = sprintf('Table "%s" already has column "%s".', $this->name, $name);
@@ -524,7 +443,7 @@ class Table implements ITable
      * @return Table
      * @throws Exception
      */
-    public function deleteColumn($name)
+    public function deleteColumn(string $name) : Table
     {
         // initial checks
         if (!$this->columnsCount) {
@@ -566,10 +485,8 @@ class Table implements ITable
             $newRowsString .= PHP_EOL;
         }
 
-        //return;
         $result = file_put_contents($this->filePath, $newRowsString);
 
-        // recalculate data
         $this->columnsString = implode(self::COLUMN_DELIMITER, $explodedColumns);
         $this->size = filesize($this->filePath);
         $this->columnsCount--;
@@ -587,21 +504,12 @@ class Table implements ITable
         return $this;
     }
 
-    /**
-     * @param string $from
-     * @param string $to
-     *
-     * @return Table
-     */
-    public function renameColumn($from, $to)
+    public function renameColumn(string $from, string $to): Table
     {
         return $this;
     }
 
-    /**
-     * @return Table
-     */
-    public function truncate()
+    public function truncate() : Table
     {
         $firstRow = $this->columnsString . $this->lineEnds;
 
@@ -613,12 +521,7 @@ class Table implements ITable
         return $this;
     }
 
-    /**
-     *
-     * @return bool
-     * @throws Exception
-     */
-    public function delete()
+    public function delete() : bool
     {
         if (!file_exists($this->filePath)) {
              $message = sprintf(
@@ -640,32 +543,37 @@ class Table implements ITable
     }
 
     /**
-     * @param bool $object
+     * @param bool $returnObject
      *
-     * @return TableRow[]|array
+     * @return Generator
      * @throws Exception
      */
-    public function getRows($object = false)
+    public function getRows(bool $returnObject = false): Generator
     {
-        if ($this->rows) {
-            return $this->rows;
-        }
+        $this->rows = [];
 
-        $fileRows = $this->toArray();
-        unset($fileRows[0]);
+        $streamer = new SplFileObject($this->filePath, 'r');
 
         $columnNames = [];
 
         foreach ($this->columns as $column) {
             $columnNames[] = $column->getName();
         }
-
-        $resultRows = [];
         
-        foreach ($fileRows as $row) {
-            $row = str_replace($this->lineEnds, '', $row);
+        while (!$streamer->eof()) {
+            $row = $streamer->fgets();
 
+            if (!$row) {
+                continue;
+            }
+
+            $row = str_replace($this->lineEnds, '', $row);
             $exploded = explode(self::COLUMN_DELIMITER, $row);
+
+            if (count($exploded) !== count($columnNames)) {
+                continue;
+            }
+
             $columnValuesArray = array_combine($columnNames, $exploded);
 
             foreach ($this->columns as $column) {
@@ -680,7 +588,7 @@ class Table implements ITable
                         $columnValuesArray[$column->getName()] = (int) $columnValuesArray[$column->getName()];
                         break;
                     case TableColumn::STRING:
-                        $columnValuesArray[$column->getName()] = (string)$columnValuesArray[$column->getName()];
+                        $columnValuesArray[$column->getName()] = (string) $columnValuesArray[$column->getName()];
                         break;
                     default:
                         $message = sprintf('Unknown column type "%s".', $column->getType());
@@ -689,20 +597,15 @@ class Table implements ITable
                 }
             }
 
-            if ($object) {
-                $resultRows[] = new TableRow($columnValuesArray);
+            if ($returnObject) {
+                yield new TableRow($columnValuesArray);
             } else {
-                $resultRows[] = $columnValuesArray;
+                yield $columnValuesArray;
             }
         }
-        
-        return $this->rows = $resultRows;
     }
 
-    /**
-     * @return array|bool
-     */
-    public function toArray()
+    public function toArray() : array|false
     {
         return file($this->filePath);
     }

@@ -13,7 +13,7 @@ class Plus implements IMathExpression
     /**
      * @var ISelectExpression[] $expressions
      */
-    private $expressions;
+    private array $expressions;
 
     /**
      * Plus constructor.
@@ -25,9 +25,6 @@ class Plus implements IMathExpression
         $this->expressions = $expressions;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function evaluate()
     {
         $result = '';
@@ -43,10 +40,7 @@ class Plus implements IMathExpression
         return $result;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function result()
+    public function result(): int|float
     {
         $result = 0;
 

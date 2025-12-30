@@ -9,50 +9,20 @@ use pql\QueryBuilder\DeleteQuery as DeleteBuilder;
 use pql\Table;
 use SplFileObject;
 
-/**
- * Class Delete
- *
- * @author  rendix2 <rendix2@seznam.cz>
- * @package pql\QueryExecute
- */
-class Delete implements IQueryExecutor
+class DeleteExecutor implements IQueryExecutor
 {
-    use Limit;
+    use LimitExecutor;
 
-    /**
-     * @var DeleteBuilder $query
-     */
-    private $query;
+    private DeleteBuilder $query;
 
-    /**
-     * @var array $result
-     */
-    private $result;
+    private array $result;
 
-    /**
-     * Delete constructor.
-     *
-     * @param DeleteBuilder $query
-     */
     public function __construct(DeleteBuilder $query)
     {
         $this->query = $query;
     }
 
-    /**
-     * Delete destructor.
-     */
-    public function __destruct()
-    {
-        $this->query = null;
-        $this->result = null;
-    }
-
-    /**
-     * @return int
-     * @throws Exception
-     */
-    public function run()
+    public function run(): int
     {
         $this->where();
         $this->limit();
@@ -76,13 +46,7 @@ class Delete implements IQueryExecutor
         return count($this->result);
     }
 
-    /**
-     * @param array     $rows
-     * @param Condition $condition
-     *
-     * @return array
-     */
-    private function doWhere(array $rows, Condition $condition)
+    private function doWhere(array $rows, Condition $condition): array
     {
         foreach ($rows as $rowNumber => $row) {
             if (ConditionHelper::condition($condition, $row, [])) {
@@ -93,10 +57,7 @@ class Delete implements IQueryExecutor
         return $this->result = $rows;
     }
 
-    /**
-     *
-     */
-    private function where()
+    private function where(): void
     {
         $rows = $this->query->getTable()->getRows();
 

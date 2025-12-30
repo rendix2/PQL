@@ -15,56 +15,30 @@ use pql\Table;
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryExecute
  */
-class Explain implements IQueryExecutor
+class ExplainExecutor implements IQueryExecutor
 {
     /**
      * @var array
      */
-    const JOIN_ALGORITHMS = [
+    const array JOIN_ALGORITHMS = [
         Optimizer::MERGE_JOIN  => 'MERGE JOIN',
         Optimizer::HASH_JOIN   => 'HASH JOIN',
         Optimizer::NESTED_LOOP => 'NESTED LOOP',
     ];
 
-    /**
-     * @var Optimizer $optimizer
-     */
-    private $optimizer;
+    private Optimizer $optimizer;
 
-    /**
-     * @var ExplainBuilder $query
-     */
-    private $query;
+    private IQueryBuilder $query;
 
-    /**
-     * @var array $result
-     */
-    private $result;
+    private array $result;
 
-    /**
-     * Explain constructor.
-     *
-     * @param IQueryBuilder $query
-     */
     public function __construct(IQueryBuilder $query)
     {
         $this->query     = $query;
         $this->optimizer = new Optimizer($query);
     }
 
-    /**
-     * Explain destructor.
-     */
-    public function __destruct()
-    {
-        $this->optimizer = null;
-        $this->query     = null;
-    }
-
-    /**
-     * @return ExplainBuilder
-     */
-    private function getQuery()
+    private function getQuery(): IQueryBuilder
     {
         return $this->query;
     }
@@ -80,7 +54,7 @@ class Explain implements IQueryExecutor
 
         foreach ($query->getSelectedColumns() as $selectedColumn) {
             if ($selectedColumn instanceof Query) {
-                $explain = new Explain($selectedColumn);
+                $explain = new ExplainExecutor($selectedColumn);
 
                 $tables[] = new ExplainRow(
                     'SELECTED COLUMN',
@@ -115,7 +89,7 @@ class Explain implements IQueryExecutor
                 null
             );
         } elseif ($query->getTable() instanceof Query) {
-            $explain = new Explain($query->getTable()->getQuery());
+            $explain = new ExplainExecutor($query->getTable()->getQuery());
 
             $tables[] = new ExplainRow(
                 'FROM CLAUSE',
@@ -154,7 +128,7 @@ class Explain implements IQueryExecutor
             } elseif ($innerJoinedTable->getTable() instanceof Query) {
                 $innerJoinQuery = $innerJoinedTable->getTable()->getQuery();
 
-                $explain = new Explain($innerJoinQuery);
+                $explain = new ExplainExecutor($innerJoinQuery);
 
                 $tables[] = new ExplainRow(
                     $innerJoinQuery->getTable()->getName(),
@@ -192,7 +166,7 @@ class Explain implements IQueryExecutor
             } elseif ($crossJoinedTable->getTable() instanceof Query) {
                 $crossJoinQuery = $crossJoinedTable->getTable()->getQuery();
 
-                $explain = new Explain($crossJoinQuery);
+                $explain = new ExplainExecutor($crossJoinQuery);
 
                 $tables[] = new ExplainRow(
                     $crossJoinQuery->getTable()->getName(),
@@ -232,7 +206,7 @@ class Explain implements IQueryExecutor
             } elseif ($leftJoinedTable->getTable() instanceof Query) {
                 $leftJoinQuery = $leftJoinedTable->getTable()->getQuery();
 
-                $explain = new Explain($leftJoinedTable->getTable()->getQuery());
+                $explain = new ExplainExecutor($leftJoinedTable->getTable()->getQuery());
 
                 $tables[] = new ExplainRow(
                     $leftJoinQuery->getTable()->getName(),
@@ -272,7 +246,7 @@ class Explain implements IQueryExecutor
             } elseif ($rightJoinedTable->getTable() instanceof Query) {
                 $rightJoinQuery = $rightJoinedTable->getTable()->getQuery();
 
-                $explain = new Explain($rightJoinQuery);
+                $explain = new ExplainExecutor($rightJoinQuery);
 
                 $tables[] = new ExplainRow(
                     $rightJoinQuery->getTable()->getName(),
@@ -312,7 +286,7 @@ class Explain implements IQueryExecutor
             } elseif ($fullJoinedTable->getTable() instanceof Query) {
                 $fullJoinQuery = $fullJoinedTable->getTable()->getQuery();
 
-                $explain = new Explain($fullJoinQuery);
+                $explain = new ExplainExecutor($fullJoinQuery);
 
                 $tables[] = new ExplainRow(
                     $fullJoinQuery->getTable()->getName(),
@@ -339,12 +313,12 @@ class Explain implements IQueryExecutor
 
         foreach ($query->getWhereConditions() as $whereCondition) {
             if ($whereCondition->getColumn() instanceof Query) {
-                $explain = new Explain($whereCondition->getColumn());
+                $explain = new ExplainExecutor($whereCondition->getColumn());
                 $tables[] = $explain->run();
             }
 
             if ($whereCondition->getValue() instanceof Query) {
-                $explain = new Explain($whereCondition->getValue());
+                $explain = new ExplainExecutor($whereCondition->getValue());
                 $tables[] = $explain->run();
             }
         }
@@ -363,12 +337,12 @@ class Explain implements IQueryExecutor
 
         foreach ($query->getHavingConditions() as $havingCondition) {
             if ($havingCondition->getValue() instanceof Query) {
-                $explain = new Explain($havingCondition->getValue());
+                $explain = new ExplainExecutor($havingCondition->getValue());
                 $tables[] = $explain->run();
             }
 
             if ($havingCondition->getColumn() instanceof Query) {
-                $explain = new Explain($havingCondition->getColumn());
+                $explain = new ExplainExecutor($havingCondition->getColumn());
                 $tables[] = $explain->run();
             }
         }
@@ -386,7 +360,7 @@ class Explain implements IQueryExecutor
         $tables = [];
 
         foreach ($query->getUnionQueries() as $i => $unionQuery) {
-            $explain = new Explain($unionQuery);
+            $explain = new ExplainExecutor($unionQuery);
 
             $tables[] = new ExplainRow(
                 '',
@@ -411,7 +385,7 @@ class Explain implements IQueryExecutor
         $tables = [];
 
         foreach ($query->getUnionAllQueries() as $i => $unionAllQuery) {
-            $explain = new Explain($unionAllQuery);
+            $explain = new ExplainExecutor($unionAllQuery);
 
             $tables[] = new ExplainRow(
                 '',
@@ -436,7 +410,7 @@ class Explain implements IQueryExecutor
         $tables = [];
 
         foreach ($query->getExceptQueries() as $i => $exceptQuery) {
-            $explain = new Explain($exceptQuery);
+            $explain = new ExplainExecutor($exceptQuery);
 
             $tables[] = new ExplainRow(
                 '',
@@ -461,7 +435,7 @@ class Explain implements IQueryExecutor
         $tables = [];
 
         foreach ($query->getIntersectQueries() as $i => $intersectQuery) {
-            $explain = new Explain($intersectQuery);
+            $explain = new ExplainExecutor($intersectQuery);
 
             $tables[] = new ExplainRow(
                 '',

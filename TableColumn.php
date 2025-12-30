@@ -15,69 +15,41 @@ class TableColumn
     /**
      * @var array
      */
-    const COLUMN_TYPES = [self::INTEGER, self::STRING, self::FLOAT, self::BOOL];
+    private const array COLUMN_TYPES = [self::INTEGER, self::STRING, self::FLOAT, self::BOOL];
 
     /**
      * @var string
      */
-    const INTEGER = 'int';
+    public const string INTEGER = 'int';
 
     /**
      * @var string
      */
-    const STRING = 'string';
+    public const string STRING = 'string';
 
     /**
      * @var string
      */
-    const FLOAT = 'float';
+    public const string FLOAT = 'float';
 
     /**
      * @var string
      */
-    const BOOL = 'bool';
+    public const string BOOL = 'bool';
 
-    /**
-     * @var int
-     */
-    const COLUMN_NAME = 0;
+    private const int COLUMN_NAME = 0;
 
-    /**
-     * @var int
-     */
-    const COLUMN_TYPE = 1;
+    private const int COLUMN_TYPE = 1;
 
-    /**
-     * @var string $name
-     */
-    private $name;
+    private string $name;
 
-    /**
-     * @var string $type
-     */
-    private $type;
+    private string $type;
 
-    /**
-     * @var bool $unique
-     */
-    private $unique;
+    private bool $unique;
 
-    /**
-     * @var Table|null $table
-     */
-    private $table;
+    private ?Table $table;
 
-    /**
-     * TableColumn constructor.
-     *
-     * @param string $name
-     * @param string $type
-     * @param bool $unique
-     * @param Table|null $table
-     *
-     * @throws Exception
-     */
-    public function __construct($name, $type, $unique, Table $table = null)
+    public function __construct(string $name, string $type, bool $unique, ?Table $table = null)
     {
         if (!in_array($type, self::COLUMN_TYPES, true)) {
             throw new Exception(sprintf('Unknown type "%s" of column "%s".', $type, $name));
@@ -89,44 +61,22 @@ class TableColumn
         $this->table = $table;
     }
 
-    /**
-     * TableColumn destructor.
-     */
-    public function __destruct()
-    {
-        $this->name = null;
-        $this->type = null;
-        $this->table = null;
-    }
-
-    /**
-     * @return string
-     */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
 
-    /**
-     * @return string
-     */
-    public function getType()
+    public function getType(): string
     {
         return $this->type;
     }
 
-    /**
-     * @return Table|null
-     */
-    public function getTable()
+    public function getTable(): ?Table
     {
         return $this->table;
     }
 
-    /**
-     * @return bool
-     */
-    public function getUnique()
+    public function getUnique(): bool
     {
         return $this->unique;
     }

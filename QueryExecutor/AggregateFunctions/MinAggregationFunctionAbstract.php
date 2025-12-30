@@ -2,18 +2,9 @@
 
 namespace pql\QueryExecutor\AggregateFunctions;
 
-/**
- * Class Max
- *
- * @author  rendix2 <rendix2@seznam.cz>
- * @package pql\QueryExecutor\AggregateFunctions
- */
-class Max extends AggregateFunction
+class MinAggregationFunctionAbstract extends AbstractAggregateFunction
 {
-    /**
-     * @inheritDoc
-     */
-    public function run($column, $functionColumnName)
+    public function run(string $column, string $functionColumnName): void
     {
         $functionGroupByResult  = [];
 
@@ -21,11 +12,11 @@ class Max extends AggregateFunction
             foreach ($groupByRows as $groupByValue => $groupedRows) {
                 foreach ($groupedRows as $groupedRow) {
                     if (!isset($functionGroupByResult[$groupByColumn][$groupByValue])) {
-                        $functionGroupByResult[$groupByColumn][$groupByValue] = -INF;
+                        $functionGroupByResult[$groupByColumn][$groupByValue] = INF;
                     }
 
-                    if ($groupedRow[$column] > $functionGroupByResult[$groupByColumn][$groupByValue]) {
-                        $functionGroupByResult[$groupByColumn][$groupByValue] = $groupedRow[$column];
+                    if ($groupedRow[$column] < $functionGroupByResult[$groupByColumn][$groupByValue]) {
+                        $functionGroupByResult[$groupByColumn][$groupByValue]= $groupedRow[$column];
                     }
                 }
             }

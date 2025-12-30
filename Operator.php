@@ -10,10 +10,7 @@ namespace pql;
  */
 class Operator
 {
-    /**
-     * @var array
-     */
-    const ENABLED_OPERATORS = [
+    private const array ENABLED_OPERATORS = [
         self::EQUAL,
         self::LESS_THAN,
         self::GREATER_THAN,
@@ -31,88 +28,38 @@ class Operator
         self::EXISTS
     ];
 
-    /**
-     * @var string
-     */
-    const EQUAL = '=';
+    public const string EQUAL = '=';
 
-    /**
-     * @var string
-     */
-    const LESS_THAN = '<';
+    public const string LESS_THAN = '<';
 
-    /**
-     * @var string
-     */
-    const GREATER_THAN = '>';
+    public const string GREATER_THAN = '>';
 
-    /**
-     * @var string
-     */
-    const LESS_EQUAL_THAN = '<=';
+    public const string LESS_EQUAL_THAN = '<=';
 
-    /**
-     * @var string
-     */
-    const GREATER_EQUAL_THAN = '>=';
+    public const string GREATER_EQUAL_THAN = '>=';
 
-    /**
-     * @var string
-     */
-    const NON_EQUAL = '!=';
+    public const string NON_EQUAL = '!=';
 
-    /**
-     * @var string
-     */
-    const LESS_AND_GREATER_THAN = '<>';
+    public const string LESS_AND_GREATER_THAN = '<>';
 
-    /**
-     * @var string
-     */
-    const IN = 'in';
+    public const string IN = 'in';
 
-    /**
-     * @var string
-     */
-    const NOT_IN = 'not_in';
+    public const string NOT_IN = 'not_in';
 
-    /**
-     * @var string
-     */
-    const IS_NULL = 'is_null';
+    public const string IS_NULL = 'is_null';
 
-    /**
-     * @var string
-     */
-    const IS_NOT_NULL = 'is_not_null';
+    public const string IS_NOT_NULL = 'is_not_null';
 
-    /**
-     * @var string
-     */
-    const BETWEEN = 'between';
+    public const string BETWEEN = 'between';
 
-    /**
-     * @var string
-     */
-    const BETWEEN_INCLUSIVE = 'between_in';
+    const string BETWEEN_INCLUSIVE = 'between_in';
 
-    /**
-     * @var string
-     */
-    const REGULAR_EXPRESSION = 'regexp';
+    const string REGULAR_EXPRESSION = 'regexp';
 
-    /**
-     * @var string
-     */
-    const EXISTS = 'exists';
+    const string EXISTS = 'exists';
 
-    /**
-     * @param string $operator
-     *
-     * @return bool
-     */
-    public static function isOperatorValid($operator)
+    public static function isOperatorValid(string $operator): bool
     {
-        return in_array($operator, self::ENABLED_OPERATORS, true);
+        return in_array($operator, self::ENABLED_OPERATORS,true);
     }
 }

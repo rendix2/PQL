@@ -16,7 +16,7 @@ use pql\QueryRow\TableRow;
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryExecute
  */
-trait Limit
+trait LimitExecutor
 {
     /**
      * @var int $limit

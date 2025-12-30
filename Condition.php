@@ -14,25 +14,13 @@ use pql\QueryBuilder\Select\ISelectExpression;
  */
 class Condition
 {
-    /**
-     * @var string
-     */
-    const IN_SEPARATOR = ', ';
+    const string IN_SEPARATOR = ', ';
 
-    /**
-     * @var ISelectExpression $column
-     */
-    private $column;
+    private ISelectExpression $column;
 
-    /**
-     * @var IOperator $operator
-     */
-    private $operator;
+    private IOperator $operator;
 
-    /**
-     * @var ISelectExpression $value
-     */
-    private $value;
+    private ISelectExpression $value;
 
     /**
      * Condition constructor.
@@ -51,16 +39,6 @@ class Condition
     }
 
     /**
-     * Condition destructor.
-     */
-    public function __destruct()
-    {
-        $this->column   = null;
-        $this->operator = null;
-        $this->value    = null;
-    }
-
-    /**
      * @return string
      */
     public function __toString()
@@ -71,7 +49,7 @@ class Condition
     /**
      * @return ISelectExpression
      */
-    public function getColumn()
+    public function getColumn(): ISelectExpression
     {
         return $this->column;
     }
@@ -79,7 +57,7 @@ class Condition
     /**
      * @return IOperator
      */
-    public function getOperator()
+    public function getOperator(): IOperator
     {
         return $this->operator;
     }
@@ -87,7 +65,7 @@ class Condition
     /**
      * @return ISelectExpression
      */
-    public function getValue()
+    public function getValue(): ISelectExpression
     {
         return $this->value;
     }

@@ -10,34 +10,16 @@ namespace pql\QueryBuilder;
 
 use Exception;
 
-/**
- * Trait Offset
- *
- * @author  rendix2 <rendix2@seznam.cz>
- * @package pql\QueryBuilder
- */
 trait Offset
 {
-    /**
-     * @var int $offset
-     */
-    private $offset;
+    private int $offset;
 
-    /**
-     * @return int
-     */
-    public function getOffset()
+    public function getOffset(): int
     {
         return $this->offset;
     }
 
-    /**
-     * @param int $offset
-     *
-     * @return Offset|SelectQuery
-     * @throws Exception
-     */
-    public function offset($offset)
+    public function offset(int $offset): Offset|SelectQuery
     {
         if (!is_numeric($offset)) {
             throw new Exception('Offset is not a number.');

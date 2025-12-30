@@ -8,22 +8,9 @@
 
 namespace pql\QueryExecutor\Joins;
 
-/**
- * Class OuterJoinHelper
- *
- * @author  rendix2 <rendix2@seznam.cz>
- * @package pql\QueryExecute\Joins
- */
 class OuterJoinHelper
 {
-    /**
-     * used in left and right joins
-     *
-     * @param array $table
-     *
-     * @return array
-     */
-    public static function createNullColumns(array $table)
+    public static function createNullColumns(array $table): array
     {
         $joinedColumnsTmp = array_keys($table[0]);
         $joinedColumns = [];
@@ -35,15 +22,7 @@ class OuterJoinHelper
         return $joinedColumns;
     }
 
-    /**
-     * used in fullJoin
-     *
-     * @param array $tableA
-     * @param array $tableB
-     *
-     * @return array
-     */
-    public static function removeDuplicities(array $tableA, array $tableB)
+    public static function removeDuplicities(array $tableA, array $tableB): array
     {
         $fullJoinResult = [];
 

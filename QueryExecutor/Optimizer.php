@@ -17,69 +17,28 @@ use pql\Table;
  */
 class Optimizer
 {
-    /**
-     * @var string
-     */
-    const MERGE_JOIN = 'merge';
+    public const string MERGE_JOIN = 'merge';
 
-    /**
-     * @var string
-     */
-    const HASH_JOIN = 'hash';
+    public const string HASH_JOIN = 'hash';
 
-    /**
-     * @var string
-     */
-    const NESTED_LOOP = 'nested';
+    public const string NESTED_LOOP = 'nested';
 
-    /**
-     * @var string
-     */
-    const TABLE_B_FIRST = 'b_first_a_bigger';
+    public const string TABLE_B_FIRST = 'b_first_a_bigger';
 
-    /**
-     * @var string
-     */
-    const TABLE_A_FIRST = 'a_first_b_bigger';
+    public const string TABLE_A_FIRST = 'a_first_b_bigger';
 
-    /**
-     * @var string
-     */
-    const CONDITION_VALUE_VALUE = 'value';
+    public const string CONDITION_VALUE_VALUE = 'value';
 
-    /**
-     * @var string
-     */
-    const CONDITION_COLUMN_VALUE = 'column';
+    public const string CONDITION_COLUMN_VALUE = 'column';
 
-    /**
-     * @var SelectBuilder $query
-     */
-    private $query;
+    private SelectBuilder $query;
 
-    /**
-     * @var bool $useOrderBy
-     */
-    private $useOrderBy;
+    private bool $useOrderBy;
 
-    /**
-     * Optimizer constructor.
-     *
-     * @param SelectBuilder $query
-     */
     public function __construct(SelectBuilder $query)
     {
         $this->query      = $query;
         $this->useOrderBy = $query->hasOrderBy();
-    }
-
-    /**
-     * Optimizer Constructor
-     */
-    public function __destruct()
-    {
-        $this->query      = null;
-        $this->useOrderBy = null;
     }
 
     /**
@@ -88,17 +47,17 @@ class Optimizer
      *
      * @return string
      */
-    public function sayJoinAlgorithm(JoinedTable $joinedTable, Condition $condition)
+    public function sayJoinAlgorithm(JoinedTable $joinedTable, Condition $condition): string
     {
-        $equalOperator = $condition->getOperator() === Operator::EQUAL;
+        $equalOperator = $condition->getOperator()->evaluate() === Operator::EQUAL;
 
         if (count($this->query->getOrderByColumns()) === 1) {
             $orderBy = $this->query->getOrderByColumns()[0];
 
             if ($equalOperator &&
                 (
-                    $condition->getColumn() === $orderBy->getColumn() ||
-                    $condition->getValue() === $orderBy->getColumn()
+                    $condition->getColumn()->evaluate() === $orderBy->getColumn() ||
+                    $condition->getValue()->evaluate() === $orderBy->getColumn()
                 )
             ) {
                 $this->useOrderBy = false;
@@ -120,36 +79,20 @@ class Optimizer
         }
     }
 
-    /**
-     * @param array $tableA
-     * @param array $tableB
-     *
-     * @return string
-     */
-    public function sayOrderOfInnerJoinedTables(array $tableA, array $tableB)
+    public function sayOrderOfInnerJoinedTables(array $tableA, array $tableB): string
     {
         return count($tableA) > count($tableB) ? self::TABLE_B_FIRST : self::TABLE_A_FIRST;
     }
 
-    /**
-     * @return bool
-     */
-    public function sayIfOrderByIsNeed()
+    public function sayIfOrderByIsNeed(): bool
     {
         return $this->useOrderBy;
     }
 
-    /**
-     * @param Condition $condition
-     * @param Table     $fromTable
-     * @param Table     $joinedTable
-     *
-     * @return bool|string
-     */
-    public function sayIfConditionContainsValue(Condition $condition, Table $fromTable, Table $joinedTable)
+    public function sayIfConditionContainsValue(Condition $condition, Table $fromTable, Table $joinedTable): string|false
     {
-        $column = $condition->getColumn();
-        $value  = $condition->getValue();
+        $column = $condition->getColumn()->evaluate();
+        $value  = $condition->getValue()->evaluate();
 
         if (!$fromTable->columnExists($column) && !$joinedTable->columnExists($column)) {
             return self::CONDITION_COLUMN_VALUE;
@@ -163,7 +106,7 @@ class Optimizer
     /**
      * @return bool
      */
-    public function sayIfCanOptimizeWhere()
+    public function sayIfCanOptimizeWhere(): bool
     {
         return count($this->query->getWhereConditions()) === 1;
     }

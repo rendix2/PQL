@@ -3,7 +3,7 @@
 namespace pql\QueryBuilder\Operator;
 
 use pql\QueryBuilder\Select\ISelectExpression;
-use pql\QueryBuilder\Select\Query;
+use pql\QueryBuilder\Select\QueryExpression;
 
 /**
  * Class Exists
@@ -13,18 +13,12 @@ use pql\QueryBuilder\Select\Query;
  */
 class Exists implements IOperator
 {
-    /**
-     * @inheritDoc
-     */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->evaluate();
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function evaluate()
+    public function evaluate(): string
     {
         return 'exists';
     }
@@ -32,9 +26,9 @@ class Exists implements IOperator
     /**
      * @inheritDoc
      */
-    public function checkConditions(ISelectExpression $column, ISelectExpression $value)
+    public function checkConditions(ISelectExpression $column, ISelectExpression $value): bool
     {
-        if ($column instanceof Query || $value instanceof Query) {
+        if ($column instanceof QueryExpression || $value instanceof QueryExpression) {
             return true;
         }
 

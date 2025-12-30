@@ -61,23 +61,25 @@ class Database
      */
     public function __construct($name)
     {
-        $database_dir = self::getPath($name);
+        $databaseDir = self::getPath($name);
 
-        if (!is_dir($database_dir)) {
-            throw new Exception(sprintf('Database "%s" does not exist.', $name));
+        if (!is_dir($databaseDir)) {
+            throw new Exception(sprintf('Database "%s" dir "%s"  does not exist.', $databaseDir, $name));
         }
 
-        $this->dir = $database_dir;
+        $this->dir = $databaseDir;
 
         $size = 0;
 
         $files = Finder::findFiles('*')->from($this->dir);
+        $count = 0;
 
         /**
          * @var $file SplFileInfo
          */
         foreach ($files as $file) {
             $size += $file->getSize();
+            $count++;
         }
 
         $this->size = $size;
@@ -85,68 +87,32 @@ class Database
 
         $this->tables = $this->findTables();
 
-        $this->tablesCount = $files->count();
+        $this->tablesCount = $count;
     }
 
-    /**
-     * Database destructor.
-     */
-    public function __destruct()
-    {
-        foreach ($this->tables as &$table) {
-            $table = null;
-        }
-
-        unset($table);
-
-        $this->tables      = null;
-        $this->name        = null;
-        $this->size        = null;
-        $this->tablesCount = null;
-        $this->dir         = null;
-    }
-
-    /**
-     * @param string $name
-     *
-     * @return string
-     *
-     */
-    public static function getPath($name)
+    public static function getPath(string $name): string
     {
         $sep = DIRECTORY_SEPARATOR;
 
         return __DIR__ . $sep . self::DATA_DIR . $sep.  $name . $sep;
     }
 
-    /**
-     * @return string
-     */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
 
-    /**
-     * @return string
-     */
-    public function getDir()
+    public function getDir(): string
     {
         return $this->dir;
     }
 
-    /**
-     * @return Table[]
-     */
-    public function getTables()
+    public function getTables(): array
     {
         return $this->tables;
     }
 
-    /**
-     * @return Table[]
-     */
-    public function findTables()
+    public function findTables(): array
     {
         $tables = [];
 
@@ -165,20 +131,12 @@ class Database
         return $tables;
     }
 
-    /**
-     * @param string $tableName
-     *
-     * @return Table
-     */
-    public function getTable($tableName)
+    public function getTable(string $tableName): Table
     {
         return new Table($this, $tableName);
     }
 
-    /**
-     * @return int
-     */
-    public function calculateDatabaseSize()
+    public function calculateDatabaseSize(): int
     {
         $size = 0;
 
@@ -194,21 +152,14 @@ class Database
         return $size;
     }
 
-    /**
-     * @param int $size
-     */
-    public function setSize($size)
+    public function setSize(int $size): Database
     {
         $this->size = $size;
+
+        return $this;
     }
 
-    /**
-     * @param string $name
-     *
-     * @return Database
-     * @throws Exception
-     */
-    public static function create($name)
+    public static function create(string $name): Database
     {
         $path = self::getPath($name);
 
@@ -220,18 +171,12 @@ class Database
 
                 return new Database($name);
             } catch (IOException $e) {
-                throw new Exception('Database was not created.');
+                throw new Exception(message: 'Database was not created.', previous: $e);
             }
         }
     }
 
-    /**
-     * @param string $name
-     *
-     * @return Database
-     * @throws Exception
-     */
-    public function delete($name)
+    public function delete(string $name): Database
     {
         $path = self::getPath($name);
         
@@ -248,13 +193,7 @@ class Database
         }
     }
 
-    /**
-     * @param string $newName
-     *
-     * @return Database
-     * @throws Exception
-     */
-    public function rename($newName)
+    public function rename(string $newName): Database
     {
         if (!file_exists(self::getPath($this->name))) {
             throw new Exception('Old database does not exists.');
@@ -269,12 +208,7 @@ class Database
         return $this;
     }
 
-    /**
-     * @param Table $table
-     *
-     * @return bool
-     */
-    public function tableExists(Table $table)
+    public function tableExists(Table $table): bool
     {
         foreach ($this->tables as $tableObject) {
             if ($table->getName() === $tableObject->getName()) {

@@ -13,40 +13,18 @@ use pql\QueryBuilder\Query;
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryExecute
  */
-class InsertSelect implements IQueryExecutor
+class InsertSelectExecutor implements IQueryExecutor
 {
-    /**
-     * @var InsertSelectBuilder $query
-     */
-    private $query;
+    private InsertSelectBuilder $query;
 
-    /**
-     * InsertSelect constructor.
-     *
-     * @param InsertSelectBuilder $query
-     */
     public function __construct(InsertSelectBuilder $query)
     {
         $this->query = $query;
     }
 
-    /**
-     * InsertSelect destructor.
-     *
-     *
-     */
-    public function __destruct()
-    {
-        $this->query = null;
-    }
-
-    /**
-     * @inheritDoc
-     * @throws Exception
-     */
     public function run()
     {
-        $selectQuery = new SelectQuery($this->query->getData());
+        $selectQuery = new SelectExecutor($this->query->getData());
         $selectQuery->run();
 
         $selectedColumns = [];

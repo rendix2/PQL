@@ -16,7 +16,7 @@ class In implements IOperator
     /**
      * @inheritDoc
      */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->evaluate();
     }
@@ -24,7 +24,7 @@ class In implements IOperator
     /**
      * @inheritDoc
      */
-    public function evaluate()
+    public function evaluate(): string
     {
         return 'in';
     }
@@ -32,7 +32,7 @@ class In implements IOperator
     /**
      * @inheritDoc
      */
-    public function checkConditions(ISelectExpression $column, ISelectExpression $value)
+    public function checkConditions(ISelectExpression $column, ISelectExpression $value): bool
     {
        if ($column instanceof ArrayValue || $value instanceof ArrayValue) {
            return true;

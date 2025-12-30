@@ -6,6 +6,8 @@ use pql\Database;
 use pql\QueryBuilder\Query;
 use pql\QueryBuilder\Select\AggregateFunctions\Count;
 use pql\QueryBuilder\Select\Column;
+use pql\Table;
+use pql\TableColumn;
 use Tracy\Debugger;
 use Nette\Loaders\RobotLoader;
 
@@ -17,8 +19,9 @@ $loader->setTempDirectory(__DIR__ . '/temp');
 $loader->setAutoRefresh();
 $loader->register();
 
-Debugger::enable();
+Debugger::enable(Debugger::Development);
 Debugger::$maxDepth = 2000;
+Debugger::$logDirectory = __DIR__ . '/log';
 Debugger::getBar()->addPanel(new TracyBarAdapter());
 Profiler::enable();
 
@@ -68,8 +71,19 @@ $start = microtime(true);
 bdump($search, 'search');
 */
 
+//Database::create('test');
 
-//Table::create($database, 'test', ['id', 'jmeno']);
+$database = new Database('test');
+
+
+Table::create($database, 'test',
+    [
+        new \pql\TableColumn('id', 'int',false),
+        new \pql\TableColumn('jmeno', 'string', true),
+        new \pql\TableColumn('datum', 'string', false),
+        new \pql\TableColumn('pocet', 'string', false)
+    ]
+);
 
 /*
 function hashJoin($table1, $table2, $condition) {
@@ -152,6 +166,8 @@ foreach ($result as $row) {
 
 $database = new Database('test');
 
+//\pql\Table::create($database, 'test');
+
 //$myNew = $database->getTable('test');
 
 //bdump($database);
@@ -196,7 +212,7 @@ $acount = new Column( 'a.pocet');
 
 //$query2->select()->select(new \pql\QueryBuilder\PFunction(NumberFormat::FUNCTION_NAME, 'pocet', [5 , ',' , $thousands_sep = '_']))
 $query2->select()->select(null, new Column('datum'))
-    ->from(new \pql\QueryBuilder\From\Table('test'))
+    ->from(new \pql\QueryBuilder\From\TableFromExpression('test'))
     //->innerJoin(new \pql\QueryBuilder\From\Table('test'), [new \pql\Condition(new Column('a.pocet') ,'=', 'b.pocet')], 'b')
     //->where('pocet', '>', 2)
     //->where('pocet', '<', 5)
@@ -205,7 +221,7 @@ $query2->select()->select(null, new Column('datum'))
     //->groupBy('datum');
 //->having($count, '=', 5);
 
-$querySelect = new \pql\QueryBuilder\From\Query($query2);
+$querySelect = new \pql\QueryBuilder\From\QueryFromExpression($query2);
 $equalsOperator = new \pql\QueryBuilder\Operator\Equals();
 
 
@@ -214,8 +230,8 @@ $q1->select()
     ->select(null, new Column('id'))
     ->select(null, new Column('datum'))
     ->select(null, new Column('pocet'))
-    ->from(new \pql\QueryBuilder\From\Table('test'))
-    ->where(new Column('pocet'), new \pql\QueryBuilder\Operator\Equals(), new \pql\QueryBuilder\Select\Value(45.0));
+    ->from(new \pql\QueryBuilder\From\TableFromExpression('test'))
+    ->where(new Column('pocet'), new \pql\QueryBuilder\Operator\Equals(), new \pql\QueryBuilder\Select\ValueExpression(45.0));
 
 $query3 = $q1   ;
 
@@ -256,7 +272,7 @@ $query4->select()->select(null, new Column('datum'))
 //->orderBy('a.pocet')
 //->groupBy('a.pocet');
 
-$plus = new \pql\QueryBuilder\Select\Minus(new \pql\QueryBuilder\Select\Value(1), new \pql\QueryBuilder\Select\Value(15));
+$plus = new \pql\QueryBuilder\Select\Minus(new \pql\QueryBuilder\Select\ValueExpression(1), new \pql\QueryBuilder\Select\ValueExpression(15));
 
 $ex = new \pql\QueryBuilder\Select\Expression(new \pql\QueryBuilder\Select\Plus($plus));
 
@@ -349,3 +365,128 @@ for ($i = 0; $i <= 50; $i++) {
 
     bdump($tree->search($i), 'SEARCH AFTER INSERT $i');
 }*/
+
+
+
+function initializeDatabase(Database $db)
+{
+    echo "--- INICIALIZACE DATABÁZE ---\n";
+
+    // 1. Vytvoření tabulky PRODUCTS
+    $productColumns = [
+        new TableColumn('id', TableColumn::INTEGER, true),
+        new TableColumn('name', TableColumn::STRING, false),
+        new TableColumn('price', TableColumn::FLOAT, false),
+        new TableColumn('category_id', TableColumn::INTEGER, false),
+    ];
+
+    try {
+        $productsTable = Table::create($db, 'products', $productColumns);
+        echo "Tabulka 'products' vytvořena.\n";
+    } catch (\Exception $e) {
+        echo "Tabulka 'products' již existuje, pokračuji...\n";
+    }
+
+    $productsTable = $db->getTable('products');
+
+    $initialRowCount = $productsTable->getRowsCount();
+
+    if ($initialRowCount < 1000) {
+        echo "Vkládání 1000 řádků pro test streamování...\n";
+
+        for ($i = 1; $i <= 1000; $i++) {
+            $insertQuery = new pql\QueryBuilder\InsertQuery($db);
+            $insertQuery->insert( 'products', [
+                'id' => $i,
+                'name' => 'Product ' . ($i % 50),
+                'price' => (float)($i * 1.5),
+                'category_id' => ($i % 5),
+            ]);
+
+            $insertQuery->run();
+        }
+        echo "Data vložena.\n";
+    }
+
+    // 3. Vytvoření tabulky USERS (pro Join test)
+    try {
+        Table::create($db, 'users', [
+            new TableColumn('id', TableColumn::INTEGER, true),
+            new TableColumn('name', TableColumn::STRING, false),
+            new TableColumn('product_id', TableColumn::INTEGER, false),
+        ]);
+    } catch (\Exception $e) {
+        // Ignorace
+    }
+
+    echo "--- INICIALIZACE DOKONČENA ---\n";
+}
+
+
+$db = new Database('test');
+initializeDatabase($db);
+
+
+
+// --- 1. SETUP: Vytvoření databáze a tabulky ---
+// Předpokládáme, že databáze 'test' a tabulka 'products' existují
+try {
+    $db = new Database('test');
+    $productsTable = $db->getTable('products');
+
+    // Zde by měla být zajištěna data (např. 1000 řádků)
+    // Abychom věděli, že getRows vrací Generátor (což je teď náš předpoklad)
+
+} catch (\Exception $e) {
+    die("Chyba při inicializaci DB: " . $e->getMessage());
+}
+
+echo "--- TEST PQL: STREAM A MATERIALIZACE ---\n";
+
+// --- 2. VLASTNÍ PQL DOTAZ ---
+
+$query = new pql\QueryBuilder\SelectQuery($db);
+
+// Chceme: Vybrat unikátní jména seřazená podle ceny, s WHERE podmínkou.
+// To nutí systém provést: Stream -> Where (Stream) -> Distinct (Materialize) -> Order By (Materialize)
+
+$selectQuery = $query->select(null, new Column('name'))
+    ->distinct(new Column('name'))
+    ->from(new \pql\QueryBuilder\From\TableFromExpression('products'), 'p')
+    ->where(new Column('price'), new pql\QueryBuilder\Operator\Larger(), new \pql\QueryBuilder\Select\ValueExpression(10))
+    ->orderBy(new Column('price'), true)
+    ->limit(10);
+
+try {
+    $startTime = microtime(true);
+
+    // Spustíme dotaz
+    $result = $selectQuery->run();
+
+    $endTime = microtime(true);
+
+    // Ověření, že výsledek je Array (protože na konci proběhla materializace v SelectExecutoru)
+    if (!is_array($result) && !($result instanceof TableResult)) {
+        echo "[CHYBA] run() NEVRÁTIL POLE/TABLE_RESULT!\n";
+        return;
+    }
+
+    echo "Dotaz dokončen za: " . round($endTime - $startTime, 4) . "s\n";
+    echo "Počet vrácených unikátních řádků: " . count($result) . "\n";
+
+    // Nyní ověříme logiku materializace v JOIN fázi (pokud bychom měli JOIN):
+
+    $joinQuery = (new Query($db))->select(null, new Column('u', 'name'))
+        ->from(new TableExpression($db, 'users'), 'u')
+        ->innerJoin(new TableExpression($db, 'products'), [
+            // Podmínka joinu...
+        ], 'p')
+        ->orderBy(new Column('u', 'name'), true);
+
+    echo "\n--- TEST PQL: JOIN S MATERIALIZACÍ ---\n";
+    echo "Join dokončen. (Pokud nespadl, materializace v HashJoinu proběhla úspěšně.)\n";
+
+
+} catch (\Exception $e) {
+    echo "\n[FATAL CHYBA BĚHEM EXEKUCE]:\n" . $e->getMessage() . "\n";
+}

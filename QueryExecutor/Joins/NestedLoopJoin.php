@@ -15,10 +15,7 @@ use pql\QueryExecutor\ConditionHelper;
  */
 class NestedLoopJoin implements IJoin
 {
-    /**
-     * @inheritDoc
-     */
-    public static function leftJoin(array $tableA, array $tableB, Condition $condition)
+    public static function leftJoin(array $tableA, array $tableB, Condition $condition): array
     {
         $leftJoinResult = [];
 
@@ -43,18 +40,12 @@ class NestedLoopJoin implements IJoin
         return $leftJoinResult;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public static function rightJoin(array $tableA, array $tableB, Condition $condition)
+    public static function rightJoin(array $tableA, array $tableB, Condition $condition): array
     {
         return self::leftJoin($tableB, $tableA, $condition);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public static function innerJoin(array $tableA, array $tableB, Condition $condition)
+    public static function innerJoin(array $tableA, array $tableB, Condition $condition): array
     {
         $innerJoinResult = [];
 
@@ -69,13 +60,7 @@ class NestedLoopJoin implements IJoin
         return $innerJoinResult;
     }
 
-    /**
-     * @param array $tableA
-     * @param array $tableB
-     *
-     * @return array
-     */
-    public static function crossJoin(array $tableA, array $tableB)
+    public static function crossJoin(array $tableA, array $tableB): array
     {
         $crossJoinResult = [];
 
@@ -88,14 +73,7 @@ class NestedLoopJoin implements IJoin
         return $crossJoinResult;
     }
 
-    /**
-     * @param array $tableA
-     * @param array $tableB
-     * @param Condition $condition
-     *
-     * @return array
-     */
-    public static function fullJoin(array $tableA, array $tableB, Condition $condition)
+    public static function fullJoin(array $tableA, array $tableB, Condition $condition): array
     {
         $left  = self::leftJoin($tableA, $tableB, $condition);
         $right = self::rightJoin($tableA, $tableB, $condition);

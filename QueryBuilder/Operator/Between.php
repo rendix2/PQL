@@ -13,26 +13,17 @@ use pql\QueryBuilder\Select\ISelectExpression;
  */
 class Between implements IOperator
 {
-    /**
-     * @inheritDoc
-     */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->evaluate();
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function evaluate()
+    public function evaluate(): string
     {
         return 'between';
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function checkConditions(ISelectExpression $column, ISelectExpression $value)
+    public function checkConditions(ISelectExpression $column, ISelectExpression $value): bool
     {
         if ($column instanceof ArrayValue && count($column->getValues()) === 2) {
             return true;

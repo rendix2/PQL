@@ -5,35 +5,21 @@ namespace pql\QueryBuilder\From;
 use pql\QueryBuilder\Query as QueryBuilder;
 use pql\QueryPrinter\QueryPrinter;
 
-class Query implements IFromExpression
+class QueryFromExpression implements IFromExpression
 {
-    /**
-     * @var QueryBuilder $query
-     */
-    private $query;
+    private QueryBuilder $query;
 
-    /**
-     * Query constructor.
-     *
-     * @param QueryBuilder $query
-     */
     public function __construct(QueryBuilder $query)
     {
         $this->query = $query;
     }
 
-    /**
-     * @return QueryBuilder
-     */
-    public function getQuery()
+    public function getQuery(): QueryBuilder
     {
         return $this->query;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function evaluate()
+    public function evaluate(): string
     {
         $printer = new QueryPrinter($this->query);
 

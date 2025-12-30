@@ -12,43 +12,21 @@ use SplFileObject;
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryExecute
  */
-class Insert implements IQueryExecutor
+class InsertExecutor implements IQueryExecutor
 {
-    /**
-     * @var InsertBuilder $query
-     */
-    private $query;
+    private InsertBuilder $query;
 
-    /**
-     * Insert constructor.
-     *
-     * @param InsertBuilder $query
-     */
     public function __construct(InsertBuilder $query)
     {
         $this->query = $query;
     }
 
-    /**
-     * Insert destructor.
-     */
-    public function __destruct()
-    {
-        $this->query = null;
-    }
-
-    /**
-     *
-     */
     public function run()
     {
         return $this->insert();
     }
 
-    /**
-     *
-     */
-    private function insert()
+    private function insert(): int|false
     {
         $row = [];
         $indexData = [];

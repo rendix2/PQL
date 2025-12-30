@@ -11,6 +11,7 @@ namespace pql\QueryExecutor;
 use pql\Alias;
 use pql\Operator;
 use pql\QueryBuilder\DeleteSelectQuery as DeleteSelectBuilder;
+use pql\QueryBuilder\Operator\Equals;
 use pql\QueryBuilder\Query;
 
 /**
@@ -19,37 +20,17 @@ use pql\QueryBuilder\Query;
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryExecute
  */
-class DeleteSelect implements IQueryExecutor
+class DeleteSelectExecutor implements IQueryExecutor
 {
-    /**
-     * @var DeleteSelectBuilder $query
-     */
-    private $query;
+    private DeleteSelectBuilder $query;
 
-    /**
-     * DeleteSelect constructor.
-     *
-     * @param DeleteSelectBuilder $query
-     */
     public function __construct(DeleteSelectBuilder $query)
     {
         $this->query = $query;
     }
-
-    /**
-     * DeleteSelect destructor.
-     */
-    public function __destruct()
-    {
-        $this->query = null;
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function run()
     {
-        $selectQuery = new SelectQuery($this->query->getData());
+        $selectQuery = new SelectExecutor($this->query->getData());
         $selectQuery->run();
 
         $selectedColumns = [];
@@ -74,7 +55,7 @@ class DeleteSelect implements IQueryExecutor
             $deleteQuery = $deleteQuery->delete()->delete($this->query->getTable()->getName());
 
             foreach ($selectedColumns as $selectedColumn) {
-                $deleteQuery = $deleteQuery->where($selectedColumn, Operator::EQUAL, $row[$selectedColumn]);
+                $deleteQuery = $deleteQuery->where($selectedColumn, new Equals(), $row[$selectedColumn]);
             }
 
             $results[] = $deleteQuery->run();

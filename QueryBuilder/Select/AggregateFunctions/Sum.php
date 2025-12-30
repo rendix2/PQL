@@ -12,12 +12,7 @@ use pql\QueryBuilder\Select\AggregateFunction;
  */
 class Sum extends AggregateFunction
 {
-    /**
-     * Sum constructor.
-     *
-     * @param string $column
-     */
-    public function __construct($column)
+    public function __construct(string $column)
     {
         parent::__construct(self::SUM, $column);
     }

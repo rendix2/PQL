@@ -10,10 +10,5 @@ namespace pql\QueryExecutor\Functions;
  */
 interface IFunction
 {
-    /**
-     * @param string $column
-     * @param mixed ...$params
-     * @return mixed
-     */
-    public function run($column, ...$params);
+    public function run(string $column, mixed ...$params): mixed;
 }

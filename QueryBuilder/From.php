@@ -21,19 +21,9 @@ use pql\Table;
  */
 trait From
 {
-    /**
-     * @var Table $table
-     */
-    private $table;
+    private ?Table $table;
 
-    /**
-     * @param IFromExpression $table
-     * @param string|null     $alias
-     *
-     * @return From|SelectQuery
-     * @throws Exception
-     */
-    public function from(IFromExpression $table, $alias = null)
+    public function from(IFromExpression $table, ?string $alias = null): SelectQuery
     {
         $this->table = $this->checkTable($table);
 

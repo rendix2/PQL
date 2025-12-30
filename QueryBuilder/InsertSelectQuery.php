@@ -9,91 +9,43 @@
 namespace pql\QueryBuilder;
 
 use pql\Database;
-use pql\QueryExecutor\InsertSelect as InsertSelectExecutor;
+use pql\QueryExecutor\InsertSelectExecutor as InsertSelectExecutor;
 use pql\QueryResult\IResult;
 use pql\QueryResult\TableResult;
 use pql\Table;
 
-/**
- * Class InsertSelectQuery
- *
- * @author  rendix2 <rendix2@seznam.cz>
- * @package pql\QueryBuilder
- */
 class InsertSelectQuery implements IQueryBuilder
 {
-    /**
-     * @var Database $database
-     */
-    private $database;
 
-    /**
-     * @var Query $data
-     */
-    private $data;
+    private Database $database;
 
-    /**
-     * @var IResult $result
-     */
-    private $result;
+    private Query $data;
 
-    /**
-     * @var Table $table
-     */
-    private $table;
+    private IResult $result;
 
-    /**
-     * InsertSelect constructor.
-     *
-     * @param Database $database
-     */
+    private Table $table;
+
     public function __construct(Database $database)
     {
         $this->database = $database;
     }
 
-    /**
-     * InsertSelect destructor.
-     */
-    public function __destruct()
-    {
-        $this->database = null;
-        $this->data = null;
-        $this->result = null;
-        $this->table = null;
-    }
-
-    /**
-     * @return Query
-     */
-    public function getData()
+    public function getData(): Query
     {
         return $this->data;
     }
 
-    /**
-     * @return Table
-     */
-    public function getTable()
+    public function getTable(): Table
     {
         return $this->table;
     }
 
-    /**
-     * @return Database
-     */
-    public function getDatabase()
+    public function getDatabase(): Database
     {
         return $this->database;
     }
 
-    /**
-     * @param Query  $select
-     * @param string $table
-     *
-     * @return InsertSelectQuery
-     */
-    public function insertSelect(Query $select, $table)
+    public function insertSelect(Query $select, string$table): InsertSelectQuery
     {
         $this->table = new Table($this->database, $table);
 
@@ -102,10 +54,7 @@ class InsertSelectQuery implements IQueryBuilder
         return $this;
     }
 
-    /**
-     * @return IResult|TableResult
-     */
-    public function run()
+    public function run(): IResult|TableResult
     {
         if ($this->result instanceof TableResult) {
             return $this->result;

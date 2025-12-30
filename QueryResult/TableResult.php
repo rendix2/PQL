@@ -8,69 +8,46 @@
 
 namespace pql\QueryResult;
 
+use Generator;
 use pql\ITable;
 use pql\QueryExecutor\IQueryExecutor;
 use pql\QueryRow\TableRow;
 use pql\SelectedColumn;
 
-/**
- * Class TableResult
- *
- * @author  rendix2 <rendix2@seznam.cz>
- * @package pql\QueryResult
- */
 final class TableResult implements ITable, IResult
 {
-    /**
-     * @var float $executeTime
-     */
-    private $executeTime;
+    private float $executeTime;
     
-    /**
-     * @var float $formattedTime
-     */
-    private $formattedTime;
+    private float $formattedTime;
 
     /**
      * @var int|null $affectedRows
      */
-    private $affectedRows;
+    private ?int $affectedRows;
 
     /**
      * @var TableRow[] $rows
      */
-    private $rows;
+    private array $rows;
 
-    /**
-     * @var int $rowsCount
-     */
-    private $rowsCount;
+    private int $rowsCount;
 
     /**
      * @var SelectedColumn[] $columns
      */
-    private $columns;
+    private array $columns;
 
-    /**
-     * @var int $columnsCount
-     */
-    private $columnsCount;
+    private int $columnsCount;
 
-    /**
-     * @var IQueryExecutor $query
-     */
-    private $query;
+    private IQueryExecutor $query;
 
-    /**
-     * TableResult constructor.
-     *
-     * @param SelectedColumn[] $columns
-     * @param array            $rows
-     * @param float            $executeTime
-     * @param IQueryExecutor   $query
-     * @param int              $affectedRows
-     */
-    public function __construct(array $columns, array $rows, $executeTime, IQueryExecutor $query, $affectedRows = 0)
+    public function __construct(
+        array $columns,
+        array $rows,
+        float $executeTime,
+        IQueryExecutor $query,
+        int $affectedRows = 0
+    )
     {
         $this->rows          = $rows;
         $this->rowsCount     = count($rows);
@@ -82,25 +59,7 @@ final class TableResult implements ITable, IResult
         $this->affectedRows  = $affectedRows;
     }
 
-    /**
-     * TableResult destructor.
-     */
-    public function __destruct()
-    {
-        $this->rows          = null;
-        $this->executeTime   = null;
-        $this->formattedTime = null;
-        $this->rowsCount     = null;
-        $this->affectedRows  = null;
-        $this->columns       = null;
-        $this->columnsCount  = null;
-        $this->query         = null;
-    }
-
-    /**
-     * @return string
-     */
-    public function __toString()
+    public function __toString(): string
     {
         if ($this->rowsCount) {
             $table  = '<table border="1">';
@@ -139,41 +98,27 @@ final class TableResult implements ITable, IResult
     /**
      * @return SelectedColumn[]
      */
-    public function getColumns()
+    public function getColumns(): array
     {
         return $this->columns;
     }
 
-    /**
-     * @return int
-     */
-    public function getRowsCount()
+    public function getRowsCount(): int
     {
         return $this->rowsCount;
     }
 
-    /**
-     * @return int
-     */
-    public function getColumnsCount()
+    public function getColumnsCount(): int
     {
         return $this->columnsCount;
     }
 
-    /**
-     * @param bool $object
-     *
-     * @return array|TableRow[]
-     */
-    public function getRows($object = false)
+    public function getRows(bool $returnObject = false): Generator
     {
-        return $this->rows;
+        yield $this->rows;
     }
 
-    /**
-     * @return IQueryExecutor
-     */
-    public function getQuery()
+    public function getQuery() : IQueryExecutor
     {
         return $this->query;
     }

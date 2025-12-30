@@ -15,7 +15,7 @@ class NotEquals implements IOperator
     /**
      * @inheritDoc
      */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->evaluate();
     }
@@ -23,7 +23,7 @@ class NotEquals implements IOperator
     /**
      * @inheritDoc
      */
-    public function evaluate()
+    public function evaluate(): string
     {
         return '!==';
     }
@@ -31,7 +31,7 @@ class NotEquals implements IOperator
     /**
      * @inheritDoc
      */
-    public function checkConditions(ISelectExpression $column, ISelectExpression $value)
+    public function checkConditions(ISelectExpression $column, ISelectExpression $value): bool
     {
         return true;
     }

@@ -12,26 +12,17 @@ use pql\QueryBuilder\Select\ISelectExpression;
  */
 class Equals implements IOperator
 {
-    /**
-     * @inheritDoc
-     */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->evaluate();
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function evaluate()
+    public function evaluate(): string
     {
         return '=';
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function checkConditions(ISelectExpression $column, ISelectExpression $value)
+    public function checkConditions(ISelectExpression $column, ISelectExpression $value): bool
     {
         return true;
     }

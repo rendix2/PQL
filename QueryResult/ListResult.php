@@ -15,7 +15,7 @@ class ListResult implements IResult
     /**
      * @var ExplainRow[] $rows
      */
-    private $rows;
+    private array $rows;
 
     /**
      * ListResult constructor.
@@ -27,27 +27,12 @@ class ListResult implements IResult
         $this->rows = $rows;
     }
 
-    /**
-     * ListResult destructor.
-     */
-    public function __destruct()
-    {
-        $this->rows = null;
-    }
-
-    /**
-     * @return string
-     */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->printQuery($this->rows);
     }
 
-    /**
-     * @param $rows
-     * @return string
-     */
-    public function printQuery($rows)
+    public function printQuery(array $rows): string
     {
         $list = '<ol>';
 

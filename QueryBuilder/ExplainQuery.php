@@ -8,7 +8,7 @@
 
 namespace pql\QueryBuilder;
 
-use pql\QueryExecutor\Explain as ExplainExecutor;
+use pql\QueryExecutor\ExplainExecutor as ExplainExecutor;
 use pql\QueryResult\IResult;
 use pql\QueryResult\ListResult;
 use pql\QueryResult\TableResult;
@@ -24,12 +24,12 @@ class ExplainQuery extends SelectQuery
     /**
      * @var IResult $result
      */
-    private $result;
+    private IResult $result;
 
     /**
      * @return IResult|ListResult|TableResult
      */
-    public function run()
+    public function run(): IResult|ListResult|TableResult
     {
         if ($this->result instanceof ListResult) {
             return $this->result;

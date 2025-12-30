@@ -3,6 +3,8 @@
 namespace pql\QueryExecutor;
 
 use Exception;
+use Generator;
+use Iterator;
 use Netpromotion\Profiler\Profiler;
 use pql\Alias;
 use pql\Condition;
@@ -14,12 +16,12 @@ use pql\QueryBuilder\Select\IMathExpression;
 use pql\QueryBuilder\Select\ISelectExpression;
 use pql\QueryBuilder\Select\StandardFunction;
 use pql\QueryBuilder\SelectQuery as SelectBuilder;
-use pql\QueryExecutor\AggregateFunctions\Average;
-use pql\QueryExecutor\AggregateFunctions\Count;
-use pql\QueryExecutor\AggregateFunctions\Max;
-use pql\QueryExecutor\AggregateFunctions\Median;
-use pql\QueryExecutor\AggregateFunctions\Min;
-use pql\QueryExecutor\AggregateFunctions\Sum;
+use pql\QueryExecutor\AggregateFunctions\AverageAggregationFunctionAbstract;
+use pql\QueryExecutor\AggregateFunctions\CountAggregationFunctionAbstract;
+use pql\QueryExecutor\AggregateFunctions\MaxAggregationFunctionAbstract;
+use pql\QueryExecutor\AggregateFunctions\MedianAggregationFunctionAbstract;
+use pql\QueryExecutor\AggregateFunctions\MinAggregationFunctionAbstract;
+use pql\QueryExecutor\AggregateFunctions\SumAggregationFunctionAbstract;
 use pql\QueryExecutor\Functions\NumberFormat;
 use pql\QueryExecutor\Joins\HashJoin;
 use pql\QueryExecutor\Joins\NestedLoopJoin;
@@ -29,56 +31,31 @@ use pql\QueryRow\TableRow;
 use pql\SelectedColumn;
 use pql\Table;
 
-/**
- * Class Select
- *
- * @author  rendix2 <rendix2@seznam.cz>
- * @package pql\QueryExecute
- */
-class SelectQuery implements IQueryExecutor
+
+class SelectExecutor implements IQueryExecutor
 {
-    use Limit;
+    use LimitExecutor;
+
+    private array $groupedByData;
+
+    private int $groupedByDataCount;
+
+    private Optimizer $optimizer;
 
     /**
-     * @var array $groupedByData
+     * @var SelectedColumn[]
      */
-    private $groupedByData;
+    private array $columns;
 
-    /**
-     * @var int $groupedByDataCount
-     */
-    private $groupedByDataCount;
+    private SelectBuilder $query;
 
-    /**
-     * @var Optimizer $optimizer
-     */
-    private $optimizer;
-
-    /**
-     * @var SelectedColumn $columns
-     */
-    private $columns;
-
-    /**
-     * @var SelectBuilder $query
-     */
-    private $query;
-
-    /**
-     * @var array $result
-     */
-    private $result;
+    private array|Iterator $result;
 
     /**
      * @var bool $hasExpression
      */
-    private $hasExpression;
+    private bool $hasExpression;
 
-    /**
-     * Select constructor.
-     *
-     * @param SelectBuilder $query
-     */
     public function __construct(SelectBuilder $query)
     {
         $this->optimizer = new Optimizer($query);
@@ -89,32 +66,12 @@ class SelectQuery implements IQueryExecutor
         $this->hasExpression = false;
     }
 
-    /**
-     * Select destructor.
-     */
-    public function __destruct()
-    {
-        $this->groupedByData      = null;
-        $this->optimizer          = null;
-        $this->groupedByDataCount = null;
-        $this->columns            = null;
-
-        $this->query = null;
-        $this->result = null;
-    }
-
-    /**
-     * @return SelectBuilder
-     */
-    public function getQuery()
+    public function getQuery(): SelectBuilder
     {
         return $this->query;
     }
 
-    /**
-     * @return array
-     */
-    public function getResult()
+    public function getResult(): array|Iterator
     {
         return $this->result;
     }
@@ -122,15 +79,12 @@ class SelectQuery implements IQueryExecutor
     /**
      * @return SelectedColumn[]
      */
-    public function getColumns()
+    public function getColumns(): array
     {
         return $this->columns;
     }
 
-    /**
-     * @return array
-     */
-    public function getGroupedByData()
+    public function getGroupedByData(): array
     {
         return $this->groupedByData;
     }
@@ -149,6 +103,7 @@ class SelectQuery implements IQueryExecutor
         //bdump($this->result, '$this->result SET');
 
         Profiler::start('DISTINCT');
+        $this->result = $this->materializeIfStream($this->result);
         $this->result = $this->distinct();
         Profiler::finish('DISTINCT');
 
@@ -197,6 +152,7 @@ class SelectQuery implements IQueryExecutor
         //bdump($this->result, '$this->result WHERE');
 
         Profiler::start('groupBy');
+        $this->result = $this->materializeIfStream($this->result);
         $this->groupBy();
         Profiler::finish('groupBy');
 
@@ -221,16 +177,21 @@ class SelectQuery implements IQueryExecutor
         //bdump($this->result, '$this->result HAVING');
 
         Profiler::start('orderBy');
+        $this->result = $this->materializeIfStream($this->result);
         $this->orderBy();
         Profiler::finish('orderBy');
 
         //bdump($this->result, '$this->result ORDER');
 
         Profiler::start('limit');
+        $this->result = $this->materializeIfStream($this->result);
         $this->limit();
         Profiler::finish('limit');
 
-       // bdump($this->result, '$this->result LIMIT');
+        // bdump($this->result, '$this->result LIMIT');
+
+        Profiler::start('SET_OPERATIONS');
+        $this->result = $this->materializeIfStream($this->result);
 
         Profiler::start('UNION');
         $this->union();
@@ -255,19 +216,50 @@ class SelectQuery implements IQueryExecutor
         Profiler::finish('EXCEPT');
 
         //bdump($this->result, '$this->result EXCEPT');
+        Profiler::finish('SET_OPERATIONS');
 
         Profiler::start('createRows');
         $rows = $this->createRows();
+
+        if ($rows instanceof Generator) {
+            $rows = iterator_to_array($rows, false);
+        }
+
         Profiler::finish('createRows');
 
         return $rows;
     }
 
-    /**
-     * @return void
-     * @throws Exception
-     */
-    private function checkColumns()
+    private function materializeIfStream(array|Iterator $source): array
+    {
+        if ($source instanceof Iterator) {
+            bdump('Materialize');
+
+            return iterator_to_array($source, false);
+        }
+        return $source;
+    }
+
+    private function materializeJoinSource(JoinedTable $joinedTable): array
+    {
+        $source = $joinedTable->getTable();
+
+        if ($source instanceof Table) {
+            $rows = $source->getRows();
+        } elseif ($source instanceof Query) {
+            $rows = $source->run()->getQuery()->getResult();
+        } else {
+            throw new Exception('Unknown join source type.');
+        }
+
+        if ($rows instanceof Iterator) {
+            return iterator_to_array($rows, false);
+        }
+
+        return $rows;
+    }
+
+    private function checkColumns(): void
     {
         $columns = [];
         
@@ -426,7 +418,7 @@ class SelectQuery implements IQueryExecutor
      * @param ISelectExpression $expression
      * @param mixed       $functionResult
      */
-    private function addFunctionIntoResult(ISelectExpression $expression, $functionResult)
+    private function addFunctionIntoResult(ISelectExpression $expression, mixed $functionResult): void
     {
         if ($this->query->getSelectedColumns()) {
             foreach ($this->result as &$row) {
@@ -502,10 +494,7 @@ class SelectQuery implements IQueryExecutor
         return $this->result;
     }
 
-    /**
-     *
-     */
-    private function aggregateFunctions()
+    private function aggregateFunctions(): array|Generator
     {
         if (!$this->query->hasAggregateFunctions()) {
             return $this->result;
@@ -520,7 +509,7 @@ class SelectQuery implements IQueryExecutor
                 switch ($column->getExpression()->getName()) {
                     case AggregateFunction::SUM:
                         if ($this->groupedByDataCount) {
-                            $aggregateFunction = new Sum($this);
+                            $aggregateFunction = new SumAggregationFunctionAbstract($this);
                             $aggregateFunction->run($column, $functionColumnName);
                         } else {
                             $this->addFunctionIntoResult($column->getExpression(), $functions->sum($column));
@@ -530,7 +519,7 @@ class SelectQuery implements IQueryExecutor
 
                     case AggregateFunction::COUNT:
                         if ($this->groupedByDataCount) {
-                            $aggregateFunction = new Count($this);
+                            $aggregateFunction = new CountAggregationFunctionAbstract($this);
                             $aggregateFunction->run($column, $functionColumnName);
                         } else {
                             $this->addFunctionIntoResult($column->getExpression(), $functions->count($column));
@@ -540,7 +529,7 @@ class SelectQuery implements IQueryExecutor
 
                     case AggregateFunction::AVERAGE:
                         if ($this->groupedByDataCount) {
-                            $aggregateFunction = new Average($this);
+                            $aggregateFunction = new AverageAggregationFunctionAbstract($this);
                             $aggregateFunction->run($column, $functionColumnName);
                         } else {
                             $this->addFunctionIntoResult($column->getExpression(), $functions->avg($column));
@@ -550,7 +539,7 @@ class SelectQuery implements IQueryExecutor
 
                     case AggregateFunction::MIN:
                         if ($this->groupedByDataCount) {
-                            $aggregateFunction = new Min($this);
+                            $aggregateFunction = new MinAggregationFunctionAbstract($this);
                             $aggregateFunction->run($column, $functionColumnName);
                         } else {
                             $this->addFunctionIntoResult($column->getExpression(), $functions->min($column));
@@ -560,7 +549,7 @@ class SelectQuery implements IQueryExecutor
 
                     case AggregateFunction::MAX:
                         if ($this->groupedByDataCount) {
-                            $aggregateFunction = new Max($this);
+                            $aggregateFunction = new MaxAggregationFunctionAbstract($this);
                             $aggregateFunction->run($column, $functionColumnName);
                         } else {
                             $this->addFunctionIntoResult($column->getExpression(), $functions->max($column));
@@ -569,7 +558,7 @@ class SelectQuery implements IQueryExecutor
 
                     case AggregateFunction::MEDIAN:
                         if ($this->groupedByDataCount) {
-                            $aggregateFunction = new Median($this);
+                            $aggregateFunction = new MedianAggregationFunctionAbstract($this);
                             $aggregateFunction->run($column, $functionColumnName);
                         } else {
                             $this->addFunctionIntoResult($column->getExpression(), $functions->median($column));
@@ -583,19 +572,18 @@ class SelectQuery implements IQueryExecutor
         return $this->result;
     }
 
-    /**
-     * @return array|TableRow[]
-     * @throws Exception
-     */
-    private function innerJoin()
+    private function innerJoin(): array
     {
         if (!$this->query->hasInnerJoinedTable()) {
             return $this->result;
         }
 
+        $this->result = $this->materializeIfStream($this->result);
+
         foreach ($this->query->getInnerJoinedTables() as $innerJoinedTable) {
             foreach ($innerJoinedTable->getOnConditions() as $condition) {
-                $innerJoinedTableRows = $this->joinedTableAliases($innerJoinedTable);
+
+                $innerJoinedTableRows = $this->materializeJoinSource($innerJoinedTable);
 
                 $orderOfTables = $this->optimizer->sayOrderOfInnerJoinedTables($this->result, $innerJoinedTableRows);
 
@@ -630,17 +618,16 @@ class SelectQuery implements IQueryExecutor
         return $this->result;
     }
 
-    /**
-     * @return array
-     */
-    private function crossJoin()
+    private function crossJoin(): array
     {
         if (!$this->query->hasCrossJoinedTable()) {
             return $this->result;
         }
 
+        $this->result = $this->materializeIfStream($this->result);
+
         foreach ($this->query->getCrossJoinedTables() as $crossJoinedTable) {
-            $crossJoinedTableRows = $this->joinedTableAliases($crossJoinedTable);
+            $crossJoinedTableRows = $this->materializeJoinSource($crossJoinedTable);
 
             $this->result = NestedLoopJoin::crossJoin($this->result, $crossJoinedTableRows);
         }
@@ -648,19 +635,17 @@ class SelectQuery implements IQueryExecutor
         return $this->result;
     }
 
-    /**
-     * @return array|TableRow[]
-     * @throws Exception
-     */
-    private function leftJoin()
+    private function leftJoin(): array
     {
         if (!$this->query->hasLeftJoinedTable()) {
             return $this->result;
         }
 
+        $this->result = $this->materializeIfStream($this->result);
+
         foreach ($this->query->getLeftJoinedTables() as $leftJoinedTable) {
             foreach ($leftJoinedTable->getOnConditions() as $condition) {
-                $leftJoinedTableRows = $this->joinedTableAliases($leftJoinedTable);
+                $leftJoinedTableRows = $this->materializeJoinSource($leftJoinedTable);
 
                 switch ($this->optimizer->sayJoinAlgorithm($leftJoinedTable, $condition)) {
                     case Optimizer::MERGE_JOIN:
@@ -681,19 +666,17 @@ class SelectQuery implements IQueryExecutor
         return $this->result;
     }
 
-    /**
-     * @return array
-     * @throws Exception
-     */
-    private function rightJoin()
+    private function rightJoin(): array
     {
         if (!$this->query->hasRightJoinedTable()) {
             return $this->result;
         }
 
+        $this->result = $this->materializeIfStream($this->result);
+
         foreach ($this->query->getRightJoinedTables() as $rightJoinedTable) {
             foreach ($rightJoinedTable->getOnConditions() as $condition) {
-                $rightJoinedTableRows = $this->joinedTableAliases($rightJoinedTable);
+                $rightJoinedTableRows = $this->materializeJoinSource($rightJoinedTable);
 
                 switch ($this->optimizer->sayJoinAlgorithm($rightJoinedTable, $condition)) {
                     case Optimizer::MERGE_JOIN:
@@ -714,20 +697,17 @@ class SelectQuery implements IQueryExecutor
         return $this->result;
     }
 
-    /**
-     * @return array
-     *
-     * @throws Exception
-     */
-    private function fullJoin()
+    private function fullJoin(): array
     {
         if (!$this->query->hasFullJoinedTable()) {
             return $this->result;
         }
 
+        $this->result = $this->materializeIfStream($this->result);
+
         foreach ($this->query->getFullJoinedTables() as $fullJoinedTable) {
             foreach ($fullJoinedTable->getOnConditions() as $condition) {
-                $fullJoinedTableRows = $this->joinedTableAliases($fullJoinedTable);
+                $fullJoinedTableRows = $this->materializeJoinSource($fullJoinedTable);
 
                 switch ($this->optimizer->sayJoinAlgorithm($fullJoinedTable, $condition)) {
                     case Optimizer::MERGE_JOIN:
@@ -748,14 +728,7 @@ class SelectQuery implements IQueryExecutor
         return $this->result;
     }
 
-    /**
-     * @param array     $rows
-     * @param Condition $condition
-     *
-     * @return array
-     *
-     */
-    private function doWhere(array $rows, Condition $condition)
+    private function doWhere(array|Generator $rows, Condition $condition): array|Generator
     {
         $whereResult = [];
 
@@ -768,11 +741,7 @@ class SelectQuery implements IQueryExecutor
         return $whereResult;
     }
 
-    /**
-     * @return array|TableRow[]
-     * @throws Exception
-     */
-    private function where()
+    private function where(): array|Generator
     {
         if (!$this->query->hasWhereCondition()) {
             return $this->result;
@@ -789,10 +758,7 @@ class SelectQuery implements IQueryExecutor
         return $this->result;
     }
 
-    /**
-     * @return array
-     */
-    private function whereForFromClause()
+    private function whereForFromClause(): array|Generator
     {
         if (!$this->query->hasWhereCondition()) {
             return $this->result;
@@ -815,7 +781,7 @@ class SelectQuery implements IQueryExecutor
                     $exploded = explode(Alias::DELIMITER, $whereCondition->getColumn());
 
                     if (count($exploded) === 2) {
-                        list($alias, $column) = $exploded;
+                        [$alias, $column] = $exploded;
 
                         if ($alias === $this->query->getTableAlias()->getTo() && $table->columnExists($column)) {
                             $this->result = $this->doWhere($this->result, $whereCondition);
@@ -836,7 +802,7 @@ class SelectQuery implements IQueryExecutor
                     $exploded = explode(Alias::DELIMITER, $whereCondition->getValue());
 
                     if (count($exploded) === 2) {
-                        list($alias, $column) = $exploded;
+                        [$alias, $column] = $exploded;
 
                         if ($alias === $this->query->getTableAlias()->getTo() && $table->columnExists($column)) {
                             $this->result = $this->doWhere($this->result, $whereCondition);
@@ -851,14 +817,7 @@ class SelectQuery implements IQueryExecutor
         return $this->result;
     }
 
-    /**
-     * @param array  $rows
-     * @param string $column
-     *
-     * @return array
-     * @throws Exception
-     */
-    private function doGroupBy(array $rows, $column)
+    private function doGroupBy(array $rows, string $column): array|Generator
     {
         $groupByTemp = [];
 
@@ -963,10 +922,7 @@ class SelectQuery implements IQueryExecutor
         return $result;
     }
 
-    /**
-     * @return array|TableRow[]
-     */
-    private function groupBy()
+    private function groupBy(): array|Generator
     {
         if (!$this->query->hasGroupBy()) {
             return $this->result;
@@ -979,20 +935,13 @@ class SelectQuery implements IQueryExecutor
         return $this->result;
     }
 
-    /**
-     * @param array     $rows
-     * @param array     $havingResult
-     * @param Condition $condition
-     *
-     * @return array
-     */
-    private function havingRowsHelper(array $rows, array $havingResult, Condition $condition)
+    private function havingRowsHelper(array $rows, array $havingResult, Condition $condition): array|Generator
     {
         if (count($rows)) {
             $havingResultTemp = [];
 
             foreach ($rows as $row) {
-                if (ConditionHelper::havingCondition($condition, $row[(string)$condition->getColumn()])) {
+                if (ConditionHelper::havingCondition($condition, $row[(string)$condition->getColumn()->evaluate()])) {
                     $havingResultTemp[] = $row;
                 }
             }
@@ -1003,14 +952,7 @@ class SelectQuery implements IQueryExecutor
         return $havingResult;
     }
 
-    /**
-     * @param array     $rows
-     * @param Condition $condition
-     *
-     * @return array
-     * @throws Exception
-     */
-    private function doHaving(array $rows, Condition $condition)
+    private function doHaving(array $rows, Condition $condition): array|Generator
     {
         $havingResult = [];
 
@@ -1106,10 +1048,7 @@ class SelectQuery implements IQueryExecutor
         return $havingResult;
     }
 
-    /**
-     * @return array|TableRow[]
-     */
-    private function having()
+    private function having(): array|Generator
     {
         if (!$this->query->hasHavingCondition()) {
             return $this->result;
@@ -1124,10 +1063,7 @@ class SelectQuery implements IQueryExecutor
         return $this->result = $having;
     }
 
-    /**
-     * @return array|TableRow[]
-     */
-    private function orderBy()
+    private function orderBy(): array|Generator
     {
         if (!$this->optimizer->sayIfOrderByIsNeed() || !$this->query->hasOrderBy()) {
             return $this->result;
@@ -1155,10 +1091,7 @@ class SelectQuery implements IQueryExecutor
         return $this->result = $resultTemp;
     }
 
-    /**
-     * @return TableRow[]
-     */
-    private function createRows()
+    private function createRows(): array|Generator
     {
         $columnsTemp = array_merge($this->query->getSelectedColumns(), $this->columns);
 
@@ -1192,13 +1125,7 @@ class SelectQuery implements IQueryExecutor
         return $rows;
     }
 
-    /**
-     * @param JoinedTable $table
-     *
-     * @return array
-     * @throws Exception
-     */
-    private function joinedTableAliases(JoinedTable $table)
+    private function joinedTableAliases(JoinedTable $table): Generator
     {
         if ($table->getTable() instanceof Table) {
             $rows = $table->getTable()->getRows();
@@ -1209,26 +1136,23 @@ class SelectQuery implements IQueryExecutor
         }
 
         if (!$table->hasAlias()) {
-            return $rows;
+            yield from $rows;
+            return;
         }
 
-        $result = [];
+        foreach ($rows as $row) {
+            $aliasedRow = [];
 
-        foreach ($rows as $rowNumber => $row) {
             foreach ($row as $columnName => $columnValue) {
-                $result[$rowNumber][$table->getAlias()->getTo() . Alias::DELIMITER . $columnName] = $columnValue;
-                $result[$rowNumber][$columnName] = $columnValue;
+                $aliasedRow[$table->getAlias()->getTo() . Alias::DELIMITER . $columnName] = $columnValue;
+                $aliasedRow[$columnName] = $columnValue;
             }
-        }
 
-        return $result;
+            yield $aliasedRow;
+        }
     }
 
-    /**
-     * @return array|TableRow[]
-     * @throws Exception
-     */
-    private function fromTableAliases()
+    private function fromTableAliases(): array|Generator
     {
         if ($this->query->getTable() instanceof Table) {
             $rows = $this->query->getTable()->getRows();
@@ -1263,11 +1187,7 @@ class SelectQuery implements IQueryExecutor
         return $result;
     }
 
-    /**
-     * @return array
-     * @throws Exception
-     */
-    private function union()
+    private function union(): array|Generator
     {
         if (!$this->query->hasUnionQuery()) {
             return $this->result;
@@ -1308,11 +1228,7 @@ class SelectQuery implements IQueryExecutor
         return $this->result = $result;
     }
 
-    /**
-     * @return array
-     * @throws Exception
-     */
-    private function unionAll()
+    private function unionAll(): array|Generator
     {
         if (!$this->query->hasUnionAllQuery()) {
             return $this->result;
@@ -1334,11 +1250,7 @@ class SelectQuery implements IQueryExecutor
         return $this->result;
     }
 
-    /**
-     * @return array
-     * @throws Exception
-     */
-    private function intersect()
+    private function intersect(): array|Generator
     {
         if (!$this->query->hasIntersectQuery()) {
             return $this->result;
@@ -1370,11 +1282,7 @@ class SelectQuery implements IQueryExecutor
         return $this->result = $result;
     }
 
-    /**
-     * @return array
-     * @throws Exception
-     */
-    private function except()
+    private function except(): array|Generator
     {
         if (!$this->query->hasExceptQuery()) {
             return $this->result;

@@ -8,18 +8,18 @@ namespace pql\QueryBuilder\Select;
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryBuilder\Select
  */
-class Value implements ISelectExpression
+class ValueExpression implements ISelectExpression
 {
     /**
      * @var string|int $value
      */
-    private $value;
+    private string|int $value;
 
     /**
      * Value constructor.
      * @param string|int $value
      */
-    public function __construct($value)
+    public function __construct(string|int $value)
     {
         $this->value = $value;
     }

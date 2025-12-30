@@ -10,7 +10,7 @@ namespace pql\QueryExecutor;
 
 use pql\QueryBuilder\Query;
 use pql\QueryBuilder\UpdateSelectQuery as UpdateSelectBuilder;
-use pql\QueryBuilder\Where;
+use pql\QueryBuilder\WhereQueryBuilder;
 
 /**
  * Class UpdateSelect
@@ -18,14 +18,11 @@ use pql\QueryBuilder\Where;
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryExecute
  */
-class UpdateSelect implements IQueryExecutor
+class UpdateSelectExecutor implements IQueryExecutor
 {
-    use Where;
+    use WhereQueryBuilder;
 
-    /**
-     * @var UpdateSelectBuilder $query
-     */
-    private $query;
+    private UpdateSelectBuilder $query;
 
     /**
      * UpdateSelect constructor.
@@ -37,28 +34,14 @@ class UpdateSelect implements IQueryExecutor
         $this->query = $query;
     }
 
-    /**
-     * UpdateSelect destructor.
-     */
-    public function __destruct()
-    {
-        $this->query = null;
-    }
-
-    /**
-     * @return UpdateSelectBuilder
-     */
-    public function getQuery()
+    public function getQuery(): UpdateSelectBuilder
     {
         return $this->query;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function run()
     {
-        $selectQuery = new SelectQuery($this->query->getData());
+        $selectQuery = new SelectExecutor($this->query->getData());
         $selectQuery->run();
 
         $results = [];

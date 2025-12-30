@@ -14,38 +14,19 @@ use SplFileObject;
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryExecute
  */
-class Update implements IQueryExecutor
+class UpdateExecutor implements IQueryExecutor
 {
-    use Limit;
+    use LimitExecutor;
 
-    /**
-     * @var UpdateBuilder $query
-     */
-    private $query;
+    private UpdateBuilder $query;
 
-    /**
-     * @var array $result
-     */
-    private $result;
+    private array $result;
 
-    /**
-     * Update constructor.
-     *
-     * @param UpdateBuilder $query
-     */
     public function __construct(UpdateBuilder $query)
     {
         $this->query = $query;
     }
 
-    /**
-     * Update destructor.
-     */
-    public function __destruct()
-    {
-        $this->query = null;
-        $this->result = null;
-    }
 
     /**
      * run query
@@ -76,14 +57,7 @@ class Update implements IQueryExecutor
         return count($this->result);
     }
 
-    /**
-     * @param array      $rows
-     * @param Condition $condition
-     * @param array      $updateData
-     *
-     * @return array
-     */
-    private function doWhere(array $rows, Condition $condition, array $updateData)
+    private function doWhere(array $rows, Condition $condition, array $updateData): array
     {
         foreach ($rows as $rowNumber => $row) {
             if (ConditionHelper::condition($condition, $row, [])) {
@@ -96,10 +70,7 @@ class Update implements IQueryExecutor
         return $rows;
     }
 
-    /**
-     * where conditions
-     */
-    private function where()
+    private function where(): void
     {
         $updateData = $this->query->getData();
         $rows = $this->query->getTable()->getRows();

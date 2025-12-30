@@ -16,28 +16,22 @@ use Exception;
  * @author  rendix2 <rendix2@seznam.cz>
  * @package pql\QueryBuilder
  */
-trait Limit
+trait LimitQueryBuilder
 {
     /**
      * @var int $limit
      */
-    private $limit;
+    private int $limit;
 
     /**
      * @return int
      */
-    public function getLimit()
+    public function getLimit(): int
     {
         return $this->limit;
     }
 
-    /**
-     * @param int $limit
-     *
-     * @return Limit|SelectQuery
-     * @throws Exception
-     */
-    public function limit($limit)
+    public function limit(int $limit): LimitQueryBuilder|SelectQuery
     {
         if (!is_numeric($limit)) {
             throw new Exception('Limit is not a number.');
