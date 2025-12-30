@@ -3,6 +3,7 @@
 namespace pql;
 
 use Exception;
+use Generator;
 use Iterator;
 use Nette\Utils\FileSystem;
 use SplFileObject;
@@ -12,25 +13,28 @@ use SplFileObject;
  */
 class TemporaryTable implements ITable, Iterator
 {
-    private const EXT = 'tmp';
-    private const DELIMITER = ', ';
+    private const string EXT = 'tmp';
+    private const string DELIMITER = ', ';
 
     private string $path;
-
-    /**
-     * @var TableColumn[] $columns
-     */
-    private array $columns;
 
     private int $rowsCount = 0;
 
     private ?SplFileObject $stream;
 
-    public function __construct(array $columns, Iterator $dataIterator)
+    /**
+     * @param array $columns
+     * @param Iterator $dataIterator
+     * @param Database $database
+     */
+    public function __construct(
+        private array $columns,
+        Iterator $dataIterator,
+        Database $database,
+    )
     {
-        $this->columns = $columns;
         $this->stream = null;
-        $this->path = sys_get_temp_dir() . DIRECTORY_SEPARATOR . uniqid('pql_temp_') . '.' . self::EXT;
+        $this->path = $database->getDir() . uniqid('pql_temp_') . '.' . self::EXT;
 
         $this->materializeData($dataIterator);
     }
@@ -71,7 +75,7 @@ class TemporaryTable implements ITable, Iterator
         return $this->rowsCount;
     }
 
-    public function getRows($object = false): void
+    public function getRows(bool $returnObject = false): Generator
     {
         throw new Exception();
     }

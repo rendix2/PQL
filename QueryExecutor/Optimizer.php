@@ -8,6 +8,7 @@ use pql\Operator;
 use pql\QueryBuilder\Query;
 use pql\QueryBuilder\SelectQuery as SelectBuilder;
 use pql\Table;
+use pql\ITable;
 
 /**
  * Class Optimizer
@@ -31,6 +32,10 @@ class Optimizer
 
     public const string CONDITION_COLUMN_VALUE = 'column';
 
+    private const int SAFETY_RAM_THRESHOLD_MB = 50;
+
+    private const int MEMORY_RESERVE_PER_ROW_BYTES = 1024;
+
     private SelectBuilder $query;
 
     private bool $useOrderBy;
@@ -39,6 +44,52 @@ class Optimizer
     {
         $this->query      = $query;
         $this->useOrderBy = $query->hasOrderBy();
+    }
+
+    private function parseMemoryLimit(string $limitString): int
+    {
+        $limitString = trim($limitString);
+        $last = strtolower($limitString[strlen($limitString) - 1]);
+        $value = (int)$limitString;
+
+        switch ($last) {
+            case 'g': $value *= 1024;
+            case 'm': $value *= 1024;
+            case 'k': $value *= 1024;
+        }
+
+        return ($limitString === '-1') ? PHP_INT_MAX : $value;
+    }
+
+    private function estimateMaterializedSize(ITable $table): int
+    {
+        $rowCount = $table->getRowsCount();
+
+        return $rowCount * self::MEMORY_RESERVE_PER_ROW_BYTES;
+    }
+
+    private function getAvailableMemoryBytes(): int
+    {
+        $maxLimitBytes = $this->parseMemoryLimit(ini_get('memory_limit'));
+        $usedMemoryBytes = memory_get_usage(true);
+
+        $safetyBytes = self::SAFETY_RAM_THRESHOLD_MB * 1024 * 1024;
+
+        $available = $maxLimitBytes - $usedMemoryBytes - $safetyBytes;
+
+        return max(0, $available);
+    }
+
+    public function shouldMaterializeToDisk(ITable $table): bool
+    {
+        $estimatedSize = $this->estimateMaterializedSize($table);
+        $availableRam = $this->getAvailableMemoryBytes();
+
+        if ($estimatedSize > $availableRam) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

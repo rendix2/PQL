@@ -15,7 +15,7 @@ class TableColumn
     /**
      * @var array
      */
-    private const array COLUMN_TYPES = [self::INTEGER, self::STRING, self::FLOAT, self::BOOL];
+    public const array COLUMN_TYPES = [self::INTEGER, self::STRING, self::FLOAT, self::BOOL];
 
     /**
      * @var string
@@ -37,7 +37,7 @@ class TableColumn
      */
     public const string BOOL = 'bool';
 
-    private const int COLUMN_NAME = 0;
+    public const int COLUMN_NAME = 0;
 
     private const int COLUMN_TYPE = 1;
 

@@ -30,6 +30,7 @@ use pql\QueryResult\TableResult;
 use pql\QueryRow\TableRow;
 use pql\SelectedColumn;
 use pql\Table;
+use pql\TemporaryTable;
 
 
 class SelectExecutor implements IQueryExecutor
@@ -92,7 +93,7 @@ class SelectExecutor implements IQueryExecutor
     /**
      * @return TableRow[]
      */
-    public function run()
+    public function run(): array
     {
         $this->checkColumns();
 
@@ -232,31 +233,34 @@ class SelectExecutor implements IQueryExecutor
 
     private function materializeIfStream(array|Iterator $source): array
     {
-        if ($source instanceof Iterator) {
-            bdump('Materialize');
+        if (!($source instanceof Iterator)) {
+            return $source;
+        }
 
+        $currentTableContext = $this->query->getTable();
+
+        if ($currentTableContext === null) {
+            throw new Exception('Table is not set');
+        }
+
+        $isTooLargeForRam = $this->optimizer->shouldMaterializeToDisk($currentTableContext);
+
+        if ($isTooLargeForRam) {
+            bdump('Materialize to DISC');
+            $tempTable = new TemporaryTable($this->getColumns(), $source,  $this->query->getDatabase());
+
+            return $tempTable->getArray();
+        } else {
+            bdump('Materialize to RAM (Array)');
             return iterator_to_array($source, false);
         }
-        return $source;
     }
 
     private function materializeJoinSource(JoinedTable $joinedTable): array
     {
-        $source = $joinedTable->getTable();
+        $aliasedStream = $this->joinedTableAliases($joinedTable);
 
-        if ($source instanceof Table) {
-            $rows = $source->getRows();
-        } elseif ($source instanceof Query) {
-            $rows = $source->run()->getQuery()->getResult();
-        } else {
-            throw new Exception('Unknown join source type.');
-        }
-
-        if ($rows instanceof Iterator) {
-            return iterator_to_array($rows, false);
-        }
-
-        return $rows;
+        return $this->materializeIfStream($aliasedStream);
     }
 
     private function checkColumns(): void
